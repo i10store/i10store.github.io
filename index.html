@@ -11,18 +11,11 @@
 <title>i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN...</title>
 
 <!-- Bootstrap Core CSS -->
-<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+ 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css">    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap-theme.min.css">
 
-<!-- Customizable CSS -->
-<link rel="stylesheet" href="assets/css/main.css">
 <link rel="stylesheet" href="assets/css/i10.css">
-<link rel="stylesheet" href="assets/css/blue.css">
-<link rel="stylesheet" href="assets/css/owl.carousel.css">
-<link rel="stylesheet" href="assets/css/owl.transitions.css">
-<link rel="stylesheet" href="assets/css/animate.min.css">
-<link rel="stylesheet" href="assets/css/rateit.css">
-<link rel="stylesheet" href="assets/css/bootstrap-select.min.css">
-
 <!-- Icons/Glyphs -->
 <link rel="stylesheet" href="assets/css/font-awesome.css">
 
@@ -34,6 +27,22 @@
 <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,400italic,600,600italic,700,700italic,800' rel='stylesheet' type='text/css'>
 <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
  
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Comfortaa', 'Roboto', sans-serif !important;
+  }
+</style>
+<style>
+  .i10-popup-overlay img {
+    transition: transform .6s ease, opacity .6s ease;
+  }
+  .i10-popup-overlay button:hover {
+    transform: scale(1.1);
+  }
+</style>
 
 
 </head>
@@ -57,2081 +66,137 @@
       <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
           <!-- ============================================================= LOGO ============================================================= -->
-          <div class="logo" style="display: flex;"> 
-            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="background-color: white; text-align: center; font-size: 26px; font-weight: bolder; border: black 5px solid;"> I10 STORE </marquee>
-            <a href="index.html"> <img src="assets/images/logo.webp" width="100" height="100" alt="logo"> </a> 
+          <div class="logo" style="display: flex; border:#fff solid 2px; border-radius: 20px; margin-bottom: 20px;"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="index.html">
+              <img id="site-logo" width="100" height="100" alt="logo">
+             </a>
+            <script>
+              // Lấy logo từ file i10-products.js
+              document.addEventListener("DOMContentLoaded", () => {
+                if (typeof SITE_LOGO !== "undefined") {
+                  document.getElementById("site-logo").src = SITE_LOGO;
+                }
+              });
+            </script>
           </div>
-          <!-- /.logo --> 
-          
-          <!-- ============================================================= LOGO : END ============================================================= --> </div>
-        <!-- /.logo-holder -->
-        
-        <div class="col-xs-12 col-sm-12 col-md-7 top-search-holder"> 
-          <!-- /.contact-row --> 
-          <!-- ============================================================= SEARCH AREA ============================================================= -->
-          <div class="search-area">
-            <form>
-              <div class="control-group">
-                <ul class="categories-filter animate-dropdown">
-                  <li class="dropdown"> <a class="dropdown-toggle" data-toggle="dropdown" href="thinkpad.html">THINKPAD<b class="caret"></b></a>
-                    <ul class="dropdown-menu" role="menu">
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="thinkpad.html">- X1 CARBON</a></li>
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="thinkpad.html">- YOGA</a></li>
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="thinkpad.html">- MÁY TRẠM: P, EXTREME,...</a></li>
-                      <li role="presentation"><a role="menuitem" tabindex="-1" href="other.html">- OTHER</a></li>
-                    </ul>
-                  </li>
-                </ul>
-                <input class="search-field" placeholder="Tìm kiếm tại đây..." style="width: 73%;">
-                <a class="search-button" href="404.html"></a> 
-              </div>
-            </form>
-          </div>
-          <div style="margin-top: 15px; font-size: 16px; font-weight: bold;">
-            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #efe11e;">
+
+
+          <!-- ============================================================= XIN CHÀO ============================================================= --> </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
               i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
             </marquee>
           </div>
-          <!-- /.search-area --> 
-          <!-- ============================================================= SEARCH AREA : END ============================================================= --> </div>
-        <!-- /.top-search-holder -->
-        
-        <div class="col-xs-12 col-sm-12 col-md-2 animate-dropdown top-cart-row"> 
-          <!-- ============================================================= SHOPPING CART DROPDOWN ============================================================= -->
-          
-          <div class="dropdown dropdown-cart"> <a href="#" class="dropdown-toggle lnk-cart" data-toggle="dropdown">
-            <div class="items-cart-inner">
-              <div class="basket"> <i class="glyphicon glyphicon-shopping-cart"></i> </div>
-              <div class="basket-item-count"><span class="count">6</span></div>
-              <div class="total-price-basket"> <span class="lbl">Giỏ Hàng-</span> <span class="total-price"> <span class="sign">$</span><span class="value">9</span> </span> </div>
-            </div>
-            </a>
-            <ul class="dropdown-menu">
-              <li>
-                <div class="cart-item product-summary">
-                  <div class="row">
-                    <div class="col-xs-4">
-                      <div class="image"> <a href="contact.html"><img src="assets/images/cart.webp" alt=""></a> </div>
-                    </div>
-                    <div class="col-xs-7">
-                      <h3 class="name"><a href="contact.html">Các tính năng đang hoàn thiện</a></h3>
-                      <div class="price">Quý khách vui lòng liên hệ/Zalo: 0838288000</div>
-                    </div>
-                    <div class="col-xs-1 action"> <a href="contact.html"><i class="fa fa-trash"></i></a> </div>
-                  </div>
-                </div>
-                <!-- /.cart-item -->
-                <div class="clearfix"></div>
-                <hr>
-                <div class="clearfix cart-total">
-                  <div class="pull-right"> <span class="text">Facebook :</span><!-- <span class='price'> --><a target="_blank" href="https://www.facebook.com/profile.php?id=100083555854710">Thinkpad US</a> </span> </div>
-                  <div class="clearfix"></div>
-                  <a target="_blank" href="https://www.facebook.com/profile.php?id=100083555854710" class="btn btn-upper btn-primary btn-block m-t-20">Liên hệ Facebook</a> </div>
-                <!-- /.cart-total--> 
-              </li>
+       </div>
+
+        <div class="header-nav animate-dropdown col-xs-12 col-sm-12 col-md-9" >
+            <div>
+            <ul class="nav navbar-nav main-menu">
+              <li data-desc="Hiệu năng cao, xử lý đồ họa mượt mà"><a href="index.html?filter=maytram">Máy trạm</a></li>
+              <li data-desc="Thiết kế nhỏ gọn, mỏng nhẹ, phù hợp di chuyển nhiều,..."><a href="index.html?filter=vanphong">Văn phòng</a></li>
+              <li data-desc="Thinkpad cổ điển, cá tính, ổn định, bền bỉ"><a href="index.html?filter=thinkpad">Thinkpad</a></li>
+              <li data-desc="Laptop Dell phổ biến, mạnh mẽ, thương hiệu,..."><a href="index.html?filter=dell">Dell</a></li>
+              <li data-desc="Điện thoại nhiều hoài niệm"><a href="index.html?filter=blackberry">BackBerry</a></li>
+              <li data-desc="Xem thông tin liên hệ"><a href="contact.html">Liên Hệ</a></li>
             </ul>
-            <!-- /.dropdown-menu--> 
           </div>
-          <!-- /.dropdown-cart --> 
-          <!-- ============================================================= SHOPPING CART DROPDOWN : END============================================================= --> </div>
-        <!-- /.top-cart-row --> 
-      </div>
-      <!-- /.row --> 
-    </div>
-    <!-- /.container --> 
-    
-  </div>
-  <!-- /.main-header --> 
+        </div>
   
   <!-- ============================================== NAVBAR ============================================== -->
-  <div class="header-nav animate-dropdown" >
-    <div class="container">
-      <div class="yamm navbar navbar-default" role="navigation">
-        <div class="navbar-header">
-       <button data-target="#mc-horizontal-menu-collapse" data-toggle="collapse" class="navbar-toggle collapsed" type="button"> 
-       <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
-        </div>
-        <div class="nav-bg-class">
-          <div class="navbar-collapse collapse" id="mc-horizontal-menu-collapse">
-            <div class="nav-outer">
-              <ul class="nav navbar-nav">
-                <li class="active dropdown yamm-fw"> <a href="index.html" data-hover="dropdown" class="dropdown-toggle">TRANG CHỦ</a> </li>
-                <li class="dropdown yamm mega-menu"> <a href="maytram.html" data-hover="dropdown" class="dropdown-toggle" >MÁY TRẠM-ĐỒ HOẠ</a>
-                  <ul class="dropdown-menu container">
-                    <a href="maytram.html">
-                      <li>
-                        <div class="yamm-content ">
-                          <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-menu"> 
-                                <span>Là dòng máy chuyên về đồ hoạ, thiết kế, kỹ thuật, ứng dụng nặng, game,...<br><br>
-                                Sức mạnh đến từ con chip chuyên hiệu năng, CARD đồ hoạ rời, dung lượng RAM lớn,...<br><br>
-                                Cùng với thiết kế tối ưu tản nhiệt, giúp máy có thể hoạt động liên tục nhiều ngày...
-                                </span>
-  
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-2 col-menu banner-image"> <img class="img-responsive" src="assets/images/web-products/P1.webp" alt=""> </div>
-                            <div class="col-xs-12 col-sm-12 col-md-2 col-menu banner-image"> <img class="img-responsive" src="assets/images/web-products/P53.webp" alt=""> </div>
-                            <div class="col-xs-12 col-sm-12 col-md-2 col-menu banner-image"> <img class="img-responsive" src="assets/images/web-products/p9.webp " alt=""> </div>
-                          </div>
-                        </div>
-                      </li>
-                    </a>
-                  </ul>
-                </li>
-
-                <li class="dropdown yamm mega-menu"> <a href="vanphong.html" data-hover="dropdown" class="dropdown-toggle" >VĂN PHÒNG-HỌC TẬP<span class="menu-label hot-menu hidden-xs">NEW</span></a>
-                  <ul class="dropdown-menu container">
-                    <a href="vanphong.html">
-                      <li>
-                        <div class="yamm-content ">
-                          <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-2 col-menu banner-image"> <img class="img-responsive" src="assets/images/web-products/yoga.webp " alt=""> </div>
-                            <div class="col-xs-12 col-sm-12 col-md-2 col-menu banner-image"> <img class="img-responsive" src="assets/images/web-products/x1.webp" alt=""> </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-menu"> 
-                              <span>Là dòng máy có thiết kế nhỏ gọn, mỏng nhẹ, phù hợp di chuyển nhiều, công tác xa...<br><br>
-                              Khung vỏ làm bằng hợp kim carbon siêu bền chắc nhưng lại rất nhẹ, chỉ ~1kg...<br><br>
-                              Dòng laptop doanh nhân đẳng cấp, được rất nhiều các sếp tin dùng.
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    </a>
-                  </ul>
-                </li>
-                
-                <li class="dropdown hidden-sm"> <a href="thinkpad.html">THINKPAD<span class="menu-label new-menu hidden-xs">HOT</span> </a> </li>
-                <li class="dropdown hidden-sm"> <a href="dell.html">  DELL </a> </li>
-                <li class="dropdown hidden-sm"> <a href="blackberry.html">BLACKBERRY</a> </li>
-                <li class="dropdown"> <a href="phukien.html" class="dropdown-toggle" data-hover="dropdown">PHỤ KIỆN</a>
-                  <ul class="dropdown-menu pages">
-                    <li>
-                      <div class="yamm-content">
-                        <div class="row">
-                          <div class="col-xs-12 col-menu">
-                            <ul class="links">
-                              <li><a href="phukien.html">RAM</a></li>
-                              <li><a href="phukien.html">SSD</a></li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-                </li>
-                <li class="dropdown"> <a href="contact.html">LIÊN HỆ</a> </li>
-                <li class="dropdown  navbar-right special-menu"> <a href="https://bit.ly/thinkpadUS" target="_blank">XEM NHANH SP</a> </li>
-              </ul>
-              <!-- /.navbar-nav -->
-              <div class="clearfix"></div>
-            </div>
-            <!-- /.nav-outer --> 
-          </div>
-          <!-- /.navbar-collapse --> 
-          
-        </div>
-        <!-- /.nav-bg-class --> 
-      </div>
-      <!-- /.navbar-default --> 
-    </div>
-    <!-- /.container-class --> 
-    
-  </div>
-  <!-- /.header-nav --> 
-  <!-- ============================================== NAVBAR : END ============================================== --> 
-
-  <!-- ============================================== BACK TO HOME ============================================== -->
-    <button id="myBtn" title="Lên đầu trang"><span class="icon fa-stack fa-lg"><i class="fa fa-home fa-stack-1x fa-inverse"></i> </span></button>
-  <!-- ============================================== BACK HOME : END ============================================== -->
+   <div class="container" id="top-area">
+              <!-- Banner Area -->
+              <section id="banner" style="position:relative;width:100%;overflow:hidden;border-radius:12px;">
+                <div id="banner-slides" style="display:flex;transition:transform 0.8s ease;will-change:transform;"></div>
+              </section>
+    </div> 
 </header>
 <!-- ============================================== HEADER : END ============================================== -->
   
+
+
+
+
 
 <div class="body-content outer-top-xs" id="top-banner-and-menu">
   <div class="container">
     <div class="row"> 
       <!-- ============================================== SIDEBAR ============================================== -->
       <div class="col-xs-12 col-sm-12 col-md-3 sidebar"> 
-        
-        <!-- ================================== TOP NAVIGATION - MENU ĐỨNG================================== -->
-        <div class="side-menu animate-dropdown outer-bottom-xs">
-          <div class="head"><i class="icon fa fa-align-justify fa-fw"></i> <a style="color: black;" href="all-products.html">TẤT CẢ SẢN PHẨM</a></div>
+        <!-- ================================== SIDEBAR1 ================================== -->
+        <div id="sidebar1" class="side-menu animate-dropdown outer-bottom-xs" style="border-radius: 12px;">
+          <div class="head"><i class="icon fa fa-align-justify fa-fw"></i> <a style="color: black;" href="all-products.html">i10 STORE - THINKPAD US</a></div>
           <nav class="yamm megamenu-horizontal">
             <ul class="nav">
-              <li class="dropdown menu-item"> <a style="color:rgb(74, 143, 4); font-weight: bold;" href="available-products.html" class="dropdown-toggle" ><i class="icon fa fa-shopping-bag" aria-hidden="true"></i>SẢN PHẨM </a> </li>
+              <li class="dropdown menu-item"> <a style="color:rgb(74, 143, 4); font-weight: bold;" href="index.html" class="dropdown-toggle" ><i class="icon fa fa-shopping-bag" aria-hidden="true"></i>SẢN PHẨM </a> </li>
               
-              <li class="dropdown menu-item"> <a style="color:rgb(74, 143, 4); font-weight: bold;" href="https://bit.ly/thinkpadUS" class="dropdown-toggle" target="_blank"><i class="icon fa fa-laptop" aria-hidden="true"></i>SẢN PHẨM SẴN HÀNG</a> </li>
+              <li class="dropdown menu-item"> <a style="color:rgb(74, 143, 4); font-weight: bold;" href="index.html?filter=available" class="dropdown-toggle" target="_blank"><i class="icon fa fa-laptop" aria-hidden="true"></i>SẢN PHẨM SẴN HÀNG</a> </li>
 
-              <li class="dropdown menu-item"> <a style="font-weight: bold;" href="khachhang.html" class="dropdown-toggle"><i class="icon fa fa-paw" aria-hidden="true"></i>KHÁCH ĐÃ TIN MUA</a> </li>
+              <li class="dropdown menu-item"> <a style="font-weight: bold;" href="khachhang.html" class="dropdown-toggle"><i class="icon fa fa-diamond" aria-hidden="true"></i>KHÁCH ĐÃ TIN MUA</a> </li>
 
-              <li class="dropdown menu-item"> <a href="phukien.html" class="dropdown-toggle"><i class="icon fa fa-clock-o" aria-hidden="true"></i>Phụ Kiện</a> </li>
+              <li class="dropdown menu-item"> <a href="phukien.html" class="dropdown-toggle"><i class="icon fa fa-paw" aria-hidden="true"></i>Phụ Kiện</a> </li>
               
-              <li class="dropdown menu-item"> <a href="khuyenmai.html" class="dropdown-toggle"><i class="icon fa fa-diamond" aria-hidden="true"></i>Khuyến Mãi</a> </li>
-              
-              <li class="dropdown menu-item"> <a href="sale-product.html" class="dropdown-toggle"><i class="icon fa fa-heartbeat" aria-hidden="true"></i>Giảm Giá Đặc Biệt</a> </li>
             </ul>
           </nav>
         </div>
-        <!-- ================================== TOP NAVIGATION : END ================================== --> 
         
 
-        <!-- ============================================== GIÁ ƯU ĐÃI ============================================== -->
-        <div class="sidebar-widget hot-deals wow fadeInUp outer-bottom-xs">
-          <h3 class="section-title">GIÁ ƯU ĐÃI</h3>
-          <div class="owl-carousel sidebar-carousel custom-carousel owl-theme outer-top-ss">
-            <div class="item">
-              <div class="products">
-                <a href="x1g6.html">
-                  <div class="hot-deal-wrapper">
-                    <div class="image"> <img src="assets/images/hot-deals/carbon.webp" alt=""> </div>
-                    <div class="sale-offer-tag"><span>~ 9%<br>off</span></div>
-                  </div>
-                  <div class="product-info text-left m-t-20">
-                    <h3 class="name"><a href="x1g6.html">THINKPAD X1 CARBON GEN 6</a></h3>
-                    <div class="product-price"> <span class="price"> $6.x00.000 </span> <span class="price-before-discount">$7.500.000</span> </div>
-                  </div>
-                </a>
-
-                <div class="cart clearfix animate-effect">
-                  <div class="action">
-                    <a href="contact.html">
-                      <div class="add-cart-button btn-group">
-                        <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                        <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-<!-- item 2 --> 
-            <div class="item">
-              <div class="products">
-                <a href="x1yoga3.html">
-                  <div class="hot-deal-wrapper">
-                    <div class="image"> <img src="assets/images/hot-deals/yoga.webp" alt=""> </div>
-                    <div class="sale-offer-tag"><span>~ 8%<br>off</span></div>
-                  </div>
-                  <div class="product-info text-left m-t-20">
-                    <h3 class="name"><a href="x1yoga3.html">THINKPAD X1 YOGA GEN 3 </a></h3>
-                    <div class="product-price"> <span class="price"> $6.x00.000 </span> <span class="price-before-discount">$7.500.000</span> </div>
-                  </div>
-                </a>
-
-                <div class="cart clearfix animate-effect">
-                  <div class="action">
-                    <a href="contact.html">
-                      <div class="add-cart-button btn-group">
-                        <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                        <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+        
+        <!-- ================================== SIDEBAR 2 ============================================== -->
+        <div id="sidebar2" class="sidebar-widget wow fadeInUp outer-top-vs">
+          <div class="widget-title">ƯU ĐÃI HOT</div>
+          <ul class="widget-list">
+            <li>🧰 Tặng chuột bluetooth + lót chuột + balo cao cấp</li>
+            <li>🚚 Miễn phí giao hàng toàn quốc</li>
+            <li>🎁 Hỗ trợ phần mềm trọn đời</li>
+          </ul>
         </div>
-        <!-- ============================================== GIÁ ƯU ĐÃI: END ============================================== --> 
-        
 
-        <!-- ============================================== SẢN PHẨM GIÁ TỐT ============================================== -->
-        <!-- ============================================== THẺ TAG : END ============================================== --> 
-        
-        <!-- ============================================== FEEDBACK============================================== -->
-        <div class="sidebar-widget  wow fadeInUp outer-top-vs ">
-          <div id="advertisement" class="advertisement">
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/1.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/2.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/3.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/4.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/5.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/6.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/7.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/8.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/9.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/10.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/11.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/12.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/13.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/14.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/15.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/16.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/17.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/18.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/19.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-
-            <div class="item">
-              <img class="avatar" src="assets/images/khach/20.webp" style="object-fit: contain; margin: 0 ;" width="200px" height="250px" alt="Image" >
-            </div>
-            
-          </div>
-          <!-- /.owl-carousel --> 
-        </div>
-        <!-- ============================================== FEEDBACK: END ============================================== -->
+        <!-- ============================================== SIDEBAR 2: END ============================================== -->
         
       </div>
-      <!-- /.sidemenu-holder --> 
-      <!-- ============================================== SIDEBAR : END ============================================== --> 
-      <!-- ============================================== SIDEBAR : END ============================================== --> 
-      <!-- ============================================== SIDEBAR : END ============================================== --> 
-      <!-- ============================================== SIDEBAR : END ============================================== --> 
-      <!-- ============================================== SIDEBAR : END ============================================== --> 
-
-
       
+      <!-- ============================================== SIDEBAR : END ============================================== --> 
+      <!-- ============================================== SIDEBAR : END ============================================== --> 
+      <!-- ============================================== SIDEBAR : END ============================================== --> 
+      <!-- ============================================== SIDEBAR : END ============================================== --> 
+      <!-- ============================================== SIDEBAR : END ============================================== --> 
+
+
       <!-- ============================================== CONTENT ============================================== -->
-      <div class="col-xs-12 col-sm-12 col-md-9 homebanner-holder"> 
-        <div class="clearfix filters-container m-t-10">
-            <div class="row">
-              <div class="col col-sm-6 col-md-6">
-                <div class="filter-tabs">
-                  <ul id="filter-tabs" class="nav nav-tabs nav-tab-box nav-tab-fa-icon">
-                    <li class="active"> <a data-toggle="tab" href="#grid-container"><i class="icon fa fa-th-large"></i>Hiển thị kiểu lưới    </a> </li>
-                    <li><a data-toggle="tab" href="#list-container"><i class="icon fa fa-th-list"></i>Hiển thị kiểu danh sách</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div class="col col-sm-12 col-md-2">
-              </div>
-              <div class="col col-sm-6 col-md-4 text-right">
-                <div class="pagination-container">
-                  <ul class="list-inline list-unstyled">
-                    <li class="prev"><a href="all-products.html"><i class="fa fa-angle-left"></i></a></li>
-                    <li class="active"><a href="all-products.html">1</a></li>
-                    <li><a href="all-products&page=2.html">2</a></li>
-                    <li class="next"><a href="all-products&page=2.html"><i class="fa fa-angle-right"></i></a></li>
-                  </ul>
-                </div>
-                </div>
-            </div>
+      <!-- ============================================== CONTENT ============================================== -->
+      <!-- ============================================== CONTENT ============================================== -->
+      <div class="col-xs-12 col-sm-12 col-md-9">
+          <div id="i10-product" >
+
+            
+
           </div>
-
-          
-
-
-
-        <!-- grid-container --> 
-        <!-- grid-container --> 
-        <!-- grid-container --> 
-        <div class="search-result-container ">
-          <div id="myTabContent" class="tab-content category-list">
-
-            <!-- grid-1 --> 
-            <div class="tab-pane active" id="grid-container">
-              <div class="category-product">
-                <div class="row">
-
-                  <!-- X1G10 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1g10.html"><img src="assets/images/products/x1g10/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1g9.html">Thinkpad X1 Carbon Gen 10</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 15 - 17 triệu </span> <span class="price-before-discount">15.999.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1g5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1g10.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- X1G9 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1g9.html"><img src="assets/images/products/x1g9/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1g9.html">Thinkpad X1 Carbon gen 9</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">10.999.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1g5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1g9.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- X1Yoga6 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1yoga6.html"><img src="assets/images/products/x1yoga6/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1yoga6.html">Thinkpad X1 YOGA GEN 6</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 12 - 14 triệu </span> <span class="price-before-discount">12.999.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga6.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1yoga6.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- X1G5 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1g5.html"><img src="assets/images/products/x1g5/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1g5.html">Thinkpad X1 carbon gen 5</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 5 - 7 triệu </span> <span class="price-before-discount">6.999.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1g5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1g5.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- X1G6 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="x1g6.html"><img src="assets/images/products/x1g6/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="x1g6.html">Thinkpad X1 carbon gen 6</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 6 - 8 triệu  </span> <span class="price-before-discount">$ 7.999.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="x1g6.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="x1g6.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-
-                  <!-- X1G7 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="x1g7.html"><img src="assets/images/products/x1g7/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="x1g7.html">Thinkpad X1 carbon gen 7</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 7 - 9 triệu  </span> <span class="price-before-discount">12.000.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="x1g7.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="x1g7.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                  <!-- X1G8 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1g8.html"><img height="186" src="assets/images/products/x1g8/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1g8.html">Thinkpad X1 carbon gen 8</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 9 - 11 triệu  </span> <span class="price-before-discount">10.000.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1g8.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1g8.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div>
-                  
-                  <!-- X1 YOGA3 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="x1yoga3.html"><img src="assets/images/products/x1yoga3/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="x1yoga3.html">Thinkpad X1 Yoga 3</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 6 - 8 triệu  </span> <span class="price-before-discount">8.600.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="x1yoga3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-
-                  <!-- X1 YOGA4 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1yoga4.html"><img src="assets/images/products/x1yoga4/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1yoga4.html">Thinkpad X1 Yoga 4</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 6 - 8 triệu  </span> <span class="price-before-discount">8.600.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga4.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1yoga4.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                   <!-- X1 YOGA 5-->
-                   <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x1yoga5.html"><img src="assets/images/products/x1yoga5/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x1yoga4.html">Thinkpad X1 Yoga 5</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 8 - 10 triệu  </span> <span class="price-before-discount">8.800.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x1yoga5.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- X13 YOGA -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x13yoga.html"><img src="assets/images/products/x13yoga/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x13yoga.html">Thinkpad X13 Yoga</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 7 - 9 triệu  </span> <span class="price-before-discount">9.600.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x13yoga.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x13yoga.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div>
-
-                                <!-- T14s-->
-                                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                                    <div class="products">
-                                      <div class="product">
-                                        <div class="product-image">
-                                          <div class="image"> <a href="t14s.html"><img src="assets/images/products/t14s/1.webp" alt=""></a> </div>
-                                          <div class="tag new"><span>new</span></div>
-                                        </div>
-                                        <div class="product-info text-left">
-                                          <h3 class="name"><a href="t14s.html">Thinkpad T14s</a></h3>
-                                          <div class="rating rateit-small"></div>
-                                          <div class="description"></div>
-                                          <div class="product-price"> <span class="price"> 7 - 9 triệu  </span> <span class="price-before-discount">11.000.000</span> </div>
-                                        </div>
-                                        <div class="cart clearfix animate-effect">
-                                          <div class="action">
-                                            <ul class="list-unstyled">
-                                              <li class="add-cart-button btn-group">
-                                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                              </li>
-                                              <li class="lnk wishlist"> <a class="add-to-cart" href="t14s.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                              <li class="lnk"> <a class="add-to-cart" href="t14s.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                </div>
-
-                  <!-- T14 Gen 2 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                                      <div class="products">
-                                        <div class="product">
-                                          <div class="product-image">
-                                            <div class="image"> <a href="t14g2.html"><img src="assets/images/products/t14g2/1.webp" alt=""></a> </div>
-                                            <div class="tag new"><span>new</span></div>
-                                          </div>
-                                          <div class="product-info text-left">
-                                            <h3 class="name"><a href="t14g2.html">Thinkpad T14 Gen 2</a></h3>
-                                            <div class="rating rateit-small"></div>
-                                            <div class="description"></div>
-                                            <div class="product-price"> <span class="price"> 9 - 11 triệu  </span> <span class="price-before-discount">11.000.000</span> </div>
-                                          </div>
-                                          <div class="cart clearfix animate-effect">
-                                            <div class="action">
-                                              <ul class="list-unstyled">
-                                                <li class="add-cart-button btn-group">
-                                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                                </li>
-                                                <li class="lnk wishlist"> <a class="add-to-cart" href="t14g2.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                                <li class="lnk"> <a class="add-to-cart" href="t14g2.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                              </ul>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                  </div>
-
-
-                  <!-- T14s Gen 2 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t14sg2.html"><img src="assets/images/products/t14sg2/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t14g2.html">Thinkpad T14s Gen 2</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 11 - 13 triệu  </span> <span class="price-before-discount">14.000.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t14sg2.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t14sg2.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- T14 Gen 3 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t14g3.html"><img src="assets/images/products/t14g3/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t14g3.html">Thinkpad T14 Gen 3</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 11 - 13 triệu  </span> <span class="price-before-discount">14.000.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t14g3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t14g3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  <!-- T14s Gen 3 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t14sg3.html"><img src="assets/images/products/t14sg3/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t14g2.html">Thinkpad T14s Gen 3</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 11 - 13 triệu  </span> <span class="price-before-discount">14.000.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t14sg3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t14sg3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  <!-- X1 EXTREME -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="x1extreme.html"><img src="assets/images/products/x1extreme/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="x1extreme.html">Thinkpad X1 Extreme (Card rời)</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 9 - 11 triệu  </span> <span class="price-before-discount">11.000.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="x1extreme.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="x1extreme.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                  
-                  <!-- P1 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="p1.html"><img src="assets/images/products/p1/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="p1.html">Thinkpad P1 (Card rời)</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">13.500.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="p1.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="p1.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-
-                  <!-- P1 G2 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="p1g2.html"><img src="assets/images/products/p1g2/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="p1g2.html">Thinkpad P1 Gen 2 (máy trạm)</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">13.500.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="p1g2.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="p1g2.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-
-                  <!-- P1 G3 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="p1g3.html"><img src="assets/images/products/p1g3/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="p1g3.html">Thinkpad P1 Gen 3 (máy trạm)</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 12 - 14 triệu </span> <span class="price-before-discount">13.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="p1g3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="p1g3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div>
-
-                  <!-- Dell Precision 5530 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="d5530.html"><img src="assets/images/products/dell-precision5530/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="d5530.html">Dell Precision 5530 (máy trạm)</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">13.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="d5530.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="d5530.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Dell XPS 9570 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="d9570.html"><img src="assets/images/products/dell9570/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="d9570.html">Dell XPS 9570 (máy trạm)</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">13.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="d9570.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="d9570.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- MIIX 520 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="miix520.html"><img src="assets/images/products/miix520/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="miix520.html">Lenovo Miix 520 - Máy tính bảng + phím rời</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> ~5 triệu </span> <span class="price-before-discount"> 7.900.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="miix520.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="miix520.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  
-                  <!-- T490s -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="t490s.html"><img src="assets/images/products/t490s/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="t490s.html">Thinkpad T490s</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="t490s.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="t490s.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-
-                  <!-- T480s -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t480s.html"><img src="assets/images/products/t480s/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t480s.html">Thinkpad T480s</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 6.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t480s.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t480s.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                    
-                  <!-- T495 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                      <div class="products">
-                        <div class="product">
-                          <div class="product-image">
-                            <div class="image"> <a href="t495.html"><img src="assets/images/products/t495/1.webp" alt=""></a> </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                          <div class="product-info text-left">
-                            <h3 class="name"><a href="t495.html">Thinkpad T495</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="description"></div>
-                            <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount">$ 7.999.000</span> </div>
-                          </div>
-                          <div class="cart clearfix animate-effect">
-                            <div class="action">
-                              <ul class="list-unstyled">
-                                <li class="add-cart-button btn-group">
-                                  <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                  <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                </li>
-                                <li class="lnk wishlist"> <a class="add-to-cart" href="t495.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                <li class="lnk"> <a class="add-to-cart" href="t495.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                  
-                  <!-- T490 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t490.html"><img src="assets/images/products/t490/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t490.html">Thinkpad T490</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t490.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t490.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-
-                  <!-- T590 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t590.html"><img src="assets/images/products/t590/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t590.html">Thinkpad T590</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t590.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t590.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- T14 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t14.html"><img src="assets/images/products/t14/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t14.html">Thinkpad T14</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">6 - 8 triệu  </span> <span class="price-before-discount"> 8.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t14.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t14.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- T15 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="t15.html"><img src="assets/images/products/t15/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="t15.html">Thinkpad T15</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">5 - 7 triệu  </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="t15.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="t15.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                      
-                  <!-- E580 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="e580.html"><img src="assets/images/products/e580/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="e580.html">Thinkpad E580</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">4 - 6 triệu </span> <span class="price-before-discount"> 6.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="e580.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="e580.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  
-                  <!-- X395 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="x395.html"><img src="assets/images/products/x395/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="x395.html">Thinkpad X395</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">5 - 7 triệu  </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="x395.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="x395.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- P51 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="p51.html"><img src="assets/images/products/p51/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="p51.html">Thinkpad P51 (máy trạm)</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">5 - 7 triệu </span> <span class="price-before-discount"> 8.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="p51.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="p51.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- P53 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="p53.html"><img src="assets/images/products/p53/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="p53.html">Thinkpad P53 (máy trạm)</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">11 - 13 triệu </span> <span class="price-before-discount"> 13.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="p53.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="p53.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- D7490 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="d7490.html"><img src="assets/images/products/dell7490/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="d7520.html">Dell Latitude 7490</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">5 - 7 triệu </span> <span class="price-before-discount"> 6.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="d7490.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="d7490.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- D7520 -->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="d7520.html"><img src="assets/images/products/dell7520/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="d7520.html">Dell Latitude 7520</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">8 - 10 triệu </span> <span class="price-before-discount"> 9.900.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="d7520.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="d7520.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- D5410-->
-                  <div class="col-sm-6 col-md-4 wow fadeInUp">
-                    <div class="products">
-                      <div class="product">
-                        <div class="product-image">
-                          <div class="image"> <a href="d5410.html"><img src="assets/images/products/dell5410/1.webp" alt=""></a> </div>
-                          <div class="tag new"><span>new</span></div>
-                        </div>
-                        <div class="product-info text-left">
-                          <h3 class="name"><a href="d5410.html">Dell Latitude 5410</a></h3>
-                          <div class="rating rateit-small"></div>
-                          <div class="description"></div>
-                          <div class="product-price"> <span class="price">5 - 7 triệu </span> <span class="price-before-discount"> 7.500.000</span> </div>
-                        </div>
-                        <div class="cart clearfix animate-effect">
-                          <div class="action">
-                            <ul class="list-unstyled">
-                              <li class="add-cart-button btn-group">
-                                <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                              </li>
-                              <li class="lnk wishlist"> <a class="add-to-cart" href="d5410.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                              <li class="lnk"> <a class="add-to-cart" href="d5410.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-
-                </div>
-                <!-- /.row --> 
-              </div>
-              <!-- /.category-product --> 
-
-            </div>
-      <!-- grid-2 --> 
-
-            <!-- listtttttttttttttttttt -->
-            <!-- listtttttttttttttttttt -->
-            <!-- listtttttttttttttttttt -->
-            <div class="tab-pane" id="list-container">
-              <div class="category-product">
-
-                <div class="category-product-inner wow fadeInUp">
-                  <div class="products">
-                    <div class="product-list product">
-                      <div class="row product-list-row">
-                        <div class="col col-sm-4 col-lg-4">
-                          <div class="product-image">
-                            <div class="image"> <img src="assets/images/products/x1g5/1.webp" alt=""> </div>
-                          </div>
-                        </div>
-                        <div class="col col-sm-8 col-lg-8">
-                          <div class="product-info">
-                            <h3 class="name"><a href="x1g5.html">Thinkpad X1 Carbon gen 5</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 6.900.000 </span> </div>
-                            <div class="description m-t-10">Thinkpad X1 Carbon gen 5 - Ultrabook laptop văn phòng mỏng nhẹ, sang trọng.</div>
-                            <div class="cart clearfix animate-effect">
-                              <div class="action">
-                                <ul class="list-unstyled">
-                                  <li class="add-cart-button btn-group">
-                                    <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                    <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                  </li>
-                                  <li class="lnk wishlist"> <a class="add-to-cart" href="x1g5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                  <li class="lnk"> <a class="add-to-cart" href="x1g5.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="tag new"><span>new</span></div>
-                    </div>
-                  </div>
-                </div>
-                <!-- spppppppppppppp -->
-
-                
-                <div class="category-product-inner wow fadeInUp">
-                  <div class="products">
-                    <div class="product-list product">
-                      <div class="row product-list-row">
-                        <div class="col col-sm-4 col-lg-4">
-                          <div class="product-image">
-                            <div class="image"> <img src="assets/images/products/x1g6/1.webp" alt=""> </div>
-                          </div>
-                        </div>
-                        <div class="col col-sm-8 col-lg-8">
-                          <div class="product-info">
-                            <h3 class="name"><a href="x1g6.html">Thinkpad X1 Carbon gen 6</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="product-price"> <span class="price">6 - 8 triệu </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                            <div class="description m-t-10">Thinkpad X1 Carbon gen 6 - Ultrabook laptop văn phòng mỏng nhẹ, sang trọng.</div>
-                            <div class="cart clearfix animate-effect">
-                              <div class="action">
-                                <ul class="list-unstyled">
-                                  <li class="add-cart-button btn-group">
-                                    <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                    <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                  </li>
-                                  <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                  <li class="lnk"> <a class="add-to-cart" href="x1yoga3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="tag new"><span>new</span></div>
-                    </div>
-                  </div>
-                </div>
-                <!-- spppppppppppppp -->
-
-
-                <div class="category-product-inner wow fadeInUp">
-                  <div class="products">
-                    <div class="product-list product">
-                      <div class="row product-list-row">
-                        <div class="col col-sm-4 col-lg-4">
-                          <div class="product-image">
-                            <div class="image"> <img src="assets/images/products/x1g7/1.webp" alt=""> </div>
-                          </div>
-                        </div>
-                        <div class="col col-sm-8 col-lg-8">
-                          <div class="product-info">
-                            <h3 class="name"><a href="x1g7.html">Thinkpad X1 Carbon gen 7</a></h3>
-                            <div class="rating rateit-small"></div>
-                            <div class="product-price"> <span class="price">7 - 9 triệu </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                            <div class="description m-t-10">Thinkpad X1 Carbon gen 7 - Ultrabook laptop văn phòng mỏng nhẹ, sang trọng.</div>
-                            <div class="cart clearfix animate-effect">
-                              <div class="action">
-                                <ul class="list-unstyled">
-                                  <li class="add-cart-button btn-group">
-                                    <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                    <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                  </li>
-                                  <li class="lnk wishlist"> <a class="add-to-cart" href="x1g7.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                  <li class="lnk"> <a class="add-to-cart" href="x1g7.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="tag new"><span>new</span></div>
-                    </div>
-                  </div>
-                </div>
-                <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/x1yoga3/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="x1yoga3.html">Thinkpad X1 Yoga 3</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 6 - 8 triệu  </span> <span class="price-before-discount">8.600.000 </span> </div>
-                                  <div class="description m-t-10">Thinkpad X1 Yoga 3 - laptop doanh nhân, xoay gập 360 độ cùng với bút cảm ứng</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="x1yoga3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/x1extreme/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="x1extreme.html">Thinkpad X1 Extreme</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 9 - 11 triệu  </span> <span class="price-before-discount">12.900.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy trạm cao cấp, nhưng rất mỏng nhẹ...</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="x1extreme.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="x1extreme.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/p1/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="p1.html">Thinkpad P1</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 9 - 11 triệu </span> <span class="price-before-discount">12.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy trạm cao cấp, nhưng rất mỏng nhẹ...</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="p1.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="p1.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/x1yoga5/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="x1yoga5.html">Thinkpad X1 Yoga 5</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 9 - 11 triệu  </span> <span class="price-before-discount">10.600.000 </span> </div>
-                                  <div class="description m-t-10">Thinkpad X1 Yoga 5 - laptop doanh nhân, xoay gập 360 độ cùng với bút cảm ứng</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga5.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="x1yoga5.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/t490s/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="t490s.html">Thinkpad T490s</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 6 - 8 triệu  </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy tầm trung, phù hợp cho văn phòng và học tập</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="t490s.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="t490s.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/t495/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="t495.html">Thinkpad T495</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy tầm trung, phù hợp cho văn phòng và học tập, sử dụng chip AMD Ryzen</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="t495.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="t495.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/t490/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="t490.html">Thinkpad T490</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy tầm trung, phù hợp cho văn phòng và học tập</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="t490.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="t490.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/t590/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="t490s.html">Thinkpad T590</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 5 - 7 triệu  </span> <span class="price-before-discount"> 8.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy tầm trung, phù hợp cho văn phòng và học tập</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="t495.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="t495.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/x395/1.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="x395.html">Thinkpad X395</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price"> 5 - 7 triệu </span> <span class="price-before-discount">7.600.000 </span> </div>
-                                  <div class="description m-t-10">Dòng máy tầm trung, phù hợp cho văn phòng và học tập, sử dụng chip AMD Ryzen</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="x395.html  " title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="x395.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp -->
-                      
-                      <div class="category-product-inner wow fadeInUp">
-                        <div class="products">
-                          <div class="product-list product">
-                            <div class="row product-list-row">
-                              <div class="col col-sm-4 col-lg-4">
-                                <div class="product-image">
-                                  <div class="image"> <img src="assets/images/products/x1yoga3/2.webp" alt=""> </div>
-                                </div>
-                              </div>
-                              <div class="col col-sm-8 col-lg-8">
-                                <div class="product-info">
-                                  <h3 class="name"><a href="x1yoga3.html">Thinkpad X1 Yoga 3</a></h3>
-                                  <div class="rating rateit-small"></div>
-                                  <div class="product-price"> <span class="price">6 - 8 triệu </span> <span class="price-before-discount">$ 8.600.000 </span> </div>
-                                  <div class="description m-t-10">Thinkpad X1 Yoga 3 - laptop doanh nhân, xoay gập 360 độ cùng với bút cảm ứng</div>
-                                  <div class="cart clearfix animate-effect">
-                                    <div class="action">
-                                      <ul class="list-unstyled">
-                                        <li class="add-cart-button btn-group">
-                                          <button class="btn btn-primary icon" data-toggle="dropdown" type="button"> <i class="fa fa-shopping-cart"></i> </button>
-                                          <button class="btn btn-primary cart-btn" type="button">Mua ngay</button>
-                                        </li>
-                                        <li class="lnk wishlist"> <a class="add-to-cart" href="x1yoga3.html" title="Wishlist"> <i class="icon fa fa-heart"></i> </a> </li>
-                                        <li class="lnk"> <a class="add-to-cart" href="x1yoga3.html" title="Compare"> <i class="fa fa-signal"></i> </a> </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="tag new"><span>new</span></div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- spppppppppppppp --> 
-                      
-                    </div>
-                    <!-- /.category-product --> 
-            </div>
-                <!-- /.tab-pane #list-container --> 
-          </div>
-
-
-            <!-- /.tab-content -->
-            <div class="clearfix filters-container">
-              <div class="text-right">
-                <div class="pagination-container">
-                  <ul class="list-inline list-unstyled">
-                    <li class="prev"><a href="all-products.html"><i class="fa fa-angle-left"></i></a></li>
-                    <li class="active"><a href="all-products.html">1</a></li>
-                    <li><a href="all-products&page=2.html">2</a></li>
-                    <li class="next"><a href="all-products&page=2.html"><i class="fa fa-angle-right"></i></a></li>
-                  </ul>
-                  <!-- /.list-inline --> 
-                </div>
-                <!-- /.pagination-container --> </div>
-              <!-- /.text-right --> 
-              
-            </div>
-            <!-- /.filters-container --> 
-          </div>
-          <!-- /.search-result-container --> 
-        </div>
-        <!-- /.col --> 
       </div>
-      <!-- /.row --> 
-    
-    
-  </div>
-  <!-- /.body-content --> 
-      </div>
-      <!-- ============================================== CONTENT : END ============================================== --> 
+    </div>
+</div>
+</div>
+
+
+
+<!-- ============================================================= NÚT SĐT ============================================================= -->
+  <div class="hotline-phone-ring-wrap">
+    <div class="hotline-phone-ring">
+    <div class="hotline-phone-ring-circle"></div>
+    <div class="hotline-phone-ring-circle-fill"></div>
+    <div class="hotline-phone-ring-img-circle">
+    <a href="tel:0838288000" class="pps-btn-img">
+    <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" alt="Gọi điện thoại" width="50">
+    </a>
+    </div>
+    </div>
+    <div class="hotline-bar">
+    <a target="_blank" href="https://zalo.me/0838288000">
+    <span class="text-hotline">0838.288.000</span>
+    </a>
     </div>
   </div>
-</div>
-<!-- /#top-banner-and-menu --> 
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================= FOOTER ============================================================= -->
 <footer id="footer" class="footer color-bg">
     <div class="footer-bottom">
@@ -2141,7 +206,6 @@
             <div class="module-heading">
               <h4 class="module-title">ĐỊA CHỈ</h4>
             </div>
-            <!-- /.module-heading -->
             
             <div class="module-body">
               <ul class="toggle-footer" style="">
@@ -2154,15 +218,12 @@
                 
               </ul>
             </div>
-            <!-- /.module-body --> 
           </div>
-          <!-- /.col -->
           
           <div class="col-xs-12 col-sm-6 col-md-3">
             <div class="module-heading">
               <h4 class="module-title">ĐIỆN THOẠI - ZALO</h4>
             </div>
-            <!-- /.module-heading -->
             
             <div class="module-body">
               <ul class='toggle-footer'>
@@ -2177,15 +238,12 @@
                
               </ul>
             </div>
-            <!-- /.module-body --> 
           </div>
-          <!-- /.col -->
           
           <div class="col-xs-12 col-sm-6 col-md-3">
             <div class="module-heading">
               <h4 class="module-title">FACEBOOK</h4>
             </div>
-            <!-- /.module-heading -->
             
             <div class="module-body">
               <ul class='toggle-footer'>
@@ -2198,15 +256,12 @@
                
               </ul>
             </div>
-            <!-- /.module-body --> 
           </div>
-          <!-- /.col -->
           
           <div class="col-xs-12 col-sm-6 col-md-3">
             <div class="module-heading">
               <h4 class="module-title">NGÂN HÀNG-TECHCOMBANK </h4>
             </div>
-            <!-- /.module-heading -->
             
             <div class="module-body">
               <ul class='toggle-footer'>
@@ -2219,34 +274,22 @@
                
               </ul>
             </div>
-            <!-- /.module-body --> 
           </div>
         </div>
       </div>
     </div>
-  
-  <!-- NÚT HIỂN THỊ SDT --> 
-  <div class="hotline-phone-ring-wrap">
-    <div class="hotline-phone-ring">
-    <div class="hotline-phone-ring-circle"></div>
-    <div class="hotline-phone-ring-circle-fill"></div>
-    <div class="hotline-phone-ring-img-circle">
-    <a href="tel:0838288000" class="pps-btn-img">
-    <img src="./assets/images/logo.webp" alt="Gọi điện thoại" width="50">
-    </a>
-    </div>
-    </div>
-    <div class="hotline-bar">
-    <a target="_blank" href="https://zalo.me/0838288000">
-    <span class="text-hotline">0838.288.000</span>
-    </a>
-    </div>
-  </div>
-  
+    
   </footer>
   <!-- ============================================================= FOOTER : END============================================================= --> 
   
   
+
+
+
+
+
+
+
   
   <!-- JavaScripts placed at the end of the document so the pages load faster --> 
   <script src="assets/js/jquery-1.11.1.min.js"></script> 
@@ -2263,5 +306,14 @@
   <script src="assets/js/scripts.js"></script>
   <script src="assets/js/i10.js"></script>
 
-  </body>
-  </html>
+
+<script src="assets/js/i10-products.js"></script>
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
