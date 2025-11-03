@@ -815,9 +815,9 @@ async function renderBanner() {
       return (index % total + total) % total;
     }
     function updateLayout() {
-      const currentMaxStack = window.innerWidth > 768 ? 3 : 1;
+      const currentMaxStack = window.innerWidth > 768 ? 5 : 1;
       const currentItemSize = window.innerWidth > 768 ? 220 : 150;
-      const currentBaseShift = window.innerWidth > 768 ? 130 : 90;
+      const currentBaseShift = window.innerWidth > 768 ? 90 : 90;
       const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
       bannerItems.forEach((item, index) => {
         let offset = index - currentIndex;
