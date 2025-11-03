@@ -1,12 +1,13 @@
 /**
  * ===========================
- *   I10 PRODUCT DRIVE EXPORT
+ * I10 PRODUCT DRIVE EXPORT (Nâng cấp v3 - Sửa lỗi Model trống)
  * ===========================
  * Tự động tạo, đồng bộ, dọn dẹp và xuất JSON sản phẩm + banner.
  */
 
 const SHEET_NAME = "Web";
 const CACHE_KEY_PRODUCTS = "i10_cached_products";
+const CACHE_KEY_BANNER = "i10_cached_banner";
 const DRIVE_ROOT_ID = "1ZO7AcpmyShKm2j0EVNorme7mYKRN2VcQ"; // thư mục Drive gốc
 const FOLDER_ID_BANNER = "1h1qRJQVMTtzTfXxyPPUgrIilyARr37o7"; // thư mục banner
 
@@ -16,6 +17,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("🧰 I10 Tools")
     .addItem("📁 Tạo / Đồng bộ Folder Drive", "createProductFolders")
+    .addItem("✍️ Cập nhật/Tạo Link Web (Nâng cao)", "generateAndWriteWebLinks") // <-- Nâng cấp
     .addItem("🧹 Dọn dẹp Folder dư", "checkAndCleanExtraFolders")
     .addItem("🔍 Kiểm tra link Folder Drive", "checkDriveLinkMatch")
     .addItem("🖼 Kiểm tra Folder rỗng (không có ảnh)", "checkEmptyImageFolders")
@@ -37,7 +39,7 @@ function openWebAppLink() {
   }
 }
 
-/** ==================== LẤY ID FOLDER ==================== */
+/** ==================== HELPERS (Slug & ID) ==================== */
 function extractFolderId(url) {
   if (!url) return "";
   const patterns = [/\/folders\/([-\w]{20,})/, /id=([-\w]{20,})/, /[-\w]{25,}/];
@@ -48,82 +50,145 @@ function extractFolderId(url) {
   return "";
 }
 
+// (*** MỚI - Vấn đề 2 ***) Hàm tạo slug (link)
+function createSlug(text) {
+    if (!text) return "";
+    return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')           // Thay thế khoảng trắng bằng -
+        .replace(/\//g, '-')            // Thay thế / bằng -
+        .replace(/@/g, 'at')            // Thay thế @
+        .replace(/[^\w\-]+/g, '')       // Xóa ký tự đặc biệt
+        .replace(/\-\-+/g, '-')         // Thay thế nhiều - bằng 1 -
+        .replace(/^-+/, '')             // Xóa - ở đầu
+        .replace(/-+$/, '');            // Xóa - ở cuối
+}
+
+
 /** =======================================================
- * 1️⃣ TẠO / ĐỒNG BỘ FOLDER THEO CỘT Name + Lưu ID CỐ ĐỊNH
+ * 1️⃣ TẠO / ĐỒNG BỘ FOLDER (Giữ nguyên)
  * ======================================================= */
 function createProductFolders() {
+  // (Giữ nguyên code)
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
-
   const nameCol = headers.indexOf("Name");
   const driveCol = headers.indexOf("Folder Album Image Google Drive");
   const idCol = headers.indexOf("Folder ID");
   const statusCol = headers.indexOf("Trạng thái tạo folder");
-
-  if (idCol === -1) {
-    SpreadsheetApp.getUi().alert("⚠️ Vui lòng thêm cột 'Folder ID' để lưu ID cố định.");
-    return;
-  }
-
+  if (idCol === -1) { SpreadsheetApp.getUi().alert("⚠️ Vui lòng thêm cột 'Folder ID'."); return; }
   const root = DriveApp.getFolderById(DRIVE_ROOT_ID);
   const folders = {};
   const iter = root.getFolders();
-  while (iter.hasNext()) {
-    const f = iter.next();
-    folders[f.getId()] = f.getName();
-  }
-
+  while (iter.hasNext()) { const f = iter.next(); folders[f.getId()] = f.getName(); }
   let created = 0, updated = 0;
-
   data.forEach((row, i) => {
     const name = (row[nameCol] || "").toString().trim();
     if (!name) return;
-
     const folderId = (row[idCol] || "").toString().trim();
     const link = (row[driveCol] || "").toString().trim();
-
     try {
       let folder = null;
       if (folderId && folders[folderId]) folder = DriveApp.getFolderById(folderId);
-      else {
-        const found = root.getFoldersByName(name);
-        if (found.hasNext()) folder = found.next();
-      }
-
-      if (!folder) {
-        folder = root.createFolder(name);
-        created++;
-      } else {
-        updated++;
-      }
-
+      else { const found = root.getFoldersByName(name); if (found.hasNext()) folder = found.next(); }
+      if (!folder) { folder = root.createFolder(name); created++; } else { updated++; }
       const newLink = `https://drive.google.com/drive/folders/${folder.getId()}`;
       if (link !== newLink) sheet.getRange(i + 2, driveCol + 1).setValue(newLink);
       if (folderId !== folder.getId()) sheet.getRange(i + 2, idCol + 1).setValue(folder.getId());
       sheet.getRange(i + 2, statusCol + 1).setValue("✅ OK");
-    } catch (err) {
-      sheet.getRange(i + 2, statusCol + 1).setValue("❌ " + err.message);
-    }
+    } catch (err) { sheet.getRange(i + 2, statusCol + 1).setValue("❌ " + err.message); }
   });
-
   sheet.getRange("AA1").setValue(`Lần tạo/đồng bộ gần nhất: ${new Date().toLocaleString("vi-VN")}`);
   SpreadsheetApp.getActive().toast(`✅ Tạo ${created}, đồng bộ ${updated} folder.`);
 }
 
 /** =======================================================
- * 2️⃣ DỌN DẸP FOLDER DƯ
+ * (*** SỬA LỖI - Vấn đề 2 ***) 2️⃣ TẠO VÀ GHI LINK WEB
+ * ======================================================= */
+function generateAndWriteWebLinks() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+
+  // Đọc các cột cần thiết
+  const modelCol = headers.indexOf("Model");
+  const nameCol = headers.indexOf("Name");
+  const cpuCol = headers.indexOf("CPU");
+  const ramCol = headers.indexOf("RAM");
+  const resCol = headers.indexOf("RESOLUTION");
+  const gpuCol = headers.indexOf("GPU - CARD");
+  const webLinkCol = headers.indexOf("Web Link"); // Đọc cột mới
+
+  if (webLinkCol === -1) {
+    SpreadsheetApp.getUi().alert("⚠️ Không tìm thấy cột 'Web Link'.\nVui lòng thêm cột này (tên chính xác) và thử lại.");
+    return;
+  }
+  
+  if (modelCol === -1) {
+    SpreadsheetApp.getUi().alert("⚠️ Cần cột 'Model' để tạo link.");
+    return;
+  }
+
+
+  let updated = 0;
+  const links = new Set(); // Dùng để kiểm tra link trùng
+
+  data.forEach((row, i) => {
+    
+    // (*** SỬA LỖI Vấn đề 2 ***)
+    // Nếu Model trống thì bỏ qua
+    const model = (row[modelCol] || "").toString().trim();
+    if (!model) {
+        // (Tùy chọn: Xóa link cũ nếu model bị xóa)
+        // if (row[webLinkCol] !== "") {
+        //     sheet.getRange(i + 2, webLinkCol + 1).setValue("");
+        // }
+        return; 
+    }
+
+    // Tạo chuỗi text từ các thông số
+    const textToSlug = [
+        model, // Chỉ dùng model (đã kiểm tra không rỗng)
+        row[cpuCol],
+        row[ramCol],
+        row[resCol],
+        row[gpuCol]
+    ].filter(Boolean).join(' '); // Nối các thông số
+    
+    let slug = createSlug(textToSlug || `san-pham-${i+2}`);
+    
+    // Xử lý slug trùng
+    let originalSlug = slug;
+    let count = 2;
+    while (links.has(slug)) {
+      slug = `${originalSlug}-${count++}`;
+    }
+    links.add(slug);
+
+    const webLink = `#${slug}`; // Dạng link hash
+    
+    if (row[webLinkCol] !== webLink) {
+      sheet.getRange(i + 2, webLinkCol + 1).setValue(webLink);
+      updated++;
+    }
+  });
+  
+  SpreadsheetApp.getActive().toast(`✅ Đã cập nhật ${updated} link web nâng cao.`);
+}
+
+
+/** =======================================================
+ * 3️⃣ DỌN DẸP FOLDER DƯ (Giữ nguyên)
  * ======================================================= */
 function checkAndCleanExtraFolders() {
+  // (Giữ nguyên code)
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
   const nameCol = headers.indexOf("Name");
   const validNames = new Set(data.map(r => (r[nameCol] || "").toString().trim()).filter(Boolean));
-
   const root = DriveApp.getFolderById(DRIVE_ROOT_ID);
   const recycle = root.getFoldersByName("_Recycle").hasNext() ? root.getFoldersByName("_Recycle").next() : root.createFolder("_Recycle");
-
   const extras = [];
   const folders = root.getFolders();
   while (folders.hasNext()) {
@@ -131,22 +196,14 @@ function checkAndCleanExtraFolders() {
     if (f.getName() === "_Recycle") continue;
     if (!validNames.has(f.getName().trim())) extras.push(f);
   }
-
-  if (!extras.length) {
-    SpreadsheetApp.getUi().alert("✅ Không có folder dư!");
-    return;
-  }
-
-  extras.forEach(f => {
-    try { f.moveTo(recycle); } catch (err) { Logger.log("Không di chuyển được: " + f.getName()); }
-  });
-
+  if (!extras.length) { SpreadsheetApp.getUi().alert("✅ Không có folder dư!"); return; }
+  extras.forEach(f => { try { f.moveTo(recycle); } catch (err) { Logger.log("Không di chuyển được: " + f.getName()); } });
   sheet.getRange("AB1").setValue(`Lần dọn gần nhất: ${new Date().toLocaleString("vi-VN")}`);
   SpreadsheetApp.getActive().toast(`🧹 Đã chuyển ${extras.length} folder dư vào _Recycle.`);
 }
 
 /** =======================================================
- * 3️⃣ XUẤT JSON SẢN PHẨM + CACHE
+ * 4️⃣ XUẤT JSON SẢN PHẨM + CACHE (ĐÃ CẬP NHẬT)
  * ======================================================= */
 function getImagesFromFolder(folderId) {
   try {
@@ -168,112 +225,178 @@ function sheetToObjects(sheetName) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   const values = sheet.getDataRange().getValues();
   const headers = values.shift();
-  return values.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+  
+  // (*** NÂNG CẤP Vấn đề 2 ***)
+  const webLinkCol = headers.indexOf("Web Link");
+  const modelCol = headers.indexOf("Model");
+  const nameCol = headers.indexOf("Name");
+  const cpuCol = headers.indexOf("CPU");
+  const ramCol = headers.indexOf("RAM");
+  const resCol = headers.indexOf("RESOLUTION");
+  const gpuCol = headers.indexOf("GPU - CARD");
+
+  return values.map((row, i) => {
+    const obj = Object.fromEntries(headers.map((h, i) => [h, row[i]]));
+    
+    // (*** MỚI ***) Thêm slug vào JSON
+    if (webLinkCol > -1 && obj["Web Link"]) {
+      obj.slug = obj["Web Link"]; // Dùng link đã tạo
+    } else {
+      // Tạo link fallback (nếu người dùng quên chạy tool)
+      const slugText = [
+        obj["Model"] || obj["Name"],
+        obj["CPU"],
+        obj["RAM"],
+        obj["RESOLUTION"],
+        obj["GPU - CARD"]
+      ].filter(Boolean).join(' ');
+      obj.slug = `#${createSlug(slugText || `product-${i}`)}`;
+    }
+    
+    return obj;
+  });
 }
 
-/** ⚡ Cập nhật cache JSON sản phẩm */
+/** ⚡ Cập nhật cache JSON sản phẩm (ĐÃ CẬP NHẬT) */
+/** ⚡ Cập nhật cache JSON (SẢN PHẨM + BANNER) */
 function updateCachedJson() {
+  const cache = CacheService.getScriptCache();
+
+  // 1. Cập nhật cache sản phẩm (như cũ)
   const data = sheetToObjects(SHEET_NAME)
     .filter(p => p["Brand"])
     .map(p => {
       const folderId = extractFolderId(p["Folder Album Image Google Drive"]);
       const images = folderId ? getImagesFromFolder(folderId) : [];
-      return { ...p, images };
+      return { ...p, images }; // slug đã được thêm bởi sheetToObjects
     });
-
-  const cache = CacheService.getScriptCache();
   cache.put(CACHE_KEY_PRODUCTS, JSON.stringify(data), 21600); // 6h
-  SpreadsheetApp.getActive().toast("✅ Đã cập nhật cache JSON sản phẩm.");
+
+  // 2. (*** MỚI ***) Cập nhật cache banner
+  const banners = getImagesFromFolder(FOLDER_ID_BANNER);
+  cache.put(CACHE_KEY_BANNER, JSON.stringify(banners), 21600); // 6h
+
+  SpreadsheetApp.getActive().toast("✅ Đã cập nhật cache JSON sản phẩm VÀ banner.");
 }
 
 /** 🧹 Xóa cache JSON sản phẩm */
+/** 🧹 Xóa cache JSON (SẢN PHẨM + BANNER) */
 function clearCachedJson() {
   const cache = CacheService.getScriptCache();
   cache.remove(CACHE_KEY_PRODUCTS);
-  SpreadsheetApp.getActive().toast("🚫 Đã xóa cache JSON sản phẩm.");
+  cache.remove(CACHE_KEY_BANNER); // <-- THÊM DÒNG NÀY
+  SpreadsheetApp.getActive().toast("🚫 Đã xóa cache JSON sản phẩm VÀ banner.");
 }
 
-/** doGet — phục vụ web */
+/** doGet — phục vụ web (ĐÃ CẬP NHẬT) */
+/** doGet — phục vụ web (ĐÃ CẬP NHẬT CACHE BANNER) */
 function doGet(e) {
   const mode = e?.parameter?.mode;
-  const cache = CacheService.getScriptCache();
+  const cache = CacheService.getScriptCache(); // Lấy cache service 1 lần
 
+  // === (1) XỬ LÝ BANNER ===
   if (mode === "banner") {
+    const cached = cache.get(CACHE_KEY_BANNER);
+    if (cached) {
+      // Nếu có cache server, trả về ngay
+      return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Nếu không có cache:
     const banners = getImagesFromFolder(FOLDER_ID_BANNER);
-    return ContentService.createTextOutput(JSON.stringify(banners)).setMimeType(ContentService.MimeType.JSON);
+    const bannerJson = JSON.stringify(banners);
+    cache.put(CACHE_KEY_BANNER, bannerJson, 21600); // Lưu cache server trong 6 giờ
+    return ContentService.createTextOutput(bannerJson).setMimeType(ContentService.MimeType.JSON);
   }
 
+  // === (2) XỬ LÝ SẢN PHẨM (Mặc định) ===
   const cached = cache.get(CACHE_KEY_PRODUCTS);
   if (cached) {
+    // Nếu có cache server, trả về ngay
     return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
   }
 
+  // Nếu không có cache:
   const data = sheetToObjects(SHEET_NAME)
     .filter(p => p["Brand"])
     .map(p => {
       const folderId = extractFolderId(p["Folder Album Image Google Drive"]);
       const images = folderId ? getImagesFromFolder(folderId) : [];
-      return { ...p, images };
+      return { ...p, images }; // slug đã được thêm bởi sheetToObjects
     });
 
-  cache.put(CACHE_KEY_PRODUCTS, JSON.stringify(data), 21600);
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  const productJson = JSON.stringify(data);
+  cache.put(CACHE_KEY_PRODUCTS, productJson, 21600); // Lưu cache server trong 6 giờ
+  return ContentService.createTextOutput(productJson).setMimeType(ContentService.MimeType.JSON);
 }
 
 /** =======================================================
- * 4️⃣ NHẬN ĐƠN HÀNG
+ * 5️⃣ NHẬN ĐƠN HÀNG (ĐÃ NÂNG CẤP)
  * ======================================================= */
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Order") || ss.insertSheet("Order");
-    if (sheet.getLastRow() === 0)
-      sheet.appendRow(["Thời gian", "Tên", "Điện thoại", "Sản phẩm", "Ghi chú"]);
+    
+    // Phân loại data: Hoặc là 'newOrder' hoặc là 'contactForm'
+    let sheetName;
+    let rowData;
+    
+    if (data.product) {
+        // Đây là ĐƠN HÀNG (vì có 'product')
+        sheetName = "Order";
+        rowData = [new Date(), data.name, data.phone, data.product, data.note];
+        
+    } else if (data.message) {
+        // Đây là LIÊN HỆ (vì có 'message')
+        sheetName = "Contact";
+        rowData = [new Date(), data.name, data.phone, data.email || '', data.message];
+        
+    } else {
+        throw new Error("Loại POST không xác định.");
+    }
 
-    sheet.appendRow([new Date(), data.name, data.phone, data.product, data.note]);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
+    
+    if (sheet.getLastRow() === 0) {
+        // Thêm header nếu là sheet mới
+        if (sheetName === "Order") {
+            sheet.appendRow(["Thời gian", "Tên", "Điện thoại", "Sản phẩm", "Ghi chú"]);
+        } else if (sheetName === "Contact") {
+            sheet.appendRow(["Thời gian", "Tên", "Điện thoại", "Email", "Nội dung"]);
+        }
+    }
+
+    sheet.appendRow(rowData);
     return ContentService.createTextOutput(JSON.stringify({ status: "ok" })).setMimeType(ContentService.MimeType.JSON);
+
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.message })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-/**
- * =======================================================
- * 🔍 KIỂM TRA CÁC FOLDER DRIVE RỖNG (KHÔNG CÓ ẢNH)
- *  - Đánh dấu trực tiếp trên sheet
- *  - Hiển thị danh sách chi tiết
- * =======================================================
- */
+/** =======================================================
+ * 6️⃣ KIỂM TRA FOLDER RỖNG (Giữ nguyên)
+ * ======================================================= */
 function checkEmptyImageFolders() {
+  // (Giữ nguyên code)
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
-
   const nameCol = headers.indexOf("Name");
   const driveCol = headers.indexOf("Folder Album Image Google Drive");
   const statusCol = headers.indexOf("Trạng thái tạo folder") > -1 ? headers.indexOf("Trạng thái tạo folder") : headers.length;
-
-  if (nameCol === -1 || driveCol === -1) {
-    SpreadsheetApp.getUi().alert("⚠️ Thiếu cột Name hoặc Folder Album Image Google Drive.");
-    return;
-  }
-
+  if (nameCol === -1 || driveCol === -1) { SpreadsheetApp.getUi().alert("⚠️ Thiếu cột Name hoặc Folder Album Image Google Drive."); return; }
   const emptyFolders = [];
   let checked = 0;
-
-  // Reset màu nền cũ (nếu có)
   const rangeToClear = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn());
   rangeToClear.setBackground(null);
-
   data.forEach((row, i) => {
     const name = (row[nameCol] || "").toString().trim();
     const driveLink = (row[driveCol] || "").toString().trim();
     if (!driveLink) return;
-
     const folderId = extractFolderId(driveLink);
     if (!folderId) return;
-
     try {
       const query = `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`;
       const files = Drive.Files.list({ q: query, fields: "files(id)" }).files || [];
@@ -281,7 +404,6 @@ function checkEmptyImageFolders() {
       if (files.length === 0) {
         const rowIndex = i + 2;
         emptyFolders.push({ row: rowIndex, name, link: driveLink });
-        // 🎨 Tô màu vàng cảnh báo
         sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).setBackground("#fff8b3");
         sheet.getRange(rowIndex, statusCol + 1).setValue("⚠️ Folder rỗng (không có ảnh)");
       }
@@ -292,40 +414,20 @@ function checkEmptyImageFolders() {
       sheet.getRange(rowIndex, statusCol + 1).setValue("❌ Lỗi đọc folder");
     }
   });
-
-  // Hiển thị kết quả
-  if (emptyFolders.length === 0) {
-    SpreadsheetApp.getUi().alert(`✅ Đã kiểm tra ${checked} folder. Tất cả đều có ảnh!`);
-    return;
-  }
-
-  // Tạo bảng HTML hiển thị danh sách rỗng
+  if (emptyFolders.length === 0) { SpreadsheetApp.getUi().alert(`✅ Đã kiểm tra ${checked} folder. Tất cả đều có ảnh!`); return; }
   let html = `
-  <html><head>
-  <style>
-    body{font-family:sans-serif;padding:10px;font-size:13px;}
-    table{border-collapse:collapse;width:100%;}
-    th,td{border:1px solid #ccc;padding:5px;}
-    th{background:#f3f3f3;}
+  <html><head><style>
+    body{font-family:sans-serif;padding:10px;font-size:13px;} table{border-collapse:collapse;width:100%;}
+    th,td{border:1px solid #ccc;padding:5px;} th{background:#f3f3f3;}
   </style></head><body>
   <h3>⚠️ Phát hiện ${emptyFolders.length} folder không chứa ảnh</h3>
-  <table>
-    <tr><th>Hàng</th><th>Tên sản phẩm</th><th>Link folder</th><th>Lỗi</th></tr>
-    ${emptyFolders
-      .map(
-        (f) => `
-      <tr>
-        <td>${f.row}</td>
-        <td>${f.name}</td>
+  <table><tr><th>Hàng</th><th>Tên sản phẩm</th><th>Link folder</th><th>Lỗi</th></tr>
+    ${emptyFolders.map((f) => `
+      <tr><td>${f.row}</td><td>${f.name}</td>
         <td><a href="${f.link}" target="_blank">🔗 Mở Folder</a></td>
-        <td>${f.error || "Không có ảnh"}</td>
-      </tr>`
-      )
-      .join("")}
+        <td>${f.error || "Không có ảnh"}</td></tr>`).join("")}
   </table>
   <p><i>→ Các dòng rỗng đã được tô <b style="color:#b36b00;">vàng cảnh báo</b> hoặc <b style="color:red;">đỏ lỗi</b> trên sheet Web.</i></p>
   </body></html>`;
-
   SpreadsheetApp.getUi().showSidebar(HtmlService.createHtmlOutput(html).setTitle("🖼 Folder rỗng"));
 }
-

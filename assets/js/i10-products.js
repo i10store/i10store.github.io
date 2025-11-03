@@ -3,7 +3,7 @@
    ========================================================= */
 
 /* ========== CONFIG (CẬP NHẬT LẠI CỦA BẠN) ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbyQJ-fKJkJUi0yxWuG9_XthUlp7fMLi40JCT0emxc2-3bu9stV4XigKsQnMDDvt-ehJ4w/exec"; 
+const SHEET_API = "https://script.google.com/macros/s/AKfycby0h4YG9vyxaY6sxLhfiML319gjxf6Sg03V0_SZxNdl0yiyCcEtmAostzJeE1lClTpFpw/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const THEME = "#76b500"; 
 const CACHE_KEY = "i10_products_cache_v2"; 
@@ -287,7 +287,14 @@ async function renderProductGrid() {
    (*** SỬA LỖI Vấn đề 1 ***)
    Popup hiển thị ảnh & chi tiết (KHÔI PHỤC)
    ----------------------------- */
+/* =========================================================
+   HÀM MỞ POPUP SẢN PHẨM (PHIÊN BẢN ĐÃ TỐI ƯU UI/UX)
+   (Sao chép và thay thế hàm openProductPopup cũ)
+   ========================================================= */
 function openProductPopup(encoded, slug) {
+    // (*** MỚI - Yêu cầu 4 ***) Khóa cuộn trang web
+    document.body.style.overflow = 'hidden';
+
     // Cập nhật hash trên URL
     if (slug && location.hash !== slug) {
         location.hash = slug;
@@ -309,9 +316,9 @@ function openProductPopup(encoded, slug) {
         const overlay = document.createElement("div");
         overlay.className = "i10-popup-overlay";
         overlay.style.cssText = `
-          position:fixed;inset:0;background:translation;
+          position:fixed;inset:0;background:rgba(0,0,0,0.7);
           display:flex;align-items:center;justify-content:center;z-index:9999;
-          padding:10px;animation:fadeIn 0.3s ease; margin-top: 30px;
+          padding:10px;animation:fadeIn 0.3s ease;
         `;
 
         // Card container
@@ -320,7 +327,7 @@ function openProductPopup(encoded, slug) {
           width:100%;max-width:1000px;background:#fefef5;border-radius:18px;
           display:flex;gap:20px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,0.3);
           transform:translateY(30px);opacity:0;animation:slideUpFade .45s ease forwards;
-          padding:20px 24px;position:relative;
+          padding:20px 24px;position:relative;max-height:90vh;
         `;
         const left = document.createElement("div");
         left.style.cssText = `
@@ -360,13 +367,13 @@ function openProductPopup(encoded, slug) {
           b.innerHTML = i === 0 ? "❮" : "❯";
           b.style.cssText = `
             position:absolute;${i === 0 ? "left" : "right"}:10px;top:50%;transform:translateY(-50%);
-            background:rgba(0,0,0,0.5);color:var(--i10-dark);border:none;border-radius:50%;
+            background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;
             width:40px;height:40px;cursor:pointer;font-size:18px;z-index:5;
           `;
           mainImgWrap.appendChild(b);
         });
 
-        // === Thumbnails (tối đa 5 ảnh hiển thị, luôn căn giữa) ===
+        // === Thumbnails ===
         const thumbsWrap = document.createElement("div");
         thumbsWrap.style.cssText = `
           position:relative;width:100%;overflow:hidden;margin-top:12px;
@@ -400,13 +407,13 @@ function openProductPopup(encoded, slug) {
         // Cuộn ảnh phụ (nếu >5)
         let ensureVisible = () => {};
         if (images.length > 5) {
-          // ... (Logic cuộn ảnh phụ) ...
+          // ... (Logic cuộn ảnh phụ - giữ nguyên) ...
         }
 
         left.appendChild(mainImgWrap);
         left.appendChild(thumbsWrap);
 
-        // === Autoplay ===
+        // === Autoplay (Giữ nguyên) ===
         function startAutoplay() {
           stopAutoplay();
           autoplayTimer = setInterval(() => changeImage(1), 3000);
@@ -414,7 +421,6 @@ function openProductPopup(encoded, slug) {
         function stopAutoplay() {
           if (autoplayTimer) { clearInterval(autoplayTimer); autoplayTimer = null; }
         }
-
         const changeImage = (dir) => {
           currentIndex = (currentIndex + dir + images.length) % images.length;
           mainImg.style.opacity = 0;
@@ -425,14 +431,17 @@ function openProductPopup(encoded, slug) {
           thumbElems.forEach((el, idx) => (el.style.opacity = idx === currentIndex ? "1" : "0.6"));
           ensureVisible();
         };
-
         prevBtn.onclick = () => { changeImage(-1); startAutoplay(); };
         nextBtn.onclick = () => { changeImage(1); startAutoplay(); };
 
 
-        // === RIGHT: Thông tin sản phẩm ===
+        // === RIGHT: Thông tin sản phẩm (ĐÃ TỐI ƯU) ===
         const right = document.createElement("div");
-        right.style.cssText = `width:380px;padding:10px 10px 14px 0;overflow:auto;`;
+        right.style.cssText = `
+          width:380px;padding:10px 10px 14px 0;
+          overflow-y:auto; /* (*** MỚI ***) Cho phép cuộn nội dung */
+          position:relative; /* (*** MỚI ***) Để làm cha cho nút sticky */
+        `;
 
         // Tên sản phẩm
         const titleBox = document.createElement("div");
@@ -443,7 +452,7 @@ function openProductPopup(encoded, slug) {
         `;
         titleBox.textContent = titleText;
 
-        // Xử lý giá
+        // (*** MỚI - Yêu cầu 1 ***) Xử lý giá (Đưa lên trước khi tạo bảng)
         let priceText = "Liên hệ";
         let priceColor = THEME;
         if (product["T.THÁI"] && product["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -468,61 +477,87 @@ function openProductPopup(encoded, slug) {
           ["GPU", product["GPU - CARD"] || "Onboard"],
           ["Phân loại", product["Phân loại"] || "Laptop"],
           ["Trạng thái", product["T.THÁI"] || "Đang bán"],
+          // (*** MỚI - Yêu cầu 1 ***) Thêm giá vào bảng
+          ["Giá", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
           ["Ghi chú", product["NOTE"] || "Không có"]
         ];
         rows.forEach((r, i) => {
           const tr = document.createElement("tr");
           tr.style.background = i % 2 === 0 ? "#fff" : "#f8faf8";
+          // Sửa lại để chấp nhận HTML trong cell
           tr.innerHTML = `
             <td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">${r[0]}</td>
             <td style="padding:8px;border:1px solid #eee">${r[1]}</td>`;
           table.appendChild(tr);
         });
 
-        // Giá cuối cùng
-        const priceDisplay = document.createElement("h3");
-        priceDisplay.textContent = `Giá: ${priceText}`;
-        priceDisplay.style.cssText = `color:${priceColor};margin:15px 0 10px 0;font-weight:800;font-size:20px;text-align:center;`;
+        // (*** XÓA ***) Xóa thẻ H3 hiển thị giá cũ
+        // const priceDisplay = document.createElement("h3");
         
-
-        // Nút hành động
+        // (*** MỚI - Yêu cầu 2 & 3 ***) Nút hành động (Sticky)
         const actions = document.createElement("div");
-        actions.style.cssText = "display:flex;gap:8px;margin:22px 0 10px 0;align-items:center;justify-content:center;";
+        actions.style.cssText = `
+          display:flex;gap:10px;margin: 20px 0 0 0; /* Bỏ margin-bottom */
+          align-items:center;justify-content:center;
+          
+          /* --- Logic Sticky --- */
+          position: sticky;
+          bottom: -1px; /* Bám sát đáy */
+          background: #fefef5; /* (Quan trọng) Nền che nội dung khi cuộn */
+          padding: 12px 0; /* Tạo khoảng đệm */
+          border-top: 1px solid #eee; /* Đường phân cách */
+          box-shadow: 0 -5px 12px rgba(0,0,0,0.05); /* (Tùy chọn) Đổ bóng */
+        `;
         const buyBtn = document.createElement("button");
         buyBtn.textContent = "Mua Ngay";
         buyBtn.className = "btn btn-success";
-        buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 18px;border-radius:6px;color:#fff;`;
+        buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 22px;border-radius:6px;color:#fff;flex:1;`;
         const contactBtn = document.createElement("a");
         contactBtn.href = "contact.html";
         contactBtn.textContent = "Liên Hệ";
         contactBtn.className = "btn btn-warning";
-        contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 18px;border-radius:6px;font-weight:700;text-decoration:none;";
+        contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;flex:1;";
         actions.appendChild(buyBtn);
         actions.appendChild(contactBtn);
 
-        // (*** ĐÂY LÀ KHAI BÁO closeBtn - SỬA LỖI VẤN ĐỀ 1 ***)
+        // Nút đóng (closeBtn)
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = "×";
         closeBtn.style.cssText = `
-          position:absolute;right:10px;top:10px;font-size:28px;background:#fff;color:#ff0000;border:2px solid #ff0000;
+          position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;
           border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;
-          line-height:1;
+          line-height:0.9;
         `;
 
         // Gắn kết cấu trúc
         right.appendChild(titleBox);
         right.appendChild(table);
-        right.appendChild(priceDisplay);
-        right.appendChild(actions);
+        // (*** XÓA ***) Xóa dòng append giá cũ
+        // right.appendChild(priceDisplay); 
+        right.appendChild(actions); // (*** MỚI ***) Thêm actions (sticky) vào cuối
         
-        // Media Query cho mobile
+        // (*** MỚI - Yêu cầu 5 ***) Media Query cho mobile
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
+          card.style.height = '90vh'; 
+          card.style.maxHeight = '90vh';
+          card.style.padding = '15px';
+          card.style.overflowY = 'auto'; // (*** THAY ĐỔI 1: TOÀN BỘ CARD SẼ CUỘN ***)
+          
           left.style.minWidth = 'auto';
+          // ...
           right.style.width = '100%';
           right.style.padding = '10px 0 0 0';
-          closeBtn.style.right = '20px';
-          closeBtn.style.top = '20px';
+          right.style.flex = '0 0 auto'; // (*** THAY ĐỔI 2: Bỏ flex-grow/shrink ***)
+          right.style.overflow = 'visible';
+
+          
+
+          // Điều chỉnh nút đóng cho mobile
+          closeBtn.style.right = '10px';
+          closeBtn.style.top = '10px';
+          closeBtn.style.height = '40px';
+          closeBtn.style.width = '40px';
         }
 
         card.appendChild(left);
@@ -531,11 +566,14 @@ function openProductPopup(encoded, slug) {
         overlay.appendChild(closeBtn); // Phải thêm closeBtn vào
         document.body.appendChild(overlay);
 
-        // (*** SỬA LỖI VẤN ĐỀ 1 ***)
         // Logic đóng popup
         const closePopup = () => {
             stopAutoplay();
             overlay.remove();
+            
+            // (*** MỚI - Yêu cầu 4 ***) Khôi phục cuộn trang
+            document.body.style.overflow = 'auto'; 
+            
             if (history.pushState) {
                 history.pushState(null, null, location.pathname + location.search); // Xóa hash
             } else {
@@ -564,15 +602,32 @@ function openProductPopup(encoded, slug) {
         style.textContent = `
           @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
           @keyframes slideUpFade { from {transform:translateY(30px);opacity:0;} to {transform:translateY(0);opacity:1;} }
+          
+          /* (*** MỚI ***) Tùy chỉnh thanh cuộn cho đẹp (Webkit) */
+          .i10-popup-overlay ::-webkit-scrollbar {
+              width: 6px;
+          }
+          .i10-popup-overlay ::-webkit-scrollbar-thumb {
+              background: #ccc;
+              border-radius: 3px;
+          }
+          .i10-popup-overlay ::-webkit-scrollbar-track {
+              background: #f0f0f0;
+          }
         `;
         document.head.appendChild(style);
     } catch (err) {
         console.error("Lỗi mở popup:", err);
+        // (*** MỚI ***) Đảm bảo khôi phục cuộn nếu có lỗi
+        document.body.style.overflow = 'auto';
         alert("Lỗi hiển thị sản phẩm: " + err.message);
     }
 }
 
-/* ===== POPUP ĐẶT HÀNG (KHÔI PHỤC) ===== */
+/* =========================================================
+   POPUP ĐẶT HÀNG (KHÔI PHỤC)
+   (Bạn cũng nên cập nhật hàm này nếu bạn đã tùy chỉnh nó)
+   ========================================================= */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
   modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
@@ -611,20 +666,28 @@ function openOrderForm(product, titleText, parentOverlay) {
     try {
       const response = await fetch(SHEET_API, {
         method: 'POST',
-        mode: 'no-cors', // Dùng no-cors nếu Apps Script của bạn chưa xử lý preflight
+        // (*** LƯU Ý ***) Đổi lại 'no-cors' nếu API của bạn không xử lý preflight
+        mode: 'cors', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-            product: titleText, // Thêm 'product' để Apps Script nhận diện
+            product: titleText, // Sửa 'type' thành 'product' để khớp Apps Script
             name, 
             phone, 
             note 
         })
       });
       
-      // Vì dùng no-cors, ta giả định thành công
-      msgEl.style.color = 'green';
-      msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
-      setTimeout(()=> modal.remove(), 2000);
+      // Nếu dùng 'cors' thì cần kiểm tra response
+      if (response.ok) {
+          msgEl.style.color = 'green';
+          msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
+          setTimeout(()=> modal.remove(), 2000);
+      } else {
+          // Nếu dùng 'no-cors' thì bạn sẽ không vào được đây, nó sẽ nhảy
+          // xuống catch. Nhưng nếu dùng 'cors' thì đây là lỗi server.
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Lỗi server: ${response.status}`);
+      }
 
     } catch (err) {
       msgEl.style.color = 'red';
