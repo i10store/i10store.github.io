@@ -1,5 +1,5 @@
 /* =========================================================
-   i10.css - TOÀN BỘ MÃ NGUỒN (Hoàn thiện Navigation và Banner Stacked)
+   i10.css - TOÀN BỘ MÃ NGUỒN (Đã đồng bộ và sửa lỗi)
    ========================================================= */
 
 :root{
@@ -26,7 +26,7 @@ body {
   padding: 8px 0;
 }
 
-/* Logo Box Tối ưu */
+/* Logo Box Tối ưu (Giữ nguyên màu nền #2c3e50) */
 .logo-box {
   display: flex; 
   align-items: center;
@@ -67,54 +67,57 @@ body {
 
 
 /* === NAVIGATION MENU (Vị trí mới trong Body) === */
-.body-content .col-md-9[style*="#76b500"] {
+.body-content .col-md-9{
     padding: 0; 
 }
 .header-nav.animate-dropdown {
-    background-color: var(--i10-bg);
     width: 100%; 
     margin: 0;
     padding: 0;
+    background-color: var(--i10-bg);
 }
 /* CÁC MỤC MENU (Cập nhật hiện đại và cân đối) */
 .navbar-nav.main-menu {
-  justify-content: space-between; /* Căn đều các mục */
+  justify-content: space-between; 
   overflow-x: auto; 
   flex-wrap: nowrap;
   -webkit-overflow-scrolling: touch;
-  padding: 10px; 
+  padding: 8px 0px; 
   margin: 0;
 }
 .navbar-nav.main-menu > li {
-  min-width: 120px;
   flex-shrink: 0; 
   margin-right: 8px;
   padding-bottom: 0;
-  flex-grow: 1; /* Cho phép các mục mở rộng */
+  flex-grow: 1; 
   text-align: center;
+  min-width: 120px;
 }
 .navbar-nav.main-menu > li > a {
-  border: solid 1px var(--i10-dark);
+  border: none;
   border-radius: 6px;
-  background: var(--i10);
+  border: solid 1px var(--i10-bg);
+  background: var(--i10); 
   color: #2c3e50;
-  padding: 8px 10px; /* Giảm padding ngang để cân đối */
-  font-weight: 800;
-  display: block; /* Chiếm hết chiều rộng li */
+  padding: 8px 10px; 
+  font-weight: 600;
+  display: block; 
 }
 .navbar-nav.main-menu > li > a:hover {
   background: #eee;
   color: var(--i10-dark);
+  font-weight: 800;
+  border: solid 1px var(--i10-dark);
 }
 
 /* Mobile Optimization cho Menu */
 @media (max-width: 992px) {
     .navbar-nav.main-menu {
         overflow-x: scroll;
-        justify-content: flex-start; /* Ưu tiên cuộn ngang trên mobile */
+        justify-content: flex-start; 
     }
     .navbar-nav.main-menu > li {
-        flex-grow: 0; /* Không mở rộng trên mobile */
+        flex-grow: 0; 
         min-width: 120px;
     }
 }
@@ -171,28 +174,29 @@ body {
     display: block;
 }
 
-/* Navigation Arrows (Giữ nguyên) */
+/* (Task 1) Navigation Arrows (Nút nổi bật, bỏ vòng tròn) */
 .banner-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.4); 
   color: #fff;
   border: none;
-  border-radius: 50%;
+  border-radius: 8px; /* Bỏ vòng tròn */
   cursor: pointer;
-  font-size: 20px;
-  line-height: 38px;
-  text-align: center;
+  font-size: 30px; /* Nút to hơn */
+  padding: 6px 10px;
+  line-height: 1; /* Cân giữa nút */
   z-index: 10;
   transition: background 0.3s;
+}
+.banner-nav:hover {
+    background: rgba(0,0,0,0.7);
 }
 .banner-nav.prev { left: 10px; }
 .banner-nav.next { right: 10px; }
 
-/* Tối ưu Banner trên Mobile */
+/* Tối ưu Banner trên Mobile (Task 2) */
 @media (max-width: 768px) {
     .banner-row {
         height: 150px;
@@ -202,8 +206,10 @@ body {
         width: 120px;
     }
     .banner-nav {
-        width: 30px;
-        height: 30px;
+        width: auto;
+        height: auto;
+        font-size: 24px;
+        padding: 4px 8px;
     }
 }
 
@@ -237,6 +243,7 @@ body {
 #sidebar1 .nav > li > a:hover {
   background: var(--i10-light);
   border-left-color: var(--i10-dark);
+  font-weight: 800;
 }
 
 /* Ưu Đãi Widget */
@@ -256,6 +263,10 @@ body {
   font-size: 14px;
   color: #333;
   list-style-type: none;
+}
+#sidebar2 .widget-list li:hover{
+  color: var(--i10-dark);
+  font-weight: 800;
 }
 
 
@@ -277,19 +288,81 @@ body {
 .product-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-hover);
+  border:1px solid var(--i10);
+}
+/* (Task 4) CSS xử lý kích thước ảnh */
+.product-card .thumb {
+  overflow:hidden;
+  height:220px; 
+  display:flex;
+  border-radius:6px;
+  align-items:center;
+  justify-content:center;
+  background:#fafafa;
 }
 .product-card .thumb img {
+  width: 86%; 
+  height: 100%; 
+  object-fit: cover;
   transition: transform .4s ease;
+  border-radius:6px;
 }
+/* (Task 4) CSS xử lý hover (JS đã bị xóa) */
 .product-card:hover .thumb img {
-  transform: scale(1.15);
+    transform: scale(1.2);
 }
+
 
 /* Control Bar (Search/Sort) */
 #i10-controls {
   padding: 0 10px 15px 0;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 20px;
+  /* (Task 3) Căn chỉnh cho mobile */
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  width: 100%;
+}
+#i10-controls select {
+    width: 180px; /* Cố định chiều rộng Sắp xếp */
+}
+
+/* (Task 3) Tối ưu Controls Bar trên Mobile */
+@media (max-width: 480px) {
+    #i10-controls {
+        gap: 6px;
+    }
+    #i10-controls select {
+        width: 100%; /* Sắp xếp xuống dòng, chiếm 100% */
+    }
+    #i10-controls input[type="search"] {
+        flex-grow: 1; /* Cho phép search co giãn */
+        min-width: 100px;
+    }
+    #i10-controls button {
+        padding: 8px 10px; /* Nút Xóa/Làm mới nhỏ hơn */
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+}
+
+
+/* (Task 4) Tối ưu Product Card trên Mobile */
+@media (max-width: 768px) {
+    .product-card {
+        height: 320px; /* Giảm chiều cao card */
+    }
+    .product-card .thumb {
+        height: 160px; /* Giảm chiều cao vùng ảnh */
+    }
+    .product-card .thumb img{
+        height: 100%; /* Giảm chiều cao vùng ảnh */
+        width: 200px;
+    }
+    .product-card h4 {
+        font-size: 14px;
+        min-height: 38px;
+    }
 }
 
 
@@ -335,6 +408,7 @@ body {
   left: 0;
   z-index: 999999;
 }
+/* ... (Giữ nguyên CSS cho Nút SĐT và Animations) ... */
 .hotline-phone-ring-circle {
   -webkit-animation: phonering-alo-circle-anim 1.2s infinite ease-in-out;
   animation: phonering-alo-circle-anim 1.2s infinite ease-in-out;
@@ -350,8 +424,6 @@ body {
 .hotline-bar {
   background: rgba(230, 8, 8, 0.75);
 }
-
-/* Animations for Hotline (Bootstrap 3 needs these defined) */
 @keyframes phonering-alo-circle-anim { 0% { opacity: 0.1; transform: rotate(0) scale(0.5) skew(1deg); } 30% { opacity: 0.5; transform: rotate(0) scale(0.7) skew(1deg); } 100% { opacity: 0.1; transform: rotate(0) scale(1) skew(1deg); } }
 @keyframes phonering-alo-circle-fill-anim { 0% { opacity: 0.6; transform: rotate(0) scale(0.7) skew(1deg); } 50% { opacity: 0.6; transform: rotate(0) scale(1) skew(1deg); } 100% { opacity: 0.6; transform: rotate(0) scale(0.7) skew(1deg); } }
 @keyframes phonering-alo-circle-img-anim { 0% { transform: rotate(0) scale(1) skew(1deg); } 10% { transform: rotate(-25deg) scale(1) skew(1deg); } 20% { transform: rotate(25deg) scale(1) skew(1deg); } 30% { transform: rotate(-25deg) scale(1) skew(1deg); } 40% { transform: rotate(25deg) scale(1) skew(1deg); } 50% { transform: rotate(0) scale(1) skew(1deg); } 100% { transform: rotate(0) scale(1) skew(1deg); } }
