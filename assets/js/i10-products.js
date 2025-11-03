@@ -1,13 +1,27 @@
 /* =========================================================
-   i10 PRODUCTS - Sửa lỗi Popup (closeBtn), Nâng cấp Link (Slug)
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v4 - SEO & UI/UX)
+   Bao gồm:
+   1. Tối ưu SEO (Clean URLs /san-pham/...)
+   2. Tối ưu UI/UX Popup (Sticky buttons, Mobile 90vh, Scroll-lock)
+   3. Tối ưu Cache (localStorage cho Banner & Products)
+   4. Logic Routing (Tự mở popup từ URL, xử lý nút Back)
    ========================================================= */
 
 /* ========== CONFIG (CẬP NHẬT LẠI CỦA BẠN) ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycby0h4YG9vyxaY6sxLhfiML319gjxf6Sg03V0_SZxNdl0yiyCcEtmAostzJeE1lClTpFpw/exec"; 
+// (*** QUAN TRỌNG: Thay link API và Logo của bạn vào đây ***)
+const SHEET_API = "https://script.google.com/macros/s/AKfycbyQJ-fKJkJUi0yxWuG9_XthUlp7fMLi40JCT0emxc2-3bu9stV4XigKsQnMDDvt-ehJ4w/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
-const THEME = "#76b500"; 
-const CACHE_KEY = "i10_products_cache_v2"; 
-const CACHE_TTL = 30 * 60 * 1000; 
+
+const THEME = "#76b500"; // Màu chủ đạo
+const CACHE_KEY = "i10_products_cache_v2"; // Key cache sản phẩm
+const CACHE_KEY_BANNER = "i10_banner_cache_v2"; // Key cache banner
+const CACHE_TTL = 30 * 60 * 1000; // 30 phút
+
+/* === TÊN WEBSITE (DÙNG CHO SEO) === */
+const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
+const SITE_TITLE_SUFFIX = "- i10 STORE";
+const SITE_META_DESC_HOME = "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
+
 
 /* Helper: fetch JSON */
 async function fetchJSON(url, opts = {}) {
@@ -25,7 +39,7 @@ function debounce(fn, wait=250){
   return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
 }
 
-/* (*** MỚI - Vấn đề 2 ***) Helper: Tạo slug (link) nâng cao */
+/* Helper: Tạo slug (link) */
 function createSlug(text) {
     if (!text) return "";
     return text.toString().toLowerCase()
@@ -37,7 +51,7 @@ function createSlug(text) {
 }
 
 
-/* Render control bar: sort + search (Giữ nguyên) */
+/* Render control bar: sort + search */
 function renderControls(container, onChange) {
   const ctrl = document.createElement('div');
   ctrl.id = "i10-controls";
@@ -77,27 +91,6 @@ function renderControls(container, onChange) {
     onChange({ q:"", sort:"default" });
   };
   ctrl.appendChild(clearBtn);
-  
-  /* const refreshBtn = document.createElement('button');
-  refreshBtn.className = "btn btn-secondary";
-  refreshBtn.textContent = "🔄 Làm mới";
-  refreshBtn.style.cssText = `
-  background:${THEME};
-  color:#fff;
-  border:none;
-  padding:8px 14px;
-  border-radius:6px;
-  font-weight:600;
-  cursor:pointer;
-  transition:background 0.2s;
-`;
-
-  refreshBtn.style.marginLeft = "6px";
-  refreshBtn.onclick = ()=>{
-    localStorage.removeItem(CACHE_KEY);
-    location.reload();
-  };
-  ctrl.appendChild(refreshBtn); */
 
   container.prepend(ctrl);
 
@@ -108,7 +101,7 @@ function renderControls(container, onChange) {
   return { input, sel };
 }
 
-/* Convert price field to number for sorting (if possible) (Giữ nguyên) */
+/* Convert price field to number for sorting */
 function extractPriceNum(p) {
   if (p == null) return Infinity;
   if (typeof p === 'number') return p;
@@ -117,53 +110,90 @@ function extractPriceNum(p) {
   return isNaN(m) ? Infinity : m;
 }
 
-/* Render danh sách sản phẩm (với search/sort) (SỬA VẤN ĐỀ 1, 2, 3) */
-async function renderProductGrid() {
-  const container = document.getElementById("i10-product");
-  if (!container) return;
-    try {
+
+/* -----------------------------------------------------
+   LOGIC LẤY DATA SẢN PHẨM (TỐI ƯU SEO)
+   ----------------------------------------------------- */
+
+// Biến toàn cục để lưu data, tránh fetch nhiều lần
+let globalProductData = null;
+let globalProductPromise = null;
+
+/**
+ * Hàm lấy data sản phẩm (chỉ fetch 1 lần)
+ */
+async function getProductData() {
+    if (globalProductData) {
+        return globalProductData;
+    }
+    if (globalProductPromise) {
+        return globalProductPromise;
+    }
+
+    // Hàm fetch
+    const fetchData = async () => {
         let data = null;
         try {
-          const cached = localStorage.getItem(CACHE_KEY);
-          if (cached) {
-            const { timestamp, items } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_TTL) {
-              data = items;
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                const { timestamp, items } = JSON.parse(cached);
+                if (Date.now() - timestamp < CACHE_TTL) {
+                    data = items;
+                }
             }
-          }
-        } catch(e) { /* ignore */ }
+        } catch (e) { /* ignore */ }
 
         if (!data) {
-          container.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
-          data = await fetchJSON(SHEET_API);
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            timestamp: Date.now(),
-            items: data
-          }));
+            // Hiển thị loading tạm thời
+            const container = document.getElementById("i10-product");
+            if (container) container.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
+            
+            data = await fetchJSON(SHEET_API);
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                timestamp: Date.now(),
+                items: data
+            }));
         }
 
         if (!Array.isArray(data)) throw new Error("Dữ liệu trả về không phải mảng");
 
-        // (*** MỚI - Vấn đề 2 ***)
-        // Tạo slug (link) cho mỗi sản phẩm
+        // Tạo slug (link sạch) cho mỗi sản phẩm
         data.forEach((p, i) => {
-            // Tạo link dựa trên Model, CPU, RAM, GPU...
             const slugText = [
                 p["Model"] || p["Name"],
                 p["CPU"],
                 p["RAM"],
                 p["RESOLUTION"],
                 p["GPU - CARD"]
-            ].filter(Boolean).join(' '); // Nối các thông số
+            ].filter(Boolean).join(' ');
 
-            // Ưu tiên link từ Sheet (Web Link), nếu không có thì tạo link fallback
-            p.slug = p["Web Link"] || `#${createSlug(slugText || `product-${i}`)}`;
+            // Dùng link từ Sheet hoặc tạo link fallback (dạng sạch)
+            p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
         });
+        
+        globalProductData = data;
+        return data;
+    };
+
+    globalProductPromise = fetchData();
+    return globalProductPromise;
+}
+
+/**
+ * Render danh sách sản phẩm (TỐI ƯU SEO)
+ */
+async function renderProductGrid() {
+  const container = document.getElementById("i10-product");
+  if (!container) return;
+    try {
+        // Lấy data từ hàm mới
+        const data = await getProductData();
 
         container.innerHTML = `<div id="i10-controls"></div><div id="i10-grid"></div>`;
         const controlsEl = document.getElementById('i10-controls');
         const gridEl = document.getElementById('i10-grid');
 
+        // Logic filter từ URL
         const params = new URLSearchParams(window.location.search);
         const filter = params.get("filter");
         let defaultQuery = "";
@@ -171,7 +201,12 @@ async function renderProductGrid() {
         switch (filter) {
           case "available": defaultQuery = "còn"; break;
           case "sold": defaultQuery = "đã bán"; break;
-          // ... (các case khác)
+          // Các filter của bạn
+          case "maytram": defaultQuery = "máy trạm"; break;
+          case "vanphong": defaultQuery = "văn phòng"; break;
+          case "thinkpad": defaultQuery = "thinkpad"; break;
+          case "dell": defaultQuery = "dell"; break;
+          case "blackberry": defaultQuery = "blackberry"; break;
           default: defaultQuery = "";
         }
 
@@ -199,10 +234,10 @@ async function renderProductGrid() {
 
           const html = list.map((p) => {
             const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-
             const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
             const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
-
+            
+            // Logic giá
             let priceText = "Liên hệ";
             let priceStyle = `color:${THEME};font-weight:800;`;
             if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -214,7 +249,7 @@ async function renderProductGrid() {
             } else if (p["PRICE SEGMENT"]) {
               priceText = p["PRICE SEGMENT"];
             }
-
+            // Logic config
             let config = [];
             if (p["CPU"]) config.push(p["CPU"]);
             if (p["RAM"]) config.push(p["RAM"]);
@@ -223,15 +258,16 @@ async function renderProductGrid() {
 
             const jsonData = encodeURIComponent(JSON.stringify(p));
             
-            // (*** SỬA LỖI Vấn đề 1 ***)
-            // Đảm bảo p.slug được truyền vào
+            // (*** THAY ĐỔI SEO ***) Dùng thẻ <a>
             return `
               <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                <div class="product-card"
-                    onclick="openProductPopup('${jsonData}', '${p.slug}')">
+                <a class="product-card" 
+                   href="/${p.slug}" 
+                   data-json="${jsonData}"
+                   data-slug="${p.slug}">
 
                   <div class="thumb">
-                    <img src="${mainImg}" alt="${title}" onerror="this.src='${SITE_LOGO}' ">
+                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
                   </div>
 
                   <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
@@ -241,36 +277,38 @@ async function renderProductGrid() {
                     </div>
                     <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
                   </div>
-                </div>
+                </a>
               </div>`;
           }).join("");
 
 
           gridEl.innerHTML = `<div class="row">${html}</div>`;
 
-          // (*** SỬA LỖI Vấn đề 3 ***)
-          // Xóa JS event listener. CSS sẽ tự xử lý hover.
-          /*
+          // (*** MỚI - LOGIC SEO ***)
+          // Bắt các cú click vào thẻ <a> sản phẩm
           document.querySelectorAll("#i10-grid .product-card").forEach(card => {
-            //... (ĐÃ XÓA)
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const jsonData = this.getAttribute('data-json');
+                const slug = this.getAttribute('data-slug');
+                openProductPopup(jsonData, slug);
+            });
           });
-          */
-
-        };
+          
+        }; // Hết hàm doRender
+        
         renderControls(controlsEl, ({ q, sort }) => {
           doRender({ q, sort });
         });
-        if (state.q) doRender({ q: state.q, sort: "default" });
-        doRender();
-
-        // (*** SỬA LỖI Vấn đề 1 & 2 ***) Tự động mở popup nếu có hash
-        const hashSlug = location.hash; // Giữ nguyên dấu #
-        if (hashSlug) {
-            const productToOpen = data.find(p => p.slug === hashSlug);
-            if (productToOpen) {
-                const jsonData = encodeURIComponent(JSON.stringify(productToOpen));
-                openProductPopup(jsonData, productToOpen.slug);
-            }
+        
+        // Kích hoạt filter (nếu có)
+        if (state.q) {
+            doRender({ q: state.q, sort: "default" });
+            // Cập nhật ô tìm kiếm (nếu filter từ URL)
+            const searchInput = document.querySelector('#i10-controls input[type="search"]');
+            if (searchInput) searchInput.value = state.q;
+        } else {
+            doRender();
         }
 
       } catch (err) {
@@ -283,26 +321,32 @@ async function renderProductGrid() {
       }
 }
 
-/* -----------------------------
-   (*** SỬA LỖI Vấn đề 1 ***)
-   Popup hiển thị ảnh & chi tiết (KHÔI PHỤC)
-   ----------------------------- */
-/* =========================================================
-   HÀM MỞ POPUP SẢN PHẨM (PHIÊN BẢN ĐÃ TỐI ƯU UI/UX)
-   (Sao chép và thay thế hàm openProductPopup cũ)
-   ========================================================= */
+/* -----------------------------------------------------
+   POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
+   ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
-    // (*** MỚI - Yêu cầu 4 ***) Khóa cuộn trang web
+    // (*** MỚI - UI/UX ***) Khóa cuộn trang web
     document.body.style.overflow = 'hidden';
 
-    // Cập nhật hash trên URL
-    if (slug && location.hash !== slug) {
-        location.hash = slug;
+    // (*** MỚI - SEO ***) Cập nhật URL bằng History API
+    if (slug && window.location.pathname !== `/${slug}`) {
+        history.pushState({ json: encoded, slug: slug }, "", `/${slug}`); 
     }
 
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+
+        // (*** MỚI - SEO ***) Cập nhật Tiêu đề trang
+        document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
+        
+        // (*** MỚI - SEO ***) Cập nhật Meta Description
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            const description = product["Meta Description"] || 
+                                `Cấu hình: ${[product["CPU"], product["RAM"], product["SSD"], product["GPU - CARD"]].filter(Boolean).join(' • ')}. Liên hệ i10 Store.`;
+            metaDesc.setAttribute('content', description.substring(0, 155)); // Cắt ngắn 155 ký tự
+        }
 
         // === HÌNH ẢNH ===
         const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
@@ -341,7 +385,6 @@ function openProductPopup(encoded, slug) {
           height:100%;display:flex;align-items:center;justify-content:center;
           min-height:400px;border-radius:16px;position:relative;overflow:hidden;
         `;
-
         const mainImg = document.createElement("img");
         mainImg.src = images[currentIndex];
         mainImg.style.cssText = `
@@ -373,7 +416,7 @@ function openProductPopup(encoded, slug) {
           mainImgWrap.appendChild(b);
         });
 
-        // === Thumbnails ===
+        // Thumbnails
         const thumbsWrap = document.createElement("div");
         thumbsWrap.style.cssText = `
           position:relative;width:100%;overflow:hidden;margin-top:12px;
@@ -404,16 +447,12 @@ function openProductPopup(encoded, slug) {
           thumbElems.push(t);
         });
 
-        // Cuộn ảnh phụ (nếu >5)
-        let ensureVisible = () => {};
-        if (images.length > 5) {
-          // ... (Logic cuộn ảnh phụ - giữ nguyên) ...
-        }
+        let ensureVisible = () => {}; 
 
         left.appendChild(mainImgWrap);
         left.appendChild(thumbsWrap);
 
-        // === Autoplay (Giữ nguyên) ===
+        // Autoplay
         function startAutoplay() {
           stopAutoplay();
           autoplayTimer = setInterval(() => changeImage(1), 3000);
@@ -435,12 +474,12 @@ function openProductPopup(encoded, slug) {
         nextBtn.onclick = () => { changeImage(1); startAutoplay(); };
 
 
-        // === RIGHT: Thông tin sản phẩm (ĐÃ TỐI ƯU) ===
+        // === RIGHT: Thông tin sản phẩm (TỐI ƯU UI/UX) ===
         const right = document.createElement("div");
         right.style.cssText = `
           width:380px;padding:10px 10px 14px 0;
-          overflow-y:auto; /* (*** MỚI ***) Cho phép cuộn nội dung */
-          position:relative; /* (*** MỚI ***) Để làm cha cho nút sticky */
+          overflow-y:auto; /* Cuộn (Desktop) */
+          position:relative; /* Cha cho nút sticky */
         `;
 
         // Tên sản phẩm
@@ -452,7 +491,7 @@ function openProductPopup(encoded, slug) {
         `;
         titleBox.textContent = titleText;
 
-        // (*** MỚI - Yêu cầu 1 ***) Xử lý giá (Đưa lên trước khi tạo bảng)
+        // Xử lý giá
         let priceText = "Liên hệ";
         let priceColor = THEME;
         if (product["T.THÁI"] && product["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -477,43 +516,37 @@ function openProductPopup(encoded, slug) {
           ["GPU", product["GPU - CARD"] || "Onboard"],
           ["Phân loại", product["Phân loại"] || "Laptop"],
           ["Trạng thái", product["T.THÁI"] || "Đang bán"],
-          // (*** MỚI - Yêu cầu 1 ***) Thêm giá vào bảng
+          // (*** MỚI - UI/UX ***) Thêm giá vào bảng
           ["Giá", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
           ["Ghi chú", product["NOTE"] || "Không có"]
         ];
         rows.forEach((r, i) => {
           const tr = document.createElement("tr");
           tr.style.background = i % 2 === 0 ? "#fff" : "#f8faf8";
-          // Sửa lại để chấp nhận HTML trong cell
           tr.innerHTML = `
             <td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">${r[0]}</td>
             <td style="padding:8px;border:1px solid #eee">${r[1]}</td>`;
           table.appendChild(tr);
         });
-
-        // (*** XÓA ***) Xóa thẻ H3 hiển thị giá cũ
-        // const priceDisplay = document.createElement("h3");
         
-        // (*** MỚI - Yêu cầu 2 & 3 ***) Nút hành động (Sticky)
+        // (*** MỚI - UI/UX ***) Nút hành động (Sticky)
         const actions = document.createElement("div");
         actions.style.cssText = `
-          display:flex;gap:10px;margin: 20px 0 0 0; /* Bỏ margin-bottom */
+          display:flex;gap:10px;margin: 20px 0 0 0;
           align-items:center;justify-content:center;
-          
-          /* --- Logic Sticky --- */
           position: sticky;
           bottom: -1px; /* Bám sát đáy */
-          background: #fefef5; /* (Quan trọng) Nền che nội dung khi cuộn */
-          padding: 12px 0; /* Tạo khoảng đệm */
-          border-top: 1px solid #eee; /* Đường phân cách */
-          box-shadow: 0 -5px 12px rgba(0,0,0,0.05); /* (Tùy chọn) Đổ bóng */
+          background: #fefef5; /* Nền che nội dung */
+          padding: 12px 0; 
+          border-top: 1px solid #eee;
+          box-shadow: 0 -5px 12px rgba(0,0,0,0.05);
         `;
         const buyBtn = document.createElement("button");
         buyBtn.textContent = "Mua Ngay";
         buyBtn.className = "btn btn-success";
         buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 22px;border-radius:6px;color:#fff;flex:1;`;
         const contactBtn = document.createElement("a");
-        contactBtn.href = "contact.html";
+        contactBtn.href = "contact.html"; 
         contactBtn.textContent = "Liên Hệ";
         contactBtn.className = "btn btn-warning";
         contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;flex:1;";
@@ -532,28 +565,30 @@ function openProductPopup(encoded, slug) {
         // Gắn kết cấu trúc
         right.appendChild(titleBox);
         right.appendChild(table);
-        // (*** XÓA ***) Xóa dòng append giá cũ
-        // right.appendChild(priceDisplay); 
-        right.appendChild(actions); // (*** MỚI ***) Thêm actions (sticky) vào cuối
+        right.appendChild(actions); 
         
-        // (*** MỚI - Yêu cầu 5 ***) Media Query cho mobile
+        // (*** MỚI - UI/UX ***) Media Query cho mobile
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
-          card.style.height = '90vh'; 
+          card.style.height = '90vh';
           card.style.maxHeight = '90vh';
           card.style.padding = '15px';
-          card.style.overflowY = 'auto'; // (*** THAY ĐỔI 1: TOÀN BỘ CARD SẼ CUỘN ***)
+          // (*** THAY ĐỔI ***) Toàn bộ card sẽ cuộn
+          card.style.overflowY = 'auto'; 
           
           left.style.minWidth = 'auto';
-          // ...
+          left.style.flex = '0 0 auto';
+          left.style.margin = '0';
+          
+          mainImgWrap.style.minHeight = '0';
+          mainImgWrap.style.height = '250px';
+          mainImg.style.maxHeight = '250px'; 
+
           right.style.width = '100%';
           right.style.padding = '10px 0 0 0';
-          right.style.flex = '0 0 auto'; // (*** THAY ĐỔI 2: Bỏ flex-grow/shrink ***)
-          right.style.overflow = 'visible';
+          right.style.flex = '0 0 auto'; // (*** THAY ĐỔI ***) Bỏ cuộn riêng
+          right.style.overflow = 'visible'; // (*** THAY ĐỔI ***) Bỏ cuộn riêng
 
-          
-
-          // Điều chỉnh nút đóng cho mobile
           closeBtn.style.right = '10px';
           closeBtn.style.top = '10px';
           closeBtn.style.height = '40px';
@@ -563,7 +598,7 @@ function openProductPopup(encoded, slug) {
         card.appendChild(left);
         card.appendChild(right);
         overlay.appendChild(card);
-        overlay.appendChild(closeBtn); // Phải thêm closeBtn vào
+        overlay.appendChild(closeBtn);
         document.body.appendChild(overlay);
 
         // Logic đóng popup
@@ -571,13 +606,19 @@ function openProductPopup(encoded, slug) {
             stopAutoplay();
             overlay.remove();
             
-            // (*** MỚI - Yêu cầu 4 ***) Khôi phục cuộn trang
             document.body.style.overflow = 'auto'; 
             
-            if (history.pushState) {
-                history.pushState(null, null, location.pathname + location.search); // Xóa hash
-            } else {
-                location.hash = ''; // Xóa hash (cách cũ)
+            // (*** MỚI - SEO ***) Quay lại URL gốc (trang chủ)
+            const basePath = window.location.pathname.includes('.html') ? 
+                             window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : 
+                             '/';
+            history.pushState(null, null, basePath);
+            
+            // (*** MỚI - SEO ***) Khôi phục Title và Meta gốc
+            document.title = SITE_TITLE_HOME;
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', SITE_META_DESC_HOME);
             }
         };
 
@@ -602,32 +643,22 @@ function openProductPopup(encoded, slug) {
         style.textContent = `
           @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
           @keyframes slideUpFade { from {transform:translateY(30px);opacity:0;} to {transform:translateY(0);opacity:1;} }
-          
-          /* (*** MỚI ***) Tùy chỉnh thanh cuộn cho đẹp (Webkit) */
-          .i10-popup-overlay ::-webkit-scrollbar {
-              width: 6px;
-          }
-          .i10-popup-overlay ::-webkit-scrollbar-thumb {
-              background: #ccc;
-              border-radius: 3px;
-          }
-          .i10-popup-overlay ::-webkit-scrollbar-track {
-              background: #f0f0f0;
-          }
+          .i10-popup-overlay ::-webkit-scrollbar { width: 6px; }
+          .i10-popup-overlay ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+          .i10-popup-overlay ::-webkit-scrollbar-track { background: #f0f0f0; }
         `;
         document.head.appendChild(style);
     } catch (err) {
         console.error("Lỗi mở popup:", err);
-        // (*** MỚI ***) Đảm bảo khôi phục cuộn nếu có lỗi
-        document.body.style.overflow = 'auto';
+        document.body.style.overflow = 'auto'; // Đảm bảo khôi phục cuộn nếu lỗi
         alert("Lỗi hiển thị sản phẩm: " + err.message);
     }
 }
 
-/* =========================================================
-   POPUP ĐẶT HÀNG (KHÔI PHỤC)
-   (Bạn cũng nên cập nhật hàm này nếu bạn đã tùy chỉnh nó)
-   ========================================================= */
+
+/* -----------------------------------------------------
+   POPUP ĐẶT HÀNG
+   ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
   modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
@@ -666,25 +697,21 @@ function openOrderForm(product, titleText, parentOverlay) {
     try {
       const response = await fetch(SHEET_API, {
         method: 'POST',
-        // (*** LƯU Ý ***) Đổi lại 'no-cors' nếu API của bạn không xử lý preflight
-        mode: 'cors', 
+        mode: 'cors', // Đổi 'no-cors' nếu API của bạn không xử lý preflight
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-            product: titleText, // Sửa 'type' thành 'product' để khớp Apps Script
+            product: titleText, 
             name, 
             phone, 
             note 
         })
       });
       
-      // Nếu dùng 'cors' thì cần kiểm tra response
       if (response.ok) {
           msgEl.style.color = 'green';
           msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
           setTimeout(()=> modal.remove(), 2000);
       } else {
-          // Nếu dùng 'no-cors' thì bạn sẽ không vào được đây, nó sẽ nhảy
-          // xuống catch. Nhưng nếu dùng 'cors' thì đây là lỗi server.
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `Lỗi server: ${response.status}`);
       }
@@ -700,7 +727,7 @@ function openOrderForm(product, titleText, parentOverlay) {
 
 
 /* -----------------------------------------------------
-   HIỂN THỊ BANNER (1 Center + 3/1 Lớp Stacked) (Giữ nguyên)
+   BANNER (TỐI ƯU CACHE localStorage)
    ----------------------------------------------------- */
 async function renderBanner() {
   const bannerContainer = document.getElementById("banner");
@@ -709,25 +736,40 @@ async function renderBanner() {
   const placeholder = bannerContainer.querySelector(".banner-placeholder");
   if (placeholder) placeholder.textContent = "Đang tải banner...";
 
-  const CACHE_KEY_BANNER = "i10_banner_cache_v2";
-  const CACHE_TTL = 30 * 60 * 1000;
   let banners = null;
 
   try {
-    // Logic Cache và Fetch giữ nguyên
-    const cached = localStorage.getItem(CACHE_KEY_BANNER);
-    // ... (Code cache) ...
+    // Đọc cache
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_BANNER);
+      if (cached) {
+        const { timestamp, items } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_TTL) { 
+          banners = items;
+        }
+      }
+    } catch (e) {
+      console.warn("Lỗi đọc cache banner, đang tải lại...");
+      localStorage.removeItem(CACHE_KEY_BANNER);
+    }
+
+    // Fetch nếu không có cache
     if (!banners) {
+      if (placeholder) placeholder.textContent = "Đang tải banner mới...";
       const res = await fetch(`${SHEET_API}?mode=banner`, { cache: "no-store" });
       if (!res.ok) throw new Error("Không thể tải banner từ server");
       banners = await res.json();
-      localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({ timestamp: Date.now(), items: banners }));
+      
+      localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({
+        timestamp: Date.now(),
+        items: banners
+      }));
     }
+
     if (!Array.isArray(banners) || banners.length === 0)
       throw new Error("Không có dữ liệu banner");
 
-    
-    // === 3️⃣ HTML hiển thị khung ===
+    // === HTML hiển thị khung ===
     bannerContainer.innerHTML = `
       <div class="banner-row">
         <button class="banner-nav prev">❮</button>
@@ -737,98 +779,74 @@ async function renderBanner() {
       </div>
     `;
 
-    // Xử lý slide logic
+    // (*** LOGIC RENDER SLIDE GIỮ NGUYÊN ***)
     const track = document.getElementById("banner-track");
     const prevBtn = bannerContainer.querySelector(".banner-nav.prev");
     const nextBtn = bannerContainer.querySelector(".banner-nav.next");
     const total = banners.length;
-    let currentIndex = 0; 
-    
-    // Config cho hiệu ứng
-    const MAX_STACK = window.innerWidth > 768 ? 3 : 1; 
-    const STACK_OVERLAP_PX = window.innerWidth > 768 ? 20 : 15; 
-    const SCALE_STEP = 0.1; 
-    const ITEM_SIZE = window.innerWidth > 768 ? 220 : 150; 
-    const BASE_SHIFT = window.innerWidth > 768 ? 130 : 90; 
-
-    
-    // Tạo và chèn tất cả các item vào DOM
+    let currentIndex = 0;
+    const MAX_STACK = window.innerWidth > 768 ? 3 : 1;
+    const STACK_OVERLAP_PX = window.innerWidth > 768 ? 20 : 15;
+    const SCALE_STEP = 0.1;
+    const ITEM_SIZE = window.innerWidth > 768 ? 220 : 150;
+    const BASE_SHIFT = window.innerWidth > 768 ? 130 : 90;
     let bannerItems = [];
     for (let i = 0; i < total; i++) {
-        const item = document.createElement('div');
-        item.className = 'banner-item';
-        item.onclick = (e) => {
-            const indexClicked = parseInt(e.currentTarget.dataset.index);
-            if (indexClicked === currentIndex) return; 
-            
-            let offset = indexClicked - currentIndex;
-            if (offset > total / 2) offset -= total;
-            if (offset < -total / 2) offset += total;
-            
-            if (offset > 0) nextSlide();
-            else prevSlide();
-
-            restartAuto();
-        };
-
-        item.dataset.index = i;
-        item.style.zIndex = 1; 
-        item.style.opacity = 0;
-        item.innerHTML = `<img src="${banners[i].thumb}" alt="${banners[i].name || 'Banner'}" loading="lazy" />`;
-        track.appendChild(item);
-        bannerItems.push(item);
+      const item = document.createElement('div');
+      item.className = 'banner-item';
+      item.onclick = (e) => {
+        const indexClicked = parseInt(e.currentTarget.dataset.index);
+        if (indexClicked === currentIndex) return;
+        let offset = indexClicked - currentIndex;
+        if (offset > total / 2) offset -= total;
+        if (offset < -total / 2) offset += total;
+        if (offset > 0) nextSlide();
+        else prevSlide();
+        restartAuto();
+      };
+      item.dataset.index = i;
+      item.style.zIndex = 1;
+      item.style.opacity = 0;
+      item.innerHTML = `<img src="${banners[i].thumb}" alt="${banners[i].name || 'Banner'} - i10 Store" loading="lazy" />`;
+      track.appendChild(item);
+      bannerItems.push(item);
     }
-
     function getIndex(index) {
-        return (index % total + total) % total;
+      return (index % total + total) % total;
     }
-    
-    // Hàm cập nhật vị trí, scale, và z-index của tất cả các ảnh
     function updateLayout() {
-        
-        const currentMaxStack = window.innerWidth > 768 ? 3 : 1;
-        const currentItemSize = window.innerWidth > 768 ? 220 : 150;
-        const currentBaseShift = window.innerWidth > 768 ? 130 : 90;
-        const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
-
-        bannerItems.forEach((item, index) => {
-            let offset = index - currentIndex;
-            
-            if (offset > total / 2) offset -= total;
-            if (offset < -total / 2) offset += total;
-
-            const absOffset = Math.abs(offset);
-            const direction = offset / (absOffset || 1); 
-            
-            const isVisible = absOffset <= currentMaxStack; 
-            
-            if (isVisible) {
-                let translateX;
-                let scale;
-                let zIndex;
-                
-                if (offset === 0) {
-                    scale = 1;
-                    zIndex = 10;
-                    translateX = '-50%';
-
-                } else {
-                    const stackLayer = absOffset; 
-                    
-                    scale = 1 - stackLayer * SCALE_STEP; 
-                    zIndex = 10 - stackLayer;
-                    
-                    let accumulatedShift = 0;
-                    for (let i = 1; i <= stackLayer; i++) {
-                        const currentLayerScale = 1 - (i - 1) * SCALE_STEP;
-                        const nextLayerScale = 1 - i * SCALE_STEP;
-                        accumulatedShift += (currentItemSize * currentLayerScale / 2 + currentItemSize * nextLayerScale / 2) - currentStackOverlap;
-                    }
-
-                    translateX = `calc(-50% + ${direction * (currentBaseShift + accumulatedShift)}px)`;
-                }
-                
-                item.style.cssText += `
+      const currentMaxStack = window.innerWidth > 768 ? 3 : 1;
+      const currentItemSize = window.innerWidth > 768 ? 220 : 150;
+      const currentBaseShift = window.innerWidth > 768 ? 130 : 90;
+      const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
+      bannerItems.forEach((item, index) => {
+        let offset = index - currentIndex;
+        if (offset > total / 2) offset -= total;
+        if (offset < -total / 2) offset += total;
+        const absOffset = Math.abs(offset);
+        const direction = offset / (absOffset || 1);
+        const isVisible = absOffset <= currentMaxStack;
+        if (isVisible) {
+          let translateX;
+          let scale;
+          let zIndex;
+          if (offset === 0) {
+            scale = 1;
+            zIndex = 10;
+            translateX = '-50%';
+          } else {
+            const stackLayer = absOffset;
+            scale = 1 - stackLayer * SCALE_STEP;
+            zIndex = 10 - stackLayer;
+            let accumulatedShift = 0;
+            for (let i = 1; i <= stackLayer; i++) {
+              const currentLayerScale = 1 - (i - 1) * SCALE_STEP;
+              const nextLayerScale = 1 - i * SCALE_STEP;
+              accumulatedShift += (currentItemSize * currentLayerScale / 2 + currentItemSize * nextLayerScale / 2) - currentStackOverlap;
+            }
+            translateX = `calc(-50% + ${direction * (currentBaseShift + accumulatedShift)}px)`;
+          }
+          item.style.cssText += `
                     opacity: 1; 
                     z-index: ${zIndex};
                     left: 50%;
@@ -836,47 +854,111 @@ async function renderBanner() {
                     height: ${currentItemSize}px; 
                     transform: translateX(${translateX}) scale(${scale});
                 `;
-            } else {
-                item.style.opacity = 0;
-                item.style.zIndex = 0;
-                item.style.transform = 'translateY(100%) scale(0.5)'; 
-            }
-        });
+        } else {
+          item.style.opacity = 0;
+          item.style.zIndex = 0;
+          item.style.transform = 'translateY(100%) scale(0.5)';
+        }
+      });
     }
-
     function nextSlide() {
-        currentIndex = getIndex(currentIndex + 1);
-        updateLayout();
+      currentIndex = getIndex(currentIndex + 1);
+      updateLayout();
     }
-
     function prevSlide() {
-        currentIndex = getIndex(currentIndex - 1);
-        updateLayout();
+      currentIndex = getIndex(currentIndex + 1);
+      updateLayout();
     }
-    
     updateLayout();
-
     nextBtn.onclick = () => { nextSlide(); restartAuto(); };
     prevBtn.onclick = () => { prevSlide(); restartAuto(); };
-
     let autoTimer = setInterval(nextSlide, 4000);
     function restartAuto() {
       clearInterval(autoTimer);
       autoTimer = setInterval(nextSlide, 4000);
     }
-    
     window.addEventListener('resize', debounce(updateLayout, 100));
 
   } catch (err) {
-    bannerContainer.innerHTML = `<div style="padding:40px;color:red;text-align:center;">❌ Lỗi tải banner.</div>`;
+    bannerContainer.innerHTML = `<div style="padding:40px;color:red;text-align:center;">❌ Lỗi tải banner: ${err.message}</div>`;
+    console.error("Lỗi renderBanner:", err);
   }
 }
 
-/* Init */
+
+/* -----------------------------------------------------
+   KHỞI TẠO VÀ ROUTING (TỐI ƯU SEO)
+   ----------------------------------------------------- */
+
+/**
+ * (MỚI - SEO) Hàm đọc URL khi tải trang và mở popup nếu cần
+ */
+async function handlePageLoadRouting() {
+    const path = window.location.pathname; // Ví dụ: /san-pham/thinkpad-x1
+    
+    // Nếu là trang chủ, hoặc trang con khác (contact.html)
+    if (path === '/' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
+        renderProductGrid(); // Chỉ cần render grid
+        return;
+    }
+    
+    // Nếu là link sản phẩm (ví dụ: /san-pham/thinkpad-x1)
+    
+    // 1. Render grid (để nền không bị trống)
+    renderProductGrid();
+    
+    // 2. Lấy data và tìm sản phẩm
+    const slugToFind = path.substring(1); // Bỏ dấu / ở đầu
+    const allData = await getProductData();
+    const productToOpen = allData.find(p => p.slug === slugToFind);
+
+    if (productToOpen) {
+        const jsonData = encodeURIComponent(JSON.stringify(productToOpen));
+        // Đợi 1 chút để grid render xong rồi hẵng mở
+        setTimeout(() => {
+            openProductPopup(jsonData, productToOpen.slug);
+        }, 100); 
+    } else {
+        console.warn(`Không tìm thấy sản phẩm với slug: ${slugToFind}`);
+    }
+}
+
+/**
+ * (MỚI - SEO) Hàm xử lý nút Back/Fwd của trình duyệt
+ */
+window.addEventListener('popstate', (event) => {
+    const overlay = document.querySelector('.i10-popup-overlay');
+    
+    if (event.state && event.state.slug) {
+        // Mở lại popup sản phẩm từ state
+        if (!overlay) {
+            openProductPopup(event.state.json, event.state.slug);
+        }
+    } else {
+        // Đóng popup (nếu đang mở)
+        if (overlay) {
+            overlay.remove(); // Xóa thủ công
+            document.body.style.overflow = 'auto';
+            document.title = SITE_TITLE_HOME;
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', SITE_META_DESC_HOME);
+            }
+        }
+    }
+});
+
+
+/**
+ * Init - Khởi chạy khi DOM tải xong
+ */
 document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");
     if (siteLogo) siteLogo.src = SITE_LOGO;
     
     renderBanner();
-    renderProductGrid();
+    
+    // (*** THAY ĐỔI ***)
+    // renderProductGrid(); // CŨ
+    handlePageLoadRouting(); // MỚI
 });
