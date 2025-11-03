@@ -1,418 +1,360 @@
-  
-  :root{
-    --i10:#76b500;
-    --i10-dark:#5ea000;
-    --i10-light:#9fd84a;
-    --i10-bg:#f8fff4;
-  }
+/* =========================================================
+   i10.css - TOÀN BỘ MÃ NGUỒN (Hoàn thiện Navigation và Banner Stacked)
+   ========================================================= */
 
-  body {
-    background: var(--i10-bg);
-    font-family: "Roboto", sans-serif;
-    color:#222;
-  }
-
-  /* === HEADER === */
-  .header-style-1 {
-    background: var(--i10);
-    /* border-bottom: 3px solid var(--i10-dark); */
-    padding: 8px;
-  }
-
-  .header-style-1 .header-top-inner {
-    background: var(--i10-dark);
-    color:#fff;
-    font-size:14px;
-  }
-
-
-
-  /* === NAVBAR === */
-/* === NAVIGATION MENU - hiện đại & cân đều === */
-.header-nav {
-  border-radius: 12px;
-  margin-top: 5px;
-  padding: 0 5px;
-  position: relative;
-  z-index: 10;
+:root{
+  --i10: #76b500; /* Màu chủ đạo */
+  --i10-dark:#5ea000;
+  --i10-light:#9fd84a;
+  --i10-bg:#f8fff4;
+  --color1: #fff;
+  --color2: #222;
+  --shadow-light: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-hover: 0 12px 28px rgba(0,0,0,0.12);
 }
 
-.navbar,
-.container-fluid {
+body {
+  background: var(--i10-bg);
+  font-family: 'Comfortaa', 'Roboto', sans-serif !important;
+  color:var(--color2);
+  line-height: 1.6;
+}
+
+/* === HEADER === */
+.header-style-1 {
+  background: var(--i10);
+  padding: 8px 0;
+}
+
+/* Logo Box Tối ưu */
+.logo-box {
+  display: flex; 
+  align-items: center;
+  justify-content: space-between; 
+  border:#fff solid 2px; 
+  border-radius: 20px; 
+  margin-bottom: 0px; 
+  padding: 5px;
+  background: var(--i10-dark);
+  height: 70px; 
+}
+.logo-box marquee {
+  flex-basis: 65%; 
+  font-size: 22px !important;
+  margin-right: 5px;
+  overflow: hidden;
+  line-height: 1.1;
+}
+#site-logo {
+  width: 60px !important;
+  height: 60px !important;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+/* Scroll Bar */
+.top-search-holder {
+    padding-top: 15px; 
+    padding-bottom: 5px;
+}
+#i10-scroll {
+  border-radius: 8px;
+  background: rgba(0,0,0,0.2);
+  min-height: 30px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
-.navbar-collapse {
-  flex: 1;
+
+/* === NAVIGATION MENU (Vị trí mới trong Body) === */
+.body-content .col-md-9[style*="#76b500"] {
+    padding: 0; 
+}
+.header-nav.animate-dropdown {
+    background-color: var(--i10-bg);
+    width: 100%; 
+    margin: 0;
+    padding: 0;
+}
+/* CÁC MỤC MENU (Cập nhật hiện đại và cân đối) */
+.navbar-nav.main-menu {
+  justify-content: space-between; /* Căn đều các mục */
+  overflow-x: auto; 
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px; 
+  margin: 0;
+}
+.navbar-nav.main-menu > li {
+  min-width: 120px;
+  flex-shrink: 0; 
+  margin-right: 8px;
+  padding-bottom: 0;
+  flex-grow: 1; /* Cho phép các mục mở rộng */
+  text-align: center;
+}
+.navbar-nav.main-menu > li > a {
+  border: solid 1px var(--i10-dark);
+  border-radius: 6px;
+  background: var(--i10);
+  color: #2c3e50;
+  padding: 8px 10px; /* Giảm padding ngang để cân đối */
+  font-weight: 800;
+  display: block; /* Chiếm hết chiều rộng li */
+}
+.navbar-nav.main-menu > li > a:hover {
+  background: #eee;
+  color: var(--i10-dark);
+}
+
+/* Mobile Optimization cho Menu */
+@media (max-width: 992px) {
+    .navbar-nav.main-menu {
+        overflow-x: scroll;
+        justify-content: flex-start; /* Ưu tiên cuộn ngang trên mobile */
+    }
+    .navbar-nav.main-menu > li {
+        flex-grow: 0; /* Không mở rộng trên mobile */
+        min-width: 120px;
+    }
+}
+@media (max-width: 767px) {
+    /* Logo và Scroll xếp chồng trên mobile */
+    .logo-holder, .top-search-holder {
+        width: 100%;
+    }
+    .top-search-holder {
+        padding-top: 0;
+    }
+}
+
+
+/* === BANNER (1 Center + Nhiều Stacked Sides) === */
+.banner-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 250px; 
   display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px; 
+}
+
+/* Khung chứa các ảnh */
+.banner-track {
+  display: flex;
+  transition: transform 0.6s ease;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  align-items: center;
   justify-content: center;
 }
 
-.navbar-nav.main-menu {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  width: 100%;
-  padding: 15px;
-  margin: 0;
+/* Ảnh riêng lẻ */
+.banner-item {
+    position: absolute;
+    height: 180px; 
+    width: 180px; 
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.7); 
+    cursor: pointer;
+}
+.banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-/* === Mỗi mục menu === */
-.navbar-nav.main-menu > li {
-  list-style: none;
-  flex: 1;
-  text-align: center;
-  position: relative;
-}
-
-/* === Liên kết === */
-.navbar-nav.main-menu > li > a {
-  display: inline-block;
-  padding: 10px 20px;
-  border: 2px solid #fff;
-  border-radius: 12px;
-  background: transparent;
-  color: #fff;
-  font-weight: 600;
-  font-size: 15px;
-  text-transform: capitalize;
-  transition: all 0.25s ease-in-out;
-}
-
-/* === Hiệu ứng hover === */
-.navbar-nav.main-menu > li > a:hover {
-  background: #fff;
-  color: #76b500;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(255,255,255,0.3);
-}
-
-/* === Tooltip đẹp === */
-.navbar-nav.main-menu > li::after {
-  content: attr(data-desc);
+/* Navigation Arrows (Giữ nguyên) */
+.banner-nav {
   position: absolute;
-  bottom: -45px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  background: rgba(0,0,0,0.5);
   color: #fff;
-  font-size: 13px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  opacity: 0;
-  white-space: nowrap;
-  pointer-events: none;
-  transition: opacity 0.25s, transform 0.25s;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 38px;
+  text-align: center;
+  z-index: 10;
+  transition: background 0.3s;
+}
+.banner-nav.prev { left: 10px; }
+.banner-nav.next { right: 10px; }
+
+/* Tối ưu Banner trên Mobile */
+@media (max-width: 768px) {
+    .banner-row {
+        height: 150px;
+    }
+    .banner-item {
+        height: 120px;
+        width: 120px;
+    }
+    .banner-nav {
+        width: 30px;
+        height: 30px;
+    }
 }
 
-.navbar-nav.main-menu > li:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
 
-
-
-
-
-
- 
-
-
-
-
-  /* === SIDE MENU === */
-  .side-menu {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-
-  .side-menu .head {
-    background: var(--i10);
-    color:#fff;
-    font-weight:700;
-    border-radius:10px 10px 0 0;
-    padding:10px;
-  }
-
-  .side-menu .nav > li > a {
-    font-weight:500;
-    border-left:4px solid transparent;
-    transition: all .2s;
-  }
-
-  .side-menu .nav > li > a:hover {
-    background: var(--i10-bg);
-    border-left-color: var(--i10-dark);
-  }
-
+/* === MAIN CONTENT LAYOUT === */
 #top-banner-and-menu {
-  margin: 10px;
+  margin-top: 20px;
 }
-  /* === SIDEBAR1 === */
-#sidebar1 {
-  background: #f0f0f0;
+
+/* Sidebar Menu */
+#sidebar1, #sidebar2 {
+  background: #fff;
   border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 0;
+  box-shadow: var(--shadow-light);
   margin-bottom: 20px;
 }
+#sidebar1 .head {
+  background: var(--i10);
+  color:#fff;
+  font-weight:700;
+  border-radius:12px 12px 0 0;
+  padding:12px;
+}
+#sidebar1 .nav > li > a {
+  font-weight:500;
+  border-left:4px solid transparent;
+  transition: all .2s;
+  padding: 10px 15px;
+}
+#sidebar1 .nav > li > a:hover {
+  background: var(--i10-light);
+  border-left-color: var(--i10-dark);
+}
 
-  /* === SIDEBAR2 === */
+/* Ưu Đãi Widget */
 #sidebar2 {
-  background: #f0f0f0;
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 15px;
 }
 #sidebar2 .widget-title {
   color: var(--i10-dark);
   font-weight: 700;
   border-bottom: 2px solid var(--i10);
-  margin-bottom: 8px;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  font-size: 18px;
 }
 #sidebar2 .widget-list li {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 14px;
   color: #333;
+  list-style-type: none;
 }
 
 
+/* === PRODUCT GRID & CARD === */
+.product-card {
+  border:1px solid #eee;
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+  height:380px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  box-shadow:var(--shadow-light);
+  transition:transform .28s, box-shadow .28s;
+  cursor:pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+.product-card .thumb img {
+  transition: transform .4s ease;
+}
+.product-card:hover .thumb img {
+  transform: scale(1.15);
+}
+
+/* Control Bar (Search/Sort) */
+#i10-controls {
+  padding: 0 10px 15px 0;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
 
 
+/* === FOOTER === */
+#footer.footer.color-bg {
+  background: var(--i10);
+  color: #333;
+  padding: 20px 0;
+}
+#footer .module-title {
+  color: #222;
+  font-weight:700;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+#footer a {
+  color: #333;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+#footer a:hover {
+  color: #fff;
+}
+.footer-bottom .media-body {
+  padding-left: 10px;
+}
 
+/* === POPUP (Từ i10-products.js) === */
+.i10-popup-overlay {
+  background: rgba(0,0,0,0.7) !important;
+}
+.i10-popup-overlay > div {
+  max-height: 90vh;
+}
+.i10-popup-overlay table td:first-child {
+  color: var(--i10-dark);
+}
 
-
-
-
-
-
-  /* === PRODUCT GRID === */
-  .product-card {
-    border:1px solid rgba(0,0,0,0.08);
-    border-radius:10px;
-    background:#fff;
-    transition: box-shadow .25s;
-  }
-
-  .product-card:hover {
-    box-shadow:0 6px 18px rgba(0,0,0,0.15);
-  }
-
-  .product-card .thumb {
-    background:#f8faf6;
-    border-bottom:1px solid rgba(0,0,0,0.05);
-    border-radius:10px 10px 0 0;
-  }
-
-  .product-card .price {
-    color: var(--i10);
-    font-weight:700;
-  }
-
-
-
-
-  /* === FOOTER === */
-  #footer.footer.color-bg {
-    background: var(--i10);
-    border-top:3px solid var(--i10);
-  }
-
-  #footer .module-title {
-    color: #222;
-    font-weight:700;
-    font-size: 16px;
-  }
-
-  #footer a{
-    color: #333;
-    font-weight: 500;
-  }
-
-
-
-
-
-
-
-  /* NÚT SĐT */
-  .hotline-phone-ring-wrap {
+/* NÚT SĐT - Giữ nguyên logic */
+.hotline-phone-ring-wrap {
   position: fixed;
   bottom: 84px;
   left: 0;
   z-index: 999999;
-  }
-  .hotline-phone-ring {
-  position: relative;
-  visibility: visible;
-  background-color: transparent;
-  width: 110px;
-  height: 110px;
-  cursor: pointer;
-  z-index: 11;
-  -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
-  transition: visibility .5s;
-  left: 0;
-  bottom: 0;
-  display: block;
-  }
-  .hotline-phone-ring-circle {
-  width: 85px;
-  height: 85px;
-  top: 10px;
-  left: 10px;
-  position: absolute;
-  background-color: transparent;
-  border-radius: 100%;
-  border: 2px solid #e60808;
+}
+.hotline-phone-ring-circle {
   -webkit-animation: phonering-alo-circle-anim 1.2s infinite ease-in-out;
   animation: phonering-alo-circle-anim 1.2s infinite ease-in-out;
-  transition: all .5s;
-  -webkit-transform-origin: 50% 50%;
-  -ms-transform-origin: 50% 50%;
-  transform-origin: 50% 50%;
-  opacity: 0.5;
-  }
-  .hotline-phone-ring-circle-fill {
-  width: 55px;
-  height: 55px;
-  top: 25px;
-  left: 25px;
-  position: absolute;
-  background-color: rgba(230, 8, 8, 0.7);
-  border-radius: 100%;
-  border: 2px solid transparent;
+}
+.hotline-phone-ring-circle-fill {
   -webkit-animation: phonering-alo-circle-fill-anim 2.3s infinite ease-in-out;
   animation: phonering-alo-circle-fill-anim 2.3s infinite ease-in-out;
-  transition: all .5s;
-  -webkit-transform-origin: 50% 50%;
-  -ms-transform-origin: 50% 50%;
-  transform-origin: 50% 50%;
-  }
-  .hotline-phone-ring-img-circle {
-  background-color: #fff;
-  width: 33px;
-  height: 33px;
-  top: 37px;
-  left: 37px;
-  position: absolute;
-  background-size: 20px;
-  border-radius: 100%;
-  border: 2px solid transparent;
+}
+.hotline-phone-ring-img-circle {
   -webkit-animation: phonering-alo-circle-img-anim 1s infinite ease-in-out;
   animation: phonering-alo-circle-img-anim 1s infinite ease-in-out;
-  -webkit-transform-origin: 50% 50%;
-  -ms-transform-origin: 50% 50%;
-  transform-origin: 50% 50%;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  }
-  .hotline-phone-ring-img-circle .pps-btn-img {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  }
-  .hotline-phone-ring-img-circle .pps-btn-img img {
-  width: 20px;
-  height: 20px;
-  }
-  .hotline-bar {
-  position: absolute;
+}
+.hotline-bar {
   background: rgba(230, 8, 8, 0.75);
-  height: 40px;
-  width: 180px;
-  line-height: 40px;
-  border-radius: 3px;
-  padding: 0 10px;
-  background-size: 100%;
-  cursor: pointer;
-  transition: all 0.8s;
-  -webkit-transition: all 0.8s;
-  z-index: 9;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 50px !important;
-  /* width: 175px !important; */
-  left: 33px;
-  bottom: 37px;
-  }
-  .hotline-bar > a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: bold;
-  text-indent: 50px;
-  display: block;
-  letter-spacing: 1px;
-  line-height: 40px;
-  font-family: Arial;
-  }
-  .hotline-bar > a:hover,
-  .hotline-bar > a:active {
-  color: #fff;
-  }
-  @-webkit-keyframes phonering-alo-circle-anim {
-  0% {
-  -webkit-transform: rotate(0) scale(0.5) skew(1deg);
-  -webkit-opacity: 0.1;
-  }
-  30% {
-  -webkit-transform: rotate(0) scale(0.7) skew(1deg);
-  -webkit-opacity: 0.5;
-  }
-  100% {
-  -webkit-transform: rotate(0) scale(1) skew(1deg);
-  -webkit-opacity: 0.1;
-  }
-  }
-  @-webkit-keyframes phonering-alo-circle-fill-anim {
-  0% {
-  -webkit-transform: rotate(0) scale(0.7) skew(1deg);
-  opacity: 0.6;
-  }
-  50% {
-  -webkit-transform: rotate(0) scale(1) skew(1deg);
-  opacity: 0.6;
-  }
-  100% {
-  -webkit-transform: rotate(0) scale(0.7) skew(1deg);
-  opacity: 0.6;
-  }
-  }
-  @-webkit-keyframes phonering-alo-circle-img-anim {
-  0% {
-  -webkit-transform: rotate(0) scale(1) skew(1deg);
-  }
-  10% {
-  -webkit-transform: rotate(-25deg) scale(1) skew(1deg);
-  }
-  20% {
-  -webkit-transform: rotate(25deg) scale(1) skew(1deg);
-  }
-  30% {
-  -webkit-transform: rotate(-25deg) scale(1) skew(1deg);
-  }
-  40% {
-  -webkit-transform: rotate(25deg) scale(1) skew(1deg);
-  }
-  50% {
-  -webkit-transform: rotate(0) scale(1) skew(1deg);
-  }
-  100% {
-  -webkit-transform: rotate(0) scale(1) skew(1deg);
-  }
-  }
-  @media (max-width: 768px) {
-  .hotline-bar {
-  display: none;
-  }
-  }
+}
+
+/* Animations for Hotline (Bootstrap 3 needs these defined) */
+@keyframes phonering-alo-circle-anim { 0% { opacity: 0.1; transform: rotate(0) scale(0.5) skew(1deg); } 30% { opacity: 0.5; transform: rotate(0) scale(0.7) skew(1deg); } 100% { opacity: 0.1; transform: rotate(0) scale(1) skew(1deg); } }
+@keyframes phonering-alo-circle-fill-anim { 0% { opacity: 0.6; transform: rotate(0) scale(0.7) skew(1deg); } 50% { opacity: 0.6; transform: rotate(0) scale(1) skew(1deg); } 100% { opacity: 0.6; transform: rotate(0) scale(0.7) skew(1deg); } }
+@keyframes phonering-alo-circle-img-anim { 0% { transform: rotate(0) scale(1) skew(1deg); } 10% { transform: rotate(-25deg) scale(1) skew(1deg); } 20% { transform: rotate(25deg) scale(1) skew(1deg); } 30% { transform: rotate(-25deg) scale(1) skew(1deg); } 40% { transform: rotate(25deg) scale(1) skew(1deg); } 50% { transform: rotate(0) scale(1) skew(1deg); } 100% { transform: rotate(0) scale(1) skew(1deg); } }
+@media (max-width: 768px) {
+  .hotline-bar { display: none; }
+}
