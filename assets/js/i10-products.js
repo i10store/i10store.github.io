@@ -9,7 +9,7 @@
 
 /* ========== CONFIG (CẬP NHẬT LẠI CỦA BẠN) ========== */
 // (*** QUAN TRỌNG: Thay link API và Logo của bạn vào đây ***)
-const SHEET_API = "https://script.google.com/macros/s/AKfycbyQJ-fKJkJUi0yxWuG9_XthUlp7fMLi40JCT0emxc2-3bu9stV4XigKsQnMDDvt-ehJ4w/exec"; 
+const SHEET_API = "https://script.google.com/macros/s/AKfycbzFUG2MRTNqPfQdPEUrzFFYagvLBwz8KHpiY3Hk36Et8Dzzxu_t8v3_L6XagFlcgv1J1Q/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 
 const THEME = "#76b500"; // Màu chủ đạo
@@ -694,10 +694,11 @@ function openOrderForm(product, titleText, parentOverlay) {
     msgEl.style.color = 'black'; msgEl.textContent = "Đang gửi...";
     modal.querySelector('#order_submit').disabled = true;
 
+    // ...
     try {
-      const response = await fetch(SHEET_API, {
+      await fetch(SHEET_API, {
         method: 'POST',
-        mode: 'cors', // Đổi 'no-cors' nếu API của bạn không xử lý preflight
+        mode: 'no-cors', // <-- ĐÃ SỬA
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             product: titleText, 
@@ -707,16 +708,15 @@ function openOrderForm(product, titleText, parentOverlay) {
         })
       });
       
-      if (response.ok) {
-          msgEl.style.color = 'green';
-          msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
-          setTimeout(()=> modal.remove(), 2000);
-      } else {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Lỗi server: ${response.status}`);
-      }
+      // (*** THÊM VÀO ***)
+      // Vì dùng no-cors, ta không thể đọc "response.ok".
+      // Chúng ta giả định thành công (giống hệt contact.html)
+      msgEl.style.color = 'green';
+      msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
+      setTimeout(()=> modal.remove(), 2000);
 
     } catch (err) {
+      // Lỗi này giờ đây chủ yếu là lỗi mạng (ví dụ: rớt mạng)
       msgEl.style.color = 'red';
       msgEl.textContent = "Lỗi gửi: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
     } finally {
