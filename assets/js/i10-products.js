@@ -393,13 +393,24 @@ function openProductPopup(encoded, slug) {
         `;
         mainImgWrap.appendChild(mainImg);
 
-        // Logo 
+        // Logo (Đã cập nhật vị trí Top-Center và Opacity)
         const logo = document.createElement("img");
         logo.src = SITE_LOGO;
         logo.style.cssText = `
-          position:absolute;top:6px;right:36px;width:60px;height:60px;object-fit:cover;
-          border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,0.25);
-          background:#fff;padding:2px;
+          position: absolute;
+          top: 10px; /* Vị trí trên */
+          left: 50%; /* Căn giữa ngang (bước 1) */
+          transform: translateX(-50%); /* Căn giữa ngang (bước 2) */
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 10px;
+          background: #fff;
+          padding: 2px;
+          opacity: 0.39; /* (Yêu cầu 39%) */
+          box-shadow: 0 0 8px rgba(0,0,0,0.25);
+          z-index: 5; /* Đảm bảo logo nằm trên ảnh */
+          pointer-events: none; /* Cho phép click xuyên qua logo */
         `;
         mainImgWrap.appendChild(logo);
 
