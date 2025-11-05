@@ -181,223 +181,20 @@ async function getProductData() {
 }
 
 
-/* async function renderProductGrid() {
-  const container = document.getElementById("i10-product");
-  if (!container) return;
-    try {
-        // 1. Lấy toàn bộ data (như cũ)
-        const data = await getProductData();
-
-        container.innerHTML = `<div id="i10-controls"></div><div id="i10-grid"></div>`;
-        const controlsEl = document.getElementById('i10-controls');
-        const gridEl = document.getElementById('i10-grid');
-
-        const params = new URLSearchParams(window.location.search);
-        const filter = params.get("filter");
-        
-        // (*** MỚI: Hàm lọc logic phức tạp ***)
-        function applyUrlFilter(fullList, filterKey) {
-            if (!filterKey) {
-                return fullList; // Không lọc, trả về tất cả
-            }
-
-            const key = filterKey.toLowerCase();
-            let simpleQueryString = ""; // Dùng cho các bộ lọc đơn giản
-
-            // Hàm chuẩn hóa text (chuyển sang chữ thường, xử lý null)
-            const norm = (s) => (s || "").toLowerCase();
-
-            switch (key) {
-                // --- LOGIC MỚI: VĂN PHÒNG ---
-                case "vanphong":
-                    return fullList.filter(p => {
-                        const phanLoai = norm(p["Phân loại"]);
-                        const gpu = norm(p["GPU"]);
-                        
-                        return phanLoai.includes("văn phòng") ||
-                               phanLoai.includes("mỏng nhẹ") ||
-                               gpu.includes("onboard") ||
-                               gpu.includes("intel");
-                    });
-
-                // --- LOGIC MỚI: MÁY TRẠM ---
-                case "maytram":
-                    return fullList.filter(p => {
-                        const phanLoai = norm(p["Phân loại"]);
-                        const gpu = norm(p["GPU"]);
-                        
-                        // Điều kiện 1: Phân loại là máy trạm
-                        const isWorkstation = phanLoai.includes("máy trạm") ||
-                                              phanLoai.includes("workstation");
-                                              
-                        // Điều kiện 2: GPU KHÔNG phải là onboard/intel (tức là card rời)
-                        const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
-
-                        return isWorkstation || isDedicatedGpu;
-                    });
-                
-                // --- LOGIC CŨ: Bộ lọc đơn giản ---
-                case "available": simpleQueryString = "còn"; break;
-                case "sold": simpleQueryString = "đã bán"; break;
-                case "thinkpad": simpleQueryString = "thinkpad"; break;
-                case "dell": simpleQueryString = "dell"; break;
-                case "blackberry": simpleQueryString = "blackberry"; break;
-                default: 
-                    simpleQueryString = key; // Cho phép filter bất kỳ từ nào khác
-            }
-            
-            // Xử lý các bộ lọc đơn giản (như cũ)
-            if (simpleQueryString) {
-                return fullList.filter(p => {
-                    const fields = [
-                      p["Brand"] || "", p["Model"] || "", p["Name"] || "",
-                      p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
-                    ].join(' ').toLowerCase();
-                    return fields.includes(simpleQueryString);
-                });
-            }
-            
-            return fullList; // Trả về ds gốc nếu không khớp case nào
-        }
-
-        // 2. Lấy danh sách đã được lọc theo URL
-        const filteredData = applyUrlFilter(data, filter);
-        
-        // 3. Thiết lập State (trạng thái) ban đầu
-        // `items` giờ là danh sách ĐÃ LỌC. `q` là ô tìm kiếm (trống)
-        let state = { q: "", sort: "default", items: filteredData };
-
-        // 4. Hàm doRender (chỉ còn nhiệm vụ Sắp xếp và Lọc (Search))
-        const doRender = ({ q, sort } = {}) => {
-          if (q !== undefined) state.q = q;
-          if (sort !== undefined) state.sort = sort;
-
-          const qstr = (state.q || "").toLowerCase();
-          
-          // Bắt đầu từ danh sách ĐÃ LỌC
-          let list = state.items.filter(p => {
-            if (!qstr) return true; // Nếu ô tìm kiếm trống, hiển thị tất cả
-            
-            // Nếu ô tìm kiếm có chữ, lọc TIẾP TỤC trên ds đã lọc
-            const fields = [
-              p["Brand"] || "", p["Model"] || "", p["Name"] || "",
-              p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
-            ].join(' ').toLowerCase();
-            return fields.includes(qstr);
-          });
-
-          // Logic sắp xếp (giữ nguyên)
-          if (state.sort === "price_asc") {
-            list.sort((a,b)=> extractPriceNum(a["Price"]) - extractPriceNum(b["Price"]));
-          } else if (state.sort === "price_desc") {
-            list.sort((a,b)=> extractPriceNum(b["Price"]) - extractPriceNum(a["Price"]));
-          }
-
-          // Logic render HTML (giữ nguyên)
-          const html = list.map((p) => {
-            const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-            const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2;
-            
-            let priceText = "Liên hệ";
-            let priceStyle = `color:${THEME};font-weight:800;`;
-            if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
-              priceText = "Tạm hết hàng";
-              priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
-            } else if (p["Price"]) {
-              const num = parseFloat(p["Price"]) * 1000000;
-              priceText = `~${num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
-            } else if (p["PRICE SEGMENT"]) {
-              priceText = p["PRICE SEGMENT"];
-            }
-            let config = [];
-            if (p["CPU"]) config.push(p["CPU"]);
-            if (p["RAM"]) config.push(p["RAM"]);
-            if (p["SSD"]) config.push(p["SSD"]);
-            if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
-
-            const jsonData = encodeURIComponent(JSON.stringify(p));
-            
-            return `
-              <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                <a class="product-card" 
-                   href="/${p.slug}" 
-                   data-json="${jsonData}"
-                   data-slug="${p.slug}">
-
-                  <div class="thumb">
-                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' "> 
-                  </div>
-
-                  <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
-                    <div>
-                      <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
-                      <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
-                    </div>
-                    <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                  </div>
-                </a>
-              </div>`;
-          }).join("");
-
-
-          gridEl.innerHTML = `<div class="row">${html}</div>`;
-
-          // Gắn sự kiện click (giữ nguyên)
-          document.querySelectorAll("#i10-grid .product-card").forEach(card => {
-            card.addEventListener('click', function(e) {
-                e.preventDefault(); 
-                const jsonData = this.getAttribute('data-json');
-                const slug = this.getAttribute('data-slug');
-                openProductPopup(jsonData, slug);
-            });
-          });
-          
-        }; // Hết hàm doRender
-        
-        // 5. Khởi tạo
-        renderControls(controlsEl, ({ q, sort }) => {
-          doRender({ q, sort });
-        });
-        
-        // Chạy render lần đầu (danh sách đã được lọc bởi URL)
-        doRender();
-        
-        // (*** MỚI: Tự động điền vào ô tìm kiếm nếu là filter đơn giản ***)
-        if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
-             const searchInput = document.querySelector('#i10-controls input[type="search"]');
-             let simpleQueryString = filter;
-             if (filter === 'available') simpleQueryString = 'sẵn hàng';
-             if (filter === 'sold') simpleQueryString = 'tạm hết hàng';
-             if (searchInput) searchInput.value = simpleQueryString;
-        }
-
-      } catch (err) {
-        // Xử lý lỗi (giữ nguyên)
-        container.innerHTML = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
-          <i class="fa fa-exclamation-triangle fa-2x"></i>
-          <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
-          <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
-        </div>`;
-        console.error(err);
-      }
-} */
 
 /**
- * Render danh sách sản phẩm (v6 - Hỗ trợ PHÂN TRANG)
+ * Render danh sách sản phẩm (v9 - Giữ Bố cục cũ + Sắp xếp tùy chỉnh)
  */
 async function renderProductGrid() {
   const container = document.getElementById("i10-product");
   if (!container) return;
 
-  // (*** MỚI: Cài đặt phân trang ***)
   const ITEMS_PER_PAGE = 30; // 30 sản phẩm mỗi trang
 
   try {
-    // 1. Lấy toàn bộ data (như cũ)
     const data = await getProductData();
 
-    // (*** THAY ĐỔI: Thêm container cho phân trang ***)
+    // (*** GIỮ NGUYÊN BỐ CỤC CŨ: Tự tạo div ***)
     container.innerHTML = `
         <div id="i10-controls"></div>
         <div id="i10-grid"></div>
@@ -406,18 +203,17 @@ async function renderProductGrid() {
     
     const controlsEl = document.getElementById('i10-controls');
     const gridEl = document.getElementById('i10-grid');
-    const paginationEl = document.getElementById('i10-pagination'); // (*** MỚI ***)
+    const paginationEl = document.getElementById('i10-pagination');
 
     const params = new URLSearchParams(window.location.search);
     const filter = params.get("filter");
         
-    // (*** MỚI: Hàm lọc logic phức tạp ***)
+    // (Hàm lọc applyUrlFilter - giữ nguyên)
     function applyUrlFilter(fullList, filterKey) {
         if (!filterKey) return fullList;
         const key = filterKey.toLowerCase();
         let simpleQueryString = "";
         const norm = (s) => (s || "").toLowerCase();
-
         switch (key) {
             case "vanphong":
                 return fullList.filter(p => {
@@ -440,7 +236,6 @@ async function renderProductGrid() {
             case "blackberry": simpleQueryString = "blackberry"; break;
             default: simpleQueryString = key;
         }
-        
         if (simpleQueryString) {
             return fullList.filter(p => {
                 const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
@@ -450,11 +245,8 @@ async function renderProductGrid() {
         return fullList;
     }
 
-    // 2. Lấy danh sách đã được lọc theo URL
     const filteredData = applyUrlFilter(data, filter);
         
-    // 3. Thiết lập State (trạng thái) ban đầu
-    // (*** MỚI: Thêm currentPage ***)
     let state = { 
         q: "", 
         sort: "default", 
@@ -462,51 +254,64 @@ async function renderProductGrid() {
         currentPage: 1 
     };
 
-    // (*** MỚI: Hàm tạo HTML cho các nút phân trang ***)
+    // (Hàm renderPaginationHTML - giữ nguyên)
     function renderPaginationHTML(totalPages, currentPage) {
-        if (totalPages <= 1) return ""; // Ẩn nếu chỉ có 1 trang
-
+        if (totalPages <= 1) return "";
         let html = `<ul class="pagination">`;
-
-        // Nút Lùi (Prev)
         html += `<li class="${(currentPage === 1) ? 'disabled' : ''}">
                     <a href="#" data-page="${currentPage - 1}" aria-label="Previous"><span aria-hidden="true">«</span></a>
                  </li>`;
-
-        // Hiển thị các nút số (Logic đơn giản: hiển thị 2 trang trước và 2 trang sau)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, currentPage + 2);
-
-        // Xử lý logic ... ở đầu
         if (startPage > 1) {
             html += `<li><a href="#" data-page="1">1</a></li>`;
             if (startPage > 2) html += `<li class="disabled"><span>...</span></li>`;
         }
-        
-        // Vòng lặp các trang
         for (let i = startPage; i <= endPage; i++) {
             html += `<li class="${(i === currentPage) ? 'active' : ''}">
                         <a href="#" data-page="${i}">${i}</a>
                      </li>`;
         }
-
-        // Xử lý logic ... ở cuối
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) html += `<li class="disabled"><span>...</span></li>`;
             html += `<li><a href="#" data-page="${totalPages}">${totalPages}</a></li>`;
         }
-
-        // Nút Tiến (Next)
         html += `<li class="${(currentPage === totalPages) ? 'disabled' : ''}">
                     <a href="#" data-page="${currentPage + 1}" aria-label="Next"><span aria-hidden="true">»</span></a>
                  </li>`;
-
         html += `</ul>`;
         return html;
     }
 
+    // (*** MỚI: Hàm kiểm tra Hết hàng (Sold) ***)
+    const isSold = (product) => {
+        const status = (product["T.THÁI"] || "").toLowerCase();
+        if (status.includes("đã bán") || status.includes("tạm hết")) {
+            return true;
+        }
+        const priceVal = product["Price"];
+        const segmentVal = product["PRICE SEGMENT"];
+        if ((priceVal == null || priceVal === "") && (segmentVal == null || segmentVal === "")) {
+            return true; // "Liên hệ"
+        }
+        return false;
+    };
+    
+    // (*** MỚI: Hàm lấy giá trị SỐ để so sánh ***)
+    const getComparablePrice = (product) => {
+        let priceVal = product["Price"];
+        if (priceVal != null && !isNaN(parseFloat(priceVal))) {
+            return parseFloat(priceVal);
+        }
+        let segmentStr = product["PRICE SEGMENT"] || "";
+        const match = segmentStr.match(/(\d+[\.,]?\d*)/); 
+        if (match) {
+            return parseFloat(match[1].replace(',', '.'));
+        }
+        return Infinity;
+    };
 
-    // 4. Hàm doRender (Sẽ chạy mỗi khi Lọc, Sắp xếp, hoặc Chuyển trang)
+    // 4. Hàm doRender (Đã cập nhật logic Sắp xếp)
     const doRender = ({ q, sort } = {}) => {
         if (q !== undefined) state.q = q;
         if (sort !== undefined) state.sort = sort;
@@ -519,31 +324,40 @@ async function renderProductGrid() {
             return fields.includes(qstr);
         });
 
-        if (state.sort === "price_asc") {
-            list.sort((a,b)=> extractPriceNum(a["Price"]) - extractPriceNum(b["Price"]));
-        } else if (state.sort === "price_desc") {
-            list.sort((a,b)=> extractPriceNum(b["Price"]) - extractPriceNum(a["Price"]));
+        // (*** THAY ĐỔI: LOGIC SẮP XẾP MỚI ***)
+        if (state.sort === "price_asc" || state.sort === "price_desc") {
+            list.sort((a, b) => {
+                const soldA = isSold(a);
+                const soldB = isSold(b);
+                if (soldA && !soldB) return 1;
+                if (!soldA && soldB) return -1;
+                const priceA = getComparablePrice(a);
+                const priceB = getComparablePrice(b);
+                if (state.sort === "price_asc") {
+                    return priceA - priceB;
+                } else {
+                    return priceB - priceA;
+                }
+            });
         }
+        // (*** HẾT LOGIC SẮP XẾP MỚI ***)
 
-        // (*** MỚI: LOGIC PHÂN TRANG ***)
+        // Logic phân trang (giữ nguyên)
         const totalItems = list.length;
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-
-        // Đảm bảo trang hiện tại hợp lệ
         if (state.currentPage > totalPages && totalPages > 0) state.currentPage = totalPages;
         if (state.currentPage < 1) state.currentPage = 1;
-
         const startIndex = (state.currentPage - 1) * ITEMS_PER_PAGE;
         const paginatedList = list.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-        // (*** KẾT THÚC LOGIC PHÂN TRANG ***)
 
-
-        // (*** THAY ĐỔI: Render list đã phân trang ***)
+        // Logic render HTML (giữ nguyên)
         const html = paginatedList.map((p) => {
-            // (Code render HTML của bạn... giữ nguyên)
             const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
             const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
+            
+            // (*** THAY ĐỔI: Dùng SITE_LOGO_2 theo config của bạn ***)
+            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2;
+            
             let priceText = "Liên hệ";
             let priceStyle = `color:${THEME};font-weight:800;`;
             if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -565,7 +379,7 @@ async function renderProductGrid() {
               <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                 <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
                   <div class="thumb">
-                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
+                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
                   </div>
                   <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
                     <div>
@@ -590,27 +404,25 @@ async function renderProductGrid() {
             });
         });
 
-        // (*** MỚI: Render các nút phân trang ***)
+        // (Render các nút phân trang - giữ nguyên)
         paginationEl.innerHTML = renderPaginationHTML(totalPages, state.currentPage);
           
     }; // Hết hàm doRender
         
-    // 5. Khởi tạo
-    // (*** THAY ĐỔI: Khi lọc hoặc sắp xếp, quay về trang 1 ***)
+    // 5. Khởi tạo (giữ nguyên)
     renderControls(controlsEl, ({ q, sort }) => {
         state.currentPage = 1; // QUAN TRỌNG
         doRender({ q, sort });
     });
 
-    // (*** MỚI: Gắn sự kiện click cho các nút phân trang ***)
+    // (Gắn sự kiện click cho phân trang - giữ nguyên)
     paginationEl.addEventListener('click', (e) => {
         e.preventDefault();
         const target = e.target.closest('[data-page]');
-        if (!target) return; // Không click vào nút
+        if (!target) return;
         
         const newPage = parseInt(target.dataset.page, 10);
         
-        // Lấy totalPages một lần nữa (để check nút Next/Prev)
         const qstr = (state.q || "").toLowerCase();
         const totalItems = state.items.filter(p => {
              if (!qstr) return true;
@@ -620,20 +432,19 @@ async function renderProductGrid() {
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
         if (newPage === state.currentPage || newPage < 1 || newPage > totalPages) {
-            return; // Bỏ qua click không hợp lệ
+            return;
         }
 
         state.currentPage = newPage;
-        doRender({}); // Chạy lại render
+        doRender({});
         
-        // Tự động cuộn lên đầu danh sách
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
         
     // Chạy render lần đầu
     doRender();
         
-    // (Mới: Tự động điền ô tìm kiếm nếu là filter đơn giản - giữ nguyên)
+    // (Logic điền ô tìm kiếm - giữ nguyên)
     if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
          const searchInput = document.querySelector('#i10-controls input[type="search"]');
          let simpleQueryString = filter;
