@@ -11,6 +11,7 @@
 // (*** QUAN TRỌNG: Thay link API và Logo của bạn vào đây ***)
 const SHEET_API = "https://script.google.com/macros/s/AKfycbzFUG2MRTNqPfQdPEUrzFFYagvLBwz8KHpiY3Hk36Et8Dzzxu_t8v3_L6XagFlcgv1J1Q/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000"; //Hiển thị logo ở danh sách sản phẩm, dán ID drive vào trước =s1000 là ok
 
 const THEME = "#76b500"; // Màu chủ đạo
 const CACHE_KEY = "i10_products_cache_v2"; // Key cache sản phẩm
@@ -440,7 +441,7 @@ async function renderProductGrid() {
           const html = list.map((p) => {
             const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
             const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
+            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2;
             
             let priceText = "Liên hệ";
             let priceStyle = `color:${THEME};font-weight:800;`;
@@ -469,7 +470,7 @@ async function renderProductGrid() {
                    data-slug="${p.slug}">
 
                   <div class="thumb">
-                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
+                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' "> 
                   </div>
 
                   <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
@@ -714,7 +715,7 @@ function openProductPopup(encoded, slug) {
           priceColor = "#e74c3c";
         } else if (product["Price"]) {
           const num = parseFloat(product["Price"]) * 1000000;
-          priceText = `${num.toLocaleString("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
+          priceText = `~${num.toLocaleString("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
         } else if (product["PRICE SEGMENT"]) {
           priceText = product["PRICE SEGMENT"];
         }
