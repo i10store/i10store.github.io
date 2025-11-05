@@ -511,8 +511,8 @@ async function renderProductGrid() {
         if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
              const searchInput = document.querySelector('#i10-controls input[type="search"]');
              let simpleQueryString = filter;
-             if (filter === 'available') simpleQueryString = 'còn';
-             if (filter === 'sold') simpleQueryString = 'đã bán';
+             if (filter === 'available') simpleQueryString = 'sẵn hàng';
+             if (filter === 'sold') simpleQueryString = 'tạm hết hàng';
              if (searchInput) searchInput.value = simpleQueryString;
         }
 
