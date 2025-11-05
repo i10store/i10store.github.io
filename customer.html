@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="description" content="Hình ảnh khách hàng đã tin tưởng và sử dụng sản phẩm tại i10 STORE.">
+<meta name="keywords" content="Khách hàng i10 Store, feedback i10 Store, ảnh thật sản phẩm laptop">
+<meta name="robots" content="index, follow">
+<title>KHÁCH HÀNG TIN DÙNG - i10 STORE</title>
+
+<link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/i10.css">
+
+<style>
+/* CSS HÀNG BANNER (Giữ nguyên) */
+.customer-banner-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 250px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px; 
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 25px; 
+}
+.banner-track {
+  display: flex;
+  transition: transform 0.6s ease;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.banner-item {
+    position: absolute;
+    height: 180px; 
+    width: 180px; 
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.7); 
+    cursor: pointer;
+}
+.banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+/* (*** XÓA: Nút điều khiển riêng lẻ bên trong hàng ***) */
+.customer-banner-row .banner-nav {
+    display: none; /* Ẩn 3 cặp nút cũ */
+}
+
+
+/* (*** MỚI: CSS CHO BỘ LỌC VÀ NÚT ĐIỀU KHIỂN CHUNG ***) */
+#gallery-container {
+    position: relative; 
+    padding-top: 10px;
+}
+.customer-filters {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.customer-filters .btn {
+    background: var(--i10); /* Dùng màu theme */
+    border-color: var(--i10-dark);
+    color: #fff;
+    font-weight: bold;
+    padding: 6px;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+.customer-filters .btn:hover {
+    background: var(--i10-dark);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+#gallery-controls {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.global-banner-nav {
+    display: inline-block; /* Xếp 2 nút ngang hàng */
+    background: rgba(0,0,0,0.3); 
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 38px; /* To */
+    font-weight: 100;
+    padding: 10px; /* To */
+    line-height: 1;
+    z-index: 99;
+    transition: background 0.3s;
+    margin: 0 15px; /* Khoảng cách 2 nút */
+}
+.global-banner-nav:hover { background: rgba(0,0,0,0.6); }
+
+/* (*** THAY ĐỔI: @media (max-width: 768px) ***) */
+@media (max-width: 768px) {
+    /* Thu nhỏ nút chung trên mobile (thay vì ẩn) */
+    .global-banner-nav {
+        font-size: 30px;
+        padding: 10px 15px;
+        margin: 0 10px;
+    }
+
+    .customer-banner-row { height: 150px; }
+    .banner-item { height: 120px; width: 120px; }
+}
+
+/* Hiệu ứng tải trang (Giữ nguyên) */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.customer-banner-row, .customer-filters, #gallery-controls {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+.customer-filters { animation-delay: 0.1s; }
+#gallery-controls { animation-delay: 0.2s; }
+#gallery-row-1 { animation-delay: 0.3s; }
+#gallery-row-2 { animation-delay: 0.4s; }
+#gallery-row-3 { animation-delay: 0.5s; }
+
+/* Placeholder Loading (Giữ nguyên) */
+#gallery-loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 16px;
+    width: 100%;
+}
+</style>
+</head>
+<body class="cnt-home">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
+              i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
+            </marquee>
+          </div>
+       </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="container" id="top-area">
+    <section id="banner" style="position:relative;width:100%;overflow:hidden;border-radius:12px;margin-top:10px;">
+       <div class="banner-placeholder" style="text-align:center;padding:40px;color:#666; font-size: 24px; font-weight: bold;">
+        KHÁCH HÀNG TIN DÙNG
+       </div>
+    </section>
+  </div>  -->
+</header>
+<div class="body-content outer-top-xs">
+    <div class="container">
+        <div class="row outer-bottom-md">
+            
+            <div class="col-xs-12">
+                <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li class="active">Khách hàng tin dùng</li>
+                    <li class="active"><div class="customer-filters">
+                    <a href="#" class="btn btn-primary">Khách Tây</a>
+                    <a href="#" class="btn btn-primary">Khách Ship Xa</a>
+                </div></li>
+                    
+                </ol>
+            </div>
+
+            <div class="col-xs-12">
+                <div id="gallery-controls">
+                    </div>
+            </div>
+
+
+            <div class="col-xs-12" id="gallery-container">
+                
+                <section id="gallery-row-1" class="customer-banner-row">
+                    </section>
+                
+                <section id="gallery-row-2" class="customer-banner-row">
+                    </section>
+                
+                <section id="gallery-row-3" class="customer-banner-row">
+                    </section>
+
+                <div id="gallery-loading" style="display: block;">
+                    <i class="fa fa-spinner fa-spin fa-2x" style="color: #76b500;"></i>
+                    <p style="margin-top:10px;">Đang tải hình ảnh...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<footer id="footer" class="footer color-bg">
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-6 col-md-3">
+          <div class="module-heading"><h4 class="module-title">ĐỊA CHỈ</h4></div>
+          <div class="module-body"><ul class="toggle-footer" style=""><li class="media"><div class="pull-left"> <a target="_blank" href="https://www.google.com/maps/place/Laptop+Thinkpad+US+-+I10+Store/@16.074142,108.147166,19z/data=!4m6!3m5!1s0x3142191c54241ea3:0x1e56abd50d9a7174!8m2!3d16.0741419!4d108.147166!16s%2Fg%2F11y456dc5g?hl=en&entry=ttu"><span class="icon fa-stack fa-lg"> <i class="fa fa-map-marker fa-stack-1x fa-inverse"></i> </span></a> </div><div class="media-body"><a target="_blank" href="https://www.google.com/maps/place/Laptop+Thinkpad+US+-+I10+Store/@16.074142,108.147166,19z/data=!4m6!3m5!1s0x3142191c54241ea3:0x1e56abd50d9a7174!8m2!3d16.0741419!4d108.147166!16s%2Fg%2F11y456dc5g?hl=en&entry=ttu"> 97/39 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng</a></div></li></ul></div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+          <div class="module-heading"><h4 class="module-title">ĐIỆN THOẠI - ZALO</h4></div>
+          <div class="module-body"><ul class='toggle-footer'><li class="media"><div class="pull-left"> <a target="_blank" href="https://zalo.me/0838288000"> <span class="icon fa-stack fa-lg"> <i class="fa fa-phone fa-stack-1x fa-inverse"></i> </span> </a> </div><div class="media-body"><a target="_blank" href="https://zalo.me/0838288000"><p>0838288000</p></a></div></li></ul></div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+          <div class="module-heading"><h4 class="module-title">FACEBOOK</h4></div>
+          <div class="module-body"><ul class='toggle-footer'><li class="media"><div class="pull-left"> <a target="_blank" href="https://www.facebook.com/ThinkpadUS"><span class="icon fa-stack fa-lg"> <i class="fa fa-facebook fa-stack-1x fa-inverse"></i> </span> </a></div><div class="media-body"><a target="_blank" href="https://www.facebook.com/ThinkpadUS">www.facebook.com/ThinkpadUS </a></div></li></ul></div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-3">
+          <div class="module-heading"><h4 class="module-title">NGÂN HÀNG-TECHCOMBANK </h4></div>
+          <div class="module-body"><ul class='toggle-footer'><li class="media"><div class="pull-left"> <a href="https://www.facebook.com/ThinkpadUS"><span class="icon fa-stack fa-lg"><i class="fa fa-bank fa-stack-1x fa-inverse"></i> </span> </a></div><div class="media-body"><a target="_blank" href="https://www.facebook.com/ThinkpadUS">STK: 1379 388 888 </br> CK: NGUYEN QUANG HIEU </a></div></li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
+<script src="assets/js/scripts.js"></script>
+
+<script>
+    // === CẤU HÌNH ===
+    const SHEET_API = "https://script.google.com/macros/s/AKfycbyQJ-fKJkJUi0yxWuG9_XthUlp7fMLi40JCT0emxc2-3bu9stV4XigKsQnMDDvt-ehJ4w/exec"; 
+    const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+    const CACHE_KEY_BANNER = "i10_banner_cache_v2";
+    const CACHE_TTL = 30 * 60 * 1000;
+
+    // === HELPERS ===
+    async function fetchJSON(url, opts = {}) {
+        const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts));
+        if (!res.ok) throw new Error("Lỗi mạng: " + res.status);
+        return res.json();
+    }
+    function debounce(fn, wait=250){
+        let t;
+        return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
+    }
+
+    // === KHỞI CHẠY ===
+    document.addEventListener("DOMContentLoaded", () => {
+        const siteLogo = document.getElementById("site-logo");
+        if (siteLogo) siteLogo.src = SITE_LOGO;
+        const hotlineLogo = document.getElementById("hotline-logo-icon");
+        if (hotlineLogo) hotlineLogo.src = SITE_LOGO;
+        
+        fetchCustomerImages();
+    });
+    
+    // (*** MỚI: Biến toàn cục để điều khiển chung ***)
+    let globalCurrentIndex = 0;
+    let maxLen = 0;
+    let rowControllers = []; // Mảng chứa các bộ điều khiển của 3 hàng
+    let autoTimer = null;
+
+    /**
+     * (MỚI) Hàm tải ảnh và thiết lập bộ điều khiển chung
+     */
+    async function fetchCustomerImages() {
+        const loadingEl = document.getElementById("gallery-loading");
+        
+        try {
+            let banners = null;
+            try {
+                const cached = localStorage.getItem(CACHE_KEY_BANNER);
+                if (cached) {
+                    const { timestamp, items } = JSON.parse(cached);
+                    if (Date.now() - timestamp < CACHE_TTL) banners = items;
+                }
+            } catch (e) { /* Bỏ qua lỗi cache */ }
+
+            if (!banners) {
+                banners = await fetchJSON(`${SHEET_API}?mode=banner`);
+                localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({ timestamp: Date.now(), items: banners }));
+            }
+
+            if (!banners || banners.length === 0) {
+                loadingEl.innerHTML = "Chưa có hình ảnh nào.";
+                return;
+            }
+
+            banners.reverse(); 
+
+            const total = banners.length;
+            const third = Math.ceil(total / 3);
+            
+            const chunk1 = banners.slice(0, third);
+            const chunk2 = banners.slice(third, third * 2);
+            const chunk3 = banners.slice(third * 2);
+
+            // Khởi tạo 3 banner và LƯU bộ điều khiển của chúng
+            if (chunk1.length > 0) rowControllers.push(initializeBannerRow("gallery-row-1", chunk1));
+            if (chunk2.length > 0) rowControllers.push(initializeBannerRow("gallery-row-2", chunk2));
+            if (chunk3.length > 0) rowControllers.push(initializeBannerRow("gallery-row-3", chunk3));
+
+            loadingEl.style.display = 'none'; // Ẩn loading
+
+            if (rowControllers.length === 0) return;
+
+            // Tìm hàng dài nhất để quyết định vòng lặp
+            maxLen = Math.max(...rowControllers.map(rc => rc.total));
+            if (maxLen === 0) return;
+
+            // (*** THAY ĐỔI: Tạo nút điều khiển chung ở #gallery-controls ***)
+            const container = document.getElementById('gallery-controls');
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'global-banner-nav prev';
+            prevBtn.innerHTML = '❮';
+            container.appendChild(prevBtn);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'global-banner-nav next';
+            nextBtn.innerHTML = '❯';
+            container.appendChild(nextBtn);
+
+            // Gán sự kiện cho nút chung
+            nextBtn.onclick = () => {
+                updateAllRows(globalCurrentIndex + 1);
+                restartAuto();
+            };
+            prevBtn.onclick = () => {
+                updateAllRows(globalCurrentIndex - 1);
+                restartAuto();
+            };
+            
+            // Gán sự kiện click cho từng ảnh (để điều khiển chung)
+            rowControllers.forEach((rc) => {
+                rc.items.forEach(item => {
+                    item.onclick = (e) => {
+                        const indexClicked = parseInt(e.currentTarget.dataset.index);
+                        const currentRowIndex = (globalCurrentIndex % rc.total + rc.total) % rc.total;
+
+                        if (indexClicked === currentRowIndex) {
+                            window.open(rc.banners[indexClicked].url || rc.banners[indexClicked].thumb, '_blank');
+                            return;
+                        }
+                        
+                        let offset = indexClicked - currentRowIndex;
+                        if (offset > rc.total / 2) offset -= rc.total;
+                        if (offset < -rc.total / 2) offset += rc.total;
+                        
+                        updateAllRows(globalCurrentIndex + offset); 
+                        restartAuto();
+                    };
+                });
+            });
+
+            restartAuto();
+
+        } catch (err) {
+            console.error("Lỗi tải ảnh khách hàng:", err);
+            loadingEl.innerHTML = `<span style="color: red;">❌ Lỗi tải hình ảnh. Vui lòng thử lại.</span>`;
+        }
+    }
+
+    /**
+     * (MỚI) Hàm CẬP NHẬT TẤT CẢ CÁC HÀNG
+     */
+    function updateAllRows(newIndex) {
+        globalCurrentIndex = (newIndex % maxLen + maxLen) % maxLen; 
+        
+        rowControllers.forEach(rc => {
+            const rowIndex = (globalCurrentIndex % rc.total + rc.total) % rc.total;
+            rc.update(rowIndex); // Gọi hàm update của hàng đó
+        });
+    }
+
+    /**
+     * (MỚI) Hàm TỰ ĐỘNG CHẠY CHUNG
+     */
+    function restartAuto() {
+        if (autoTimer) clearInterval(autoTimer);
+        autoTimer = setInterval(() => updateAllRows(globalCurrentIndex + 1), 3000);
+    }
+
+
+    /**
+     * (MỚI) Hàm render banner đã sửa đổi
+     * Sẽ không tạo nút, không tự chạy timer, và TRẢ VỀ (return) bộ điều khiển
+     */
+    function initializeBannerRow(containerId, banners) {
+        const bannerContainer = document.getElementById(containerId);
+        if (!bannerContainer) return;
+
+        // (*** THAY ĐỔI: Không tạo nút ***)
+        const trackId = `banner-track-${containerId}`;
+        bannerContainer.innerHTML = `<div class="banner-track" id="${trackId}"></div>`;
+
+        const track = document.getElementById(trackId);
+        const total = banners.length;
+        let currentIndex = 0; 
+
+        // Cấu hình (sao chép y hệt)
+        const MAX_STACK = window.innerWidth > 768 ? 3 : 1; 
+        const STACK_OVERLAP_PX = window.innerWidth > 768 ? 20 : 15;
+        const SCALE_STEP = 0.1;
+        const ITEM_SIZE = window.innerWidth > 768 ? 220 : 150;
+        const BASE_SHIFT = window.innerWidth > 768 ? 130 : 90;
+
+        let bannerItems = [];
+        for (let i = 0; i < total; i++) {
+            const item = document.createElement('div');
+            item.className = 'banner-item';
+            item.dataset.index = i;
+            item.style.zIndex = 1;
+            item.style.opacity = 0;
+            item.innerHTML = `<img src="${banners[i].thumb}" alt="${banners[i].name || 'Banner'}" loading="lazy" />`;
+            track.appendChild(item);
+            bannerItems.push(item);
+        }
+
+        function updateLayout(newIndex) {
+            currentIndex = newIndex; 
+            
+            const currentMaxStack = window.innerWidth > 768 ? 3 : 1;
+            const currentItemSize = window.innerWidth > 768 ? 220 : 150;
+            const currentBaseShift = window.innerWidth > 768 ? 130 : 90;
+            const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
+
+            bannerItems.forEach((item, index) => {
+                let offset = index - currentIndex;
+                if (offset > total / 2) offset -= total;
+                if (offset < -total / 2) offset += total;
+                const absOffset = Math.abs(offset);
+                const direction = offset / (absOffset || 1);
+                const isVisible = absOffset <= currentMaxStack;
+                if (isVisible) {
+                    let translateX; let scale; let zIndex;
+                    if (offset === 0) {
+                        scale = 1; zIndex = 10; translateX = '-50%';
+                    } else {
+                        const stackLayer = absOffset;
+                        scale = 1 - stackLayer * SCALE_STEP;
+                        zIndex = 10 - stackLayer;
+                        let accumulatedShift = 0;
+                        for (let i = 1; i <= stackLayer; i++) {
+                            const currentLayerScale = 1 - (i - 1) * SCALE_STEP;
+                            const nextLayerScale = 1 - i * SCALE_STEP;
+                            accumulatedShift += (currentItemSize * currentLayerScale / 2 + currentItemSize * nextLayerScale / 2) - currentStackOverlap;
+                        }
+                        translateX = `calc(-50% + ${direction * (currentBaseShift + accumulatedShift)}px)`;
+                    }
+                    item.style.cssText += `
+                        opacity: 1; z-index: ${zIndex}; left: 50%;
+                        width: ${currentItemSize}px; height: ${currentItemSize}px; 
+                        transform: translateX(${translateX}) scale(${scale});
+                    `;
+                } else {
+                    item.style.opacity = 0; item.style.zIndex = 0;
+                    item.style.transform = 'translateY(100%) scale(0.5)';
+                }
+            });
+        }
+        
+        updateLayout(0); // Chạy lần đầu
+        
+        window.addEventListener('resize', debounce(() => updateLayout(currentIndex), 100)); // Cập nhật khi resize
+
+        // (*** MỚI: Trả về bộ điều khiển ***)
+        return {
+            update: updateLayout,  // Hàm để cập nhật
+            total: total,          // Tổng số ảnh
+            items: bannerItems,    // Mảng các DOM element
+            banners: banners       // Dữ liệu thô (để lấy link)
+        };
+    }
+
+</script>
+
+</body>
+</html>

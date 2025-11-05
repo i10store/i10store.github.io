@@ -164,7 +164,7 @@ async function getProductData() {
                 p["CPU"],
                 p["RAM"],
                 p["RESOLUTION"],
-                p["GPU - CARD"]
+                p["GPU"]
             ].filter(Boolean).join(' ');
 
             // Dùng link từ Sheet hoặc tạo link fallback (dạng sạch)
@@ -182,7 +182,7 @@ async function getProductData() {
 /**
  * Render danh sách sản phẩm (TỐI ƯU SEO)
  */
-async function renderProductGrid() {
+/* async function renderProductGrid() {
   const container = document.getElementById("i10-product");
   if (!container) return;
     try {
@@ -221,7 +221,7 @@ async function renderProductGrid() {
             if (!qstr) return true;
             const fields = [
               p["Brand"] || "", p["Model"] || "", p["Name"] || "",
-              p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""
+              p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
             ].join(' ').toLowerCase();
             return fields.indexOf(qstr) !== -1;
           });
@@ -254,7 +254,7 @@ async function renderProductGrid() {
             if (p["CPU"]) config.push(p["CPU"]);
             if (p["RAM"]) config.push(p["RAM"]);
             if (p["SSD"]) config.push(p["SSD"]);
-            if (p["GPU - CARD"] && p["GPU - CARD"].toLowerCase() !== "onboard") config.push(p["GPU - CARD"]);
+            if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
 
             const jsonData = encodeURIComponent(JSON.stringify(p));
             
@@ -319,8 +319,212 @@ async function renderProductGrid() {
         </div>`;
         console.error(err);
       }
-}
+} */
+/**
+ * Render danh sách sản phẩm (ĐÃ NÂNG CẤP LOGIC FILTER V5)
+ * Hỗ trợ lọc phức tạp cho "maytram" và "vanphong"
+ */
+async function renderProductGrid() {
+  const container = document.getElementById("i10-product");
+  if (!container) return;
+    try {
+        // 1. Lấy toàn bộ data (như cũ)
+        const data = await getProductData();
 
+        container.innerHTML = `<div id="i10-controls"></div><div id="i10-grid"></div>`;
+        const controlsEl = document.getElementById('i10-controls');
+        const gridEl = document.getElementById('i10-grid');
+
+        const params = new URLSearchParams(window.location.search);
+        const filter = params.get("filter");
+        
+        // (*** MỚI: Hàm lọc logic phức tạp ***)
+        function applyUrlFilter(fullList, filterKey) {
+            if (!filterKey) {
+                return fullList; // Không lọc, trả về tất cả
+            }
+
+            const key = filterKey.toLowerCase();
+            let simpleQueryString = ""; // Dùng cho các bộ lọc đơn giản
+
+            // Hàm chuẩn hóa text (chuyển sang chữ thường, xử lý null)
+            const norm = (s) => (s || "").toLowerCase();
+
+            switch (key) {
+                // --- LOGIC MỚI: VĂN PHÒNG ---
+                case "vanphong":
+                    return fullList.filter(p => {
+                        const phanLoai = norm(p["Phân loại"]);
+                        const gpu = norm(p["GPU"]);
+                        
+                        return phanLoai.includes("văn phòng") ||
+                               phanLoai.includes("mỏng nhẹ") ||
+                               gpu.includes("onboard") ||
+                               gpu.includes("intel");
+                    });
+
+                // --- LOGIC MỚI: MÁY TRẠM ---
+                case "maytram":
+                    return fullList.filter(p => {
+                        const phanLoai = norm(p["Phân loại"]);
+                        const gpu = norm(p["GPU"]);
+                        
+                        // Điều kiện 1: Phân loại là máy trạm
+                        const isWorkstation = phanLoai.includes("máy trạm") ||
+                                              phanLoai.includes("workstation");
+                                              
+                        // Điều kiện 2: GPU KHÔNG phải là onboard/intel (tức là card rời)
+                        const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
+
+                        return isWorkstation || isDedicatedGpu;
+                    });
+                
+                // --- LOGIC CŨ: Bộ lọc đơn giản ---
+                case "available": simpleQueryString = "còn"; break;
+                case "sold": simpleQueryString = "đã bán"; break;
+                case "thinkpad": simpleQueryString = "thinkpad"; break;
+                case "dell": simpleQueryString = "dell"; break;
+                case "blackberry": simpleQueryString = "blackberry"; break;
+                default: 
+                    simpleQueryString = key; // Cho phép filter bất kỳ từ nào khác
+            }
+            
+            // Xử lý các bộ lọc đơn giản (như cũ)
+            if (simpleQueryString) {
+                return fullList.filter(p => {
+                    const fields = [
+                      p["Brand"] || "", p["Model"] || "", p["Name"] || "",
+                      p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
+                    ].join(' ').toLowerCase();
+                    return fields.includes(simpleQueryString);
+                });
+            }
+            
+            return fullList; // Trả về ds gốc nếu không khớp case nào
+        }
+
+        // 2. Lấy danh sách đã được lọc theo URL
+        const filteredData = applyUrlFilter(data, filter);
+        
+        // 3. Thiết lập State (trạng thái) ban đầu
+        // `items` giờ là danh sách ĐÃ LỌC. `q` là ô tìm kiếm (trống)
+        let state = { q: "", sort: "default", items: filteredData };
+
+        // 4. Hàm doRender (chỉ còn nhiệm vụ Sắp xếp và Lọc (Search))
+        const doRender = ({ q, sort } = {}) => {
+          if (q !== undefined) state.q = q;
+          if (sort !== undefined) state.sort = sort;
+
+          const qstr = (state.q || "").toLowerCase();
+          
+          // Bắt đầu từ danh sách ĐÃ LỌC
+          let list = state.items.filter(p => {
+            if (!qstr) return true; // Nếu ô tìm kiếm trống, hiển thị tất cả
+            
+            // Nếu ô tìm kiếm có chữ, lọc TIẾP TỤC trên ds đã lọc
+            const fields = [
+              p["Brand"] || "", p["Model"] || "", p["Name"] || "",
+              p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
+            ].join(' ').toLowerCase();
+            return fields.includes(qstr);
+          });
+
+          // Logic sắp xếp (giữ nguyên)
+          if (state.sort === "price_asc") {
+            list.sort((a,b)=> extractPriceNum(a["Price"]) - extractPriceNum(b["Price"]));
+          } else if (state.sort === "price_desc") {
+            list.sort((a,b)=> extractPriceNum(b["Price"]) - extractPriceNum(a["Price"]));
+          }
+
+          // Logic render HTML (giữ nguyên)
+          const html = list.map((p) => {
+            const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+            const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
+            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
+            
+            let priceText = "Liên hệ";
+            let priceStyle = `color:${THEME};font-weight:800;`;
+            if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
+              priceText = "Tạm hết hàng";
+              priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
+            } else if (p["Price"]) {
+              const num = parseFloat(p["Price"]) * 1000000;
+              priceText = `~${num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
+            } else if (p["PRICE SEGMENT"]) {
+              priceText = p["PRICE SEGMENT"];
+            }
+            let config = [];
+            if (p["CPU"]) config.push(p["CPU"]);
+            if (p["RAM"]) config.push(p["RAM"]);
+            if (p["SSD"]) config.push(p["SSD"]);
+            if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
+
+            const jsonData = encodeURIComponent(JSON.stringify(p));
+            
+            return `
+              <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
+                <a class="product-card" 
+                   href="/${p.slug}" 
+                   data-json="${jsonData}"
+                   data-slug="${p.slug}">
+
+                  <div class="thumb">
+                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
+                  </div>
+
+                  <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
+                    <div>
+                      <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
+                      <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
+                    </div>
+                    <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
+                  </div>
+                </a>
+              </div>`;
+          }).join("");
+
+
+          gridEl.innerHTML = `<div class="row">${html}</div>`;
+
+          // Gắn sự kiện click (giữ nguyên)
+          document.querySelectorAll("#i10-grid .product-card").forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const jsonData = this.getAttribute('data-json');
+                const slug = this.getAttribute('data-slug');
+                openProductPopup(jsonData, slug);
+            });
+          });
+          
+        }; // Hết hàm doRender
+        
+        // 5. Khởi tạo
+        renderControls(controlsEl, ({ q, sort }) => {
+          doRender({ q, sort });
+        });
+        
+        // Chạy render lần đầu (danh sách đã được lọc bởi URL)
+        doRender();
+        
+        // (*** MỚI: Tự động điền vào ô tìm kiếm nếu là filter đơn giản ***)
+        if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
+             const searchInput = document.querySelector('#i10-controls input[type="search"]');
+             let simpleQueryString = filter;
+             if (filter === 'available') simpleQueryString = 'còn';
+             if (filter === 'sold') simpleQueryString = 'đã bán';
+             if (searchInput) searchInput.value = simpleQueryString;
+        }
+
+      } catch (err) {
+        // Xử lý lỗi (giữ nguyên)
+        container.innerHTML = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
+          <i class="fa fa-exclamation-triangle fa-2x"></i>
+          <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
+          <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
+        </div>`;
+        console.error(err);
+      }
+}
 /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
    ----------------------------------------------------- */
@@ -344,7 +548,7 @@ function openProductPopup(encoded, slug) {
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
             const description = product["Meta Description"] || 
-                                `Cấu hình: ${[product["CPU"], product["RAM"], product["SSD"], product["GPU - CARD"]].filter(Boolean).join(' • ')}. Liên hệ i10 Store.`;
+                                `Cấu hình: ${[product["CPU"], product["RAM"], product["SSD"], product["GPU"]].filter(Boolean).join(' • ')}. Liên hệ i10 Store.`;
             metaDesc.setAttribute('content', description.substring(0, 155)); // Cắt ngắn 155 ký tự
         }
 
@@ -524,7 +728,7 @@ function openProductPopup(encoded, slug) {
           ["SSD Nvme", product["SSD"] ? `${product["SSD"]} Gb` : "N/A"],
           ["Màn hình", product["RESOLUTION"] || "N/A"],
           ["Kích thước", product["SIZE"] ? `${product["SIZE"]} inch` : "N/A"],
-          ["GPU", product["GPU - CARD"] || "Onboard"],
+          ["GPU", product["GPU"] || "Onboard"],
           ["Phân loại", product["Phân loại"] || "Laptop"],
           ["Trạng thái", product["T.THÁI"] || "Đang bán"],
           // (*** MỚI - UI/UX ***) Thêm giá vào bảng
@@ -883,10 +1087,10 @@ async function renderBanner() {
     updateLayout();
     nextBtn.onclick = () => { nextSlide(); restartAuto(); };
     prevBtn.onclick = () => { prevSlide(); restartAuto(); };
-    let autoTimer = setInterval(nextSlide, 4000);
+    let autoTimer = setInterval(nextSlide, 3000);
     function restartAuto() {
       clearInterval(autoTimer);
-      autoTimer = setInterval(nextSlide, 4000);
+      autoTimer = setInterval(nextSlide, 3000);
     }
     window.addEventListener('resize', debounce(updateLayout, 100));
 
