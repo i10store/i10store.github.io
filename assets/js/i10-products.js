@@ -180,152 +180,8 @@ async function getProductData() {
     return globalProductPromise;
 }
 
-/**
- * Render danh sách sản phẩm (TỐI ƯU SEO)
- */
+
 /* async function renderProductGrid() {
-  const container = document.getElementById("i10-product");
-  if (!container) return;
-    try {
-        // Lấy data từ hàm mới
-        const data = await getProductData();
-
-        container.innerHTML = `<div id="i10-controls"></div><div id="i10-grid"></div>`;
-        const controlsEl = document.getElementById('i10-controls');
-        const gridEl = document.getElementById('i10-grid');
-
-        // Logic filter từ URL
-        const params = new URLSearchParams(window.location.search);
-        const filter = params.get("filter");
-        let defaultQuery = "";
-
-        switch (filter) {
-          case "available": defaultQuery = "còn"; break;
-          case "sold": defaultQuery = "đã bán"; break;
-          // Các filter của bạn
-          case "maytram": defaultQuery = "máy trạm"; break;
-          case "vanphong": defaultQuery = "văn phòng"; break;
-          case "thinkpad": defaultQuery = "thinkpad"; break;
-          case "dell": defaultQuery = "dell"; break;
-          case "blackberry": defaultQuery = "blackberry"; break;
-          default: defaultQuery = "";
-        }
-
-        let state = { q: defaultQuery, sort: "default", items: data };
-
-        const doRender = ({ q, sort } = {}) => {
-          if (q !== undefined) state.q = q;
-          if (sort !== undefined) state.sort = sort;
-
-          const qstr = (state.q || "").toLowerCase();
-          let list = state.items.filter(p => {
-            if (!qstr) return true;
-            const fields = [
-              p["Brand"] || "", p["Model"] || "", p["Name"] || "",
-              p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""
-            ].join(' ').toLowerCase();
-            return fields.indexOf(qstr) !== -1;
-          });
-
-          if (state.sort === "price_asc") {
-            list.sort((a,b)=> extractPriceNum(a["Price"]) - extractPriceNum(b["Price"]));
-          } else if (state.sort === "price_desc") {
-            list.sort((a,b)=> extractPriceNum(b["Price"]) - extractPriceNum(a["Price"]));
-          }
-
-          const html = list.map((p) => {
-            const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-            const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
-            
-            // Logic giá
-            let priceText = "Liên hệ";
-            let priceStyle = `color:${THEME};font-weight:800;`;
-            if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
-              priceText = "Tạm hết hàng";
-              priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
-            } else if (p["Price"]) {
-              const num = parseFloat(p["Price"]) * 1000000;
-              priceText = `~${num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
-            } else if (p["PRICE SEGMENT"]) {
-              priceText = p["PRICE SEGMENT"];
-            }
-            // Logic config
-            let config = [];
-            if (p["CPU"]) config.push(p["CPU"]);
-            if (p["RAM"]) config.push(p["RAM"]);
-            if (p["SSD"]) config.push(p["SSD"]);
-            if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
-
-            const jsonData = encodeURIComponent(JSON.stringify(p));
-            
-            // (*** THAY ĐỔI SEO ***) Dùng thẻ <a>
-            return `
-              <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                <a class="product-card" 
-                   href="/${p.slug}" 
-                   data-json="${jsonData}"
-                   data-slug="${p.slug}">
-
-                  <div class="thumb">
-                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
-                  </div>
-
-                  <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
-                    <div>
-                      <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
-                      <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
-                    </div>
-                    <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                  </div>
-                </a>
-              </div>`;
-          }).join("");
-
-
-          gridEl.innerHTML = `<div class="row">${html}</div>`;
-
-          // (*** MỚI - LOGIC SEO ***)
-          // Bắt các cú click vào thẻ <a> sản phẩm
-          document.querySelectorAll("#i10-grid .product-card").forEach(card => {
-            card.addEventListener('click', function(e) {
-                e.preventDefault(); 
-                const jsonData = this.getAttribute('data-json');
-                const slug = this.getAttribute('data-slug');
-                openProductPopup(jsonData, slug);
-            });
-          });
-          
-        }; // Hết hàm doRender
-        
-        renderControls(controlsEl, ({ q, sort }) => {
-          doRender({ q, sort });
-        });
-        
-        // Kích hoạt filter (nếu có)
-        if (state.q) {
-            doRender({ q: state.q, sort: "default" });
-            // Cập nhật ô tìm kiếm (nếu filter từ URL)
-            const searchInput = document.querySelector('#i10-controls input[type="search"]');
-            if (searchInput) searchInput.value = state.q;
-        } else {
-            doRender();
-        }
-
-      } catch (err) {
-        container.innerHTML = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
-          <i class="fa fa-exclamation-triangle fa-2x"></i>
-          <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
-          <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
-        </div>`;
-        console.error(err);
-      }
-} */
-/**
- * Render danh sách sản phẩm (ĐÃ NÂNG CẤP LOGIC FILTER V5)
- * Hỗ trợ lọc phức tạp cho "maytram" và "vanphong"
- */
-async function renderProductGrid() {
   const container = document.getElementById("i10-product");
   if (!container) return;
     try {
@@ -525,8 +381,280 @@ async function renderProductGrid() {
         </div>`;
         console.error(err);
       }
+} */
+
+/**
+ * Render danh sách sản phẩm (v6 - Hỗ trợ PHÂN TRANG)
+ */
+async function renderProductGrid() {
+  const container = document.getElementById("i10-product");
+  if (!container) return;
+
+  // (*** MỚI: Cài đặt phân trang ***)
+  const ITEMS_PER_PAGE = 30; // 30 sản phẩm mỗi trang
+
+  try {
+    // 1. Lấy toàn bộ data (như cũ)
+    const data = await getProductData();
+
+    // (*** THAY ĐỔI: Thêm container cho phân trang ***)
+    container.innerHTML = `
+        <div id="i10-controls"></div>
+        <div id="i10-grid"></div>
+        <div id="i10-pagination"></div> 
+    `;
+    
+    const controlsEl = document.getElementById('i10-controls');
+    const gridEl = document.getElementById('i10-grid');
+    const paginationEl = document.getElementById('i10-pagination'); // (*** MỚI ***)
+
+    const params = new URLSearchParams(window.location.search);
+    const filter = params.get("filter");
+        
+    // (*** MỚI: Hàm lọc logic phức tạp ***)
+    function applyUrlFilter(fullList, filterKey) {
+        if (!filterKey) return fullList;
+        const key = filterKey.toLowerCase();
+        let simpleQueryString = "";
+        const norm = (s) => (s || "").toLowerCase();
+
+        switch (key) {
+            case "vanphong":
+                return fullList.filter(p => {
+                    const phanLoai = norm(p["Phân loại"]);
+                    const gpu = norm(p["GPU - CARD"]);
+                    return phanLoai.includes("văn phòng") || phanLoai.includes("mỏng nhẹ") || gpu.includes("onboard") || gpu.includes("intel");
+                });
+            case "maytram":
+                return fullList.filter(p => {
+                    const phanLoai = norm(p["Phân loại"]);
+                    const gpu = norm(p["GPU - CARD"]);
+                    const isWorkstation = phanLoai.includes("máy trạm") || phanLoai.includes("workstation");
+                    const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
+                    return isWorkstation || isDedicatedGpu;
+                });
+            case "available": simpleQueryString = "còn"; break;
+            case "sold": simpleQueryString = "đã bán"; break;
+            case "thinkpad": simpleQueryString = "thinkpad"; break;
+            case "dell": simpleQueryString = "dell"; break;
+            case "blackberry": simpleQueryString = "blackberry"; break;
+            default: simpleQueryString = key;
+        }
+        
+        if (simpleQueryString) {
+            return fullList.filter(p => {
+                const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
+                return fields.includes(simpleQueryString);
+            });
+        }
+        return fullList;
+    }
+
+    // 2. Lấy danh sách đã được lọc theo URL
+    const filteredData = applyUrlFilter(data, filter);
+        
+    // 3. Thiết lập State (trạng thái) ban đầu
+    // (*** MỚI: Thêm currentPage ***)
+    let state = { 
+        q: "", 
+        sort: "default", 
+        items: filteredData,
+        currentPage: 1 
+    };
+
+    // (*** MỚI: Hàm tạo HTML cho các nút phân trang ***)
+    function renderPaginationHTML(totalPages, currentPage) {
+        if (totalPages <= 1) return ""; // Ẩn nếu chỉ có 1 trang
+
+        let html = `<ul class="pagination">`;
+
+        // Nút Lùi (Prev)
+        html += `<li class="${(currentPage === 1) ? 'disabled' : ''}">
+                    <a href="#" data-page="${currentPage - 1}" aria-label="Previous"><span aria-hidden="true">«</span></a>
+                 </li>`;
+
+        // Hiển thị các nút số (Logic đơn giản: hiển thị 2 trang trước và 2 trang sau)
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        // Xử lý logic ... ở đầu
+        if (startPage > 1) {
+            html += `<li><a href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) html += `<li class="disabled"><span>...</span></li>`;
+        }
+        
+        // Vòng lặp các trang
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="${(i === currentPage) ? 'active' : ''}">
+                        <a href="#" data-page="${i}">${i}</a>
+                     </li>`;
+        }
+
+        // Xử lý logic ... ở cuối
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<li class="disabled"><span>...</span></li>`;
+            html += `<li><a href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+
+        // Nút Tiến (Next)
+        html += `<li class="${(currentPage === totalPages) ? 'disabled' : ''}">
+                    <a href="#" data-page="${currentPage + 1}" aria-label="Next"><span aria-hidden="true">»</span></a>
+                 </li>`;
+
+        html += `</ul>`;
+        return html;
+    }
+
+
+    // 4. Hàm doRender (Sẽ chạy mỗi khi Lọc, Sắp xếp, hoặc Chuyển trang)
+    const doRender = ({ q, sort } = {}) => {
+        if (q !== undefined) state.q = q;
+        if (sort !== undefined) state.sort = sort;
+
+        const qstr = (state.q || "").toLowerCase();
+          
+        let list = state.items.filter(p => {
+            if (!qstr) return true;
+            const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
+            return fields.includes(qstr);
+        });
+
+        if (state.sort === "price_asc") {
+            list.sort((a,b)=> extractPriceNum(a["Price"]) - extractPriceNum(b["Price"]));
+        } else if (state.sort === "price_desc") {
+            list.sort((a,b)=> extractPriceNum(b["Price"]) - extractPriceNum(a["Price"]));
+        }
+
+        // (*** MỚI: LOGIC PHÂN TRANG ***)
+        const totalItems = list.length;
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+        // Đảm bảo trang hiện tại hợp lệ
+        if (state.currentPage > totalPages && totalPages > 0) state.currentPage = totalPages;
+        if (state.currentPage < 1) state.currentPage = 1;
+
+        const startIndex = (state.currentPage - 1) * ITEMS_PER_PAGE;
+        const paginatedList = list.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+        // (*** KẾT THÚC LOGIC PHÂN TRANG ***)
+
+
+        // (*** THAY ĐỔI: Render list đã phân trang ***)
+        const html = paginatedList.map((p) => {
+            // (Code render HTML của bạn... giữ nguyên)
+            const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+            const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
+            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO;
+            let priceText = "Liên hệ";
+            let priceStyle = `color:${THEME};font-weight:800;`;
+            if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
+              priceText = "Tạm hết hàng";
+              priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
+            } else if (p["Price"]) {
+              const num = parseFloat(p["Price"]) * 1000000;
+              priceText = `~${num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
+            } else if (p["PRICE SEGMENT"]) {
+              priceText = p["PRICE SEGMENT"];
+            }
+            let config = [];
+            if (p["CPU"]) config.push(p["CPU"]);
+            if (p["RAM"]) config.push(p["RAM"]);
+            if (p["SSD"]) config.push(p["SSD"]);
+            if (p["GPU - CARD"] && p["GPU - CARD"].toLowerCase() !== "onboard") config.push(p["GPU - CARD"]);
+            const jsonData = encodeURIComponent(JSON.stringify(p));
+            return `
+              <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
+                <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
+                  <div class="thumb">
+                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO}' ">
+                  </div>
+                  <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
+                    <div>
+                      <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
+                      <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
+                    </div>
+                    <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
+                  </div>
+                </a>
+              </div>`;
+        }).join("");
+
+        gridEl.innerHTML = `<div class="row">${html}</div>`;
+
+        // Gắn sự kiện click (giữ nguyên)
+        document.querySelectorAll("#i10-grid .product-card").forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const jsonData = this.getAttribute('data-json');
+                const slug = this.getAttribute('data-slug');
+                openProductPopup(jsonData, slug);
+            });
+        });
+
+        // (*** MỚI: Render các nút phân trang ***)
+        paginationEl.innerHTML = renderPaginationHTML(totalPages, state.currentPage);
+          
+    }; // Hết hàm doRender
+        
+    // 5. Khởi tạo
+    // (*** THAY ĐỔI: Khi lọc hoặc sắp xếp, quay về trang 1 ***)
+    renderControls(controlsEl, ({ q, sort }) => {
+        state.currentPage = 1; // QUAN TRỌNG
+        doRender({ q, sort });
+    });
+
+    // (*** MỚI: Gắn sự kiện click cho các nút phân trang ***)
+    paginationEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = e.target.closest('[data-page]');
+        if (!target) return; // Không click vào nút
+        
+        const newPage = parseInt(target.dataset.page, 10);
+        
+        // Lấy totalPages một lần nữa (để check nút Next/Prev)
+        const qstr = (state.q || "").toLowerCase();
+        const totalItems = state.items.filter(p => {
+             if (!qstr) return true;
+             const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
+             return fields.includes(qstr);
+        }).length;
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+        if (newPage === state.currentPage || newPage < 1 || newPage > totalPages) {
+            return; // Bỏ qua click không hợp lệ
+        }
+
+        state.currentPage = newPage;
+        doRender({}); // Chạy lại render
+        
+        // Tự động cuộn lên đầu danh sách
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+        
+    // Chạy render lần đầu
+    doRender();
+        
+    // (Mới: Tự động điền ô tìm kiếm nếu là filter đơn giản - giữ nguyên)
+    if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
+         const searchInput = document.querySelector('#i10-controls input[type="search"]');
+         let simpleQueryString = filter;
+         if (filter === 'available') simpleQueryString = 'còn';
+         if (filter === 'sold') simpleQueryString = 'đã bán';
+         if (searchInput) searchInput.value = simpleQueryString;
+    }
+
+  } catch (err) {
+    // Xử lý lỗi (giữ nguyên)
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
+      <i class="fa fa-exclamation-triangle fa-2x"></i>
+      <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
+      <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
+    </div>`;
+    console.error(err);
+  }
 }
-/* -----------------------------------------------------
+
+
+      /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
    ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
