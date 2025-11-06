@@ -561,6 +561,10 @@ function openLightbox(src) {
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
    (*** ĐÃ CẬP NHẬT (v12) ***)
    ----------------------------------------------------- */
+/* -----------------------------------------------------
+   POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
+   (*** ĐÃ CẬP NHẬT (v12.1 - Sửa lỗi mất ảnh) ***)
+   ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
 
@@ -582,7 +586,9 @@ function openProductPopup(encoded, slug) {
         }
 
         const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        const images = sortedImgs.map(x => (x.url || x.thumb || "").replace("=s220", "=s1600")).filter(Boolean); // (*** SỬA: Ưu tiên URL gốc ***)
+        
+        // (*** ĐÃ SỬA LỖI: Quay lại ưu tiên x.thumb ***)
+        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
         if (!images.length) images.push(SITE_LOGO); 
 
         let currentIndex = 0;
@@ -605,7 +611,7 @@ function openProductPopup(encoded, slug) {
         mainImg.src = images[currentIndex];
         mainImg.style.cssText = `max-width:100%;max-height:400px;object-fit:contain;border-radius:16px;transition:opacity .3s ease, transform .3s ease;cursor: zoom-in;`;
         // (*** MỚI: LIGHTBOX Click ***)
-        mainImg.onclick = () => openLightbox(images[currentIndex]); // (*** SỬA: Lấy link full ***)
+        mainImg.onclick = () => openLightbox(images[currentIndex]); // Link ảnh thumbnail (đã đủ lớn)
         mainImgWrap.appendChild(mainImg);
 
         // Logo (Đã cập nhật vị trí Top-Center và Opacity 0.39)
@@ -633,7 +639,7 @@ function openProductPopup(encoded, slug) {
         const thumbElems = [];
         images.forEach((src, i) => {
           const t = document.createElement("img");
-          t.src = src; // Dùng link full
+          t.src = src; 
           t.style.cssText = `width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;opacity:${i === 0 ? 1 : 0.6};flex-shrink:0;`;
           t.onclick = () => {
             currentIndex = i;
@@ -730,7 +736,7 @@ function openProductPopup(encoded, slug) {
         buyBtn.className = "btn btn-success";
         buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 22px;border-radius:6px;color:#fff;flex:1;`;
         const contactBtn = document.createElement("a");
-        contactBtn.href = "/contact.html"; // (*** SỬA: Đường dẫn tuyệt đối ***)
+        contactBtn.href = "/contact.html"; 
         contactBtn.textContent = "Liên Hệ";
         contactBtn.className = "btn btn-warning";
         contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;flex:1;";
