@@ -1,5 +1,5 @@
 /* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12 - Bố cục cũ)
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.2 - Bố cục cũ)
    Bao gồm:
    1. Tối ưu SEO (Clean URLs) + Fix 404
    2. Tối ưu UI/UX Popup (Logo 0.39 opacity, no-cors)
@@ -9,12 +9,12 @@
       - Lọc trùng lặp (v10)
       - Lọc theo khoảng giá (v11)
       - Đổi tên cột thành "GPU"
-      - (MỚI) Sửa hiển thị PRICE SEGMENT (v12)
-      - (MỚI) Thêm Lightbox cho ảnh Popup (v12)
+      - Sửa hiển thị PRICE SEGMENT (v12)
+      - Thêm Lightbox NÂNG CAO (có nút < >) (v12.2)
    ========================================================= */
 
 /* ========== CONFIG (Lấy từ file của bạn) ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbwZWCz7sN2key_M-0_yrKdiIbPupONdyjzL14quGzQsbpP9Evp_LmctKK2DL0usSmAOWQ/exec"; 
+const SHEET_API = "https://script.google.com/macros/s/AKfycbxPyu_R82lcCWVqGxhYMo7j__y-xzWe5QoRkaPv4726z5Oep9xOKchVMuEkwVyPDsmu/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 
@@ -57,7 +57,7 @@ function createSlug(text) {
 }
 
 
-/* Render control bar: sort + search + price range */
+/* Render control bar: sort + search + price range (v11) */
 function renderControls(container, onChange) {
   const ctrl = document.createElement('div');
   ctrl.id = "i10-controls";
@@ -179,7 +179,7 @@ async function getProductData() {
 
 /**
  * (Hàm render chính)
- * Hàm này chứa toàn bộ logic (v12)
+ * Hàm này chứa toàn bộ logic (v12.2)
  */
 async function renderProductGridLegacy(container, controlsEl, gridEl, paginationEl) {
     const ITEMS_PER_PAGE = 30;
@@ -405,7 +405,7 @@ async function renderProductGridLegacy(container, controlsEl, gridEl, pagination
                       <div class="thumb">
                         <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
                       </div>
-                      <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
+                      <div style="padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;">
                         <div>
                           <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
@@ -509,10 +509,8 @@ async function renderProductGrid() {
     const paginationEl_new = document.getElementById('i10-pagination-placeholder');
 
     if (controlsEl_new && gridEl_new && paginationEl_new) {
-        // --- BỐ CỤC MỚI (TOP-BAR) ---
         await renderProductGridLegacy(container, controlsEl_new, gridEl_new, paginationEl_new);
     } else {
-        // --- BỐ CỤC CŨ (BẠN ĐANG DÙNG) ---
         container.innerHTML = `
             <div id="i10-controls"></div>
             <div id="i10-grid"></div>
@@ -521,17 +519,18 @@ async function renderProductGrid() {
         const controlsEl_old = document.getElementById('i10-controls');
         const gridEl_old = document.getElementById('i10-grid');
         const paginationEl_old = document.getElementById('i10-pagination');
-        
         await renderProductGridLegacy(container, controlsEl_old, gridEl_old, paginationEl_old);
     }
 }
 
 
-/* (*** MỚI: LIGHTBOX ***) */
-function openLightbox(src) {
-    // Tìm và xóa lightbox cũ (nếu có)
+/* (*** MỚI: LIGHTBOX NÂNG CAO v12.2 ***) */
+function openAdvancedLightbox(images, startIndex) {
     const oldLightbox = document.querySelector(".i10-lightbox-overlay");
     if (oldLightbox) oldLightbox.remove();
+
+    let currentIndex = startIndex;
+    const totalImages = images.length;
 
     const lightbox = document.createElement("div");
     lightbox.className = "i10-lightbox-overlay";
@@ -541,29 +540,57 @@ function openLightbox(src) {
     closeBtn.innerHTML = "×";
     
     const img = document.createElement("img");
-    img.src = src;
+    img.src = images[currentIndex];
+    img.className = "i10-lightbox-img";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "i10-lightbox-nav prev";
+    prevBtn.innerHTML = "❮";
+    
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "i10-lightbox-nav next";
+    nextBtn.innerHTML = "❯";
+
+    function updateImage(newIndex) {
+        currentIndex = (newIndex + totalImages) % totalImages;
+        img.style.opacity = 0;
+        setTimeout(() => {
+            img.src = images[currentIndex];
+            img.style.opacity = 1;
+        }, 150);
+    }
+
+    prevBtn.onclick = (e) => { e.stopPropagation(); updateImage(currentIndex - 1); };
+    nextBtn.onclick = (e) => { e.stopPropagation(); updateImage(currentIndex + 1); };
+    
+    const closeLightbox = () => {
+        lightbox.remove();
+        document.removeEventListener("keydown", handleKeydown);
+    };
+
+    closeBtn.onclick = closeLightbox;
+    lightbox.onclick = (e) => { if (e.target === lightbox) closeLightbox(); };
+
+    const handleKeydown = (e) => {
+        if (e.key === "ArrowRight") { e.preventDefault(); updateImage(currentIndex + 1); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); updateImage(currentIndex - 1); }
+        else if (e.key === "Escape") { e.preventDefault(); closeLightbox(); }
+    };
+    document.addEventListener("keydown", handleKeydown);
 
     lightbox.appendChild(img);
     lightbox.appendChild(closeBtn);
+    if (totalImages > 1) {
+        lightbox.appendChild(prevBtn);
+        lightbox.appendChild(nextBtn);
+    }
     document.body.appendChild(lightbox);
-    
-    // Close actions
-    closeBtn.onclick = () => lightbox.remove();
-    lightbox.onclick = (e) => {
-        if (e.target === lightbox) { // Chỉ đóng khi click nền
-            lightbox.remove();
-        }
-    };
 }
 
 
 /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
-   (*** ĐÃ CẬP NHẬT (v12) ***)
-   ----------------------------------------------------- */
-/* -----------------------------------------------------
-   POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
-   (*** ĐÃ CẬP NHẬT (v12.1 - Sửa lỗi mất ảnh) ***)
+   (*** ĐÃ CẬP NHẬT (v12.2) ***)
    ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
@@ -587,7 +614,6 @@ function openProductPopup(encoded, slug) {
 
         const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         
-        // (*** ĐÃ SỬA LỖI: Quay lại ưu tiên x.thumb ***)
         const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
         if (!images.length) images.push(SITE_LOGO); 
 
@@ -610,17 +636,14 @@ function openProductPopup(encoded, slug) {
         const mainImg = document.createElement("img");
         mainImg.src = images[currentIndex];
         mainImg.style.cssText = `max-width:100%;max-height:400px;object-fit:contain;border-radius:16px;transition:opacity .3s ease, transform .3s ease;cursor: zoom-in;`;
-        // (*** MỚI: LIGHTBOX Click ***)
-        mainImg.onclick = () => openLightbox(images[currentIndex]); // Link ảnh thumbnail (đã đủ lớn)
+        mainImg.onclick = () => openAdvancedLightbox(images, currentIndex);
         mainImgWrap.appendChild(mainImg);
 
-        // Logo (Đã cập nhật vị trí Top-Center và Opacity 0.39)
         const logo = document.createElement("img");
         logo.src = SITE_LOGO;
         logo.style.cssText = `position: absolute;top: 10px;left: 50%;transform: translateX(-50%);width: 60px;height: 60px;object-fit: cover;border-radius: 10px;background: #fff;padding: 2px;opacity: 0.39;box-shadow: 0 0 8px rgba(0,0,0,0.25);z-index: 5;pointer-events: none;`;
         mainImgWrap.appendChild(logo);
 
-        // Nút chuyển ảnh
         const prevBtn = document.createElement("button");
         const nextBtn = document.createElement("button");
         [prevBtn, nextBtn].forEach((b, i) => {
@@ -629,7 +652,6 @@ function openProductPopup(encoded, slug) {
           mainImgWrap.appendChild(b);
         });
 
-        // Thumbnails
         const thumbsWrap = document.createElement("div");
         thumbsWrap.style.cssText = `position:relative;width:100%;overflow:hidden;margin-top:12px;padding:6px 0;display:flex;justify-content:center;`;
         const thumbsInner = document.createElement("div");
@@ -644,7 +666,7 @@ function openProductPopup(encoded, slug) {
           t.onclick = () => {
             currentIndex = i;
             mainImg.src = src;
-            mainImg.onclick = () => openLightbox(src);
+            mainImg.onclick = () => openAdvancedLightbox(images, i);
             thumbElems.forEach((el, idx) => (el.style.opacity = idx === i ? "1" : "0.6"));
             startAutoplay();
           };
@@ -656,7 +678,6 @@ function openProductPopup(encoded, slug) {
         left.appendChild(mainImgWrap);
         left.appendChild(thumbsWrap);
 
-        // Autoplay
         function startAutoplay() { stopAutoplay(); autoplayTimer = setInterval(() => changeImage(1), 3000); }
         function stopAutoplay() { if (autoplayTimer) { clearInterval(autoplayTimer); autoplayTimer = null; } }
         const changeImage = (dir) => {
@@ -664,7 +685,7 @@ function openProductPopup(encoded, slug) {
           mainImg.style.opacity = 0;
           setTimeout(() => {
             mainImg.src = images[currentIndex];
-            mainImg.onclick = () => openLightbox(images[currentIndex]);
+            mainImg.onclick = () => openAdvancedLightbox(images, currentIndex);
             mainImg.style.opacity = 1;
           }, 150);
           thumbElems.forEach((el, idx) => (el.style.opacity = idx === currentIndex ? "1" : "0.6"));
@@ -672,7 +693,6 @@ function openProductPopup(encoded, slug) {
         prevBtn.onclick = () => { changeImage(-1); startAutoplay(); };
         nextBtn.onclick = () => { changeImage(1); startAutoplay(); };
 
-        // === RIGHT: Thông tin sản phẩm ===
         const right = document.createElement("div");
         right.style.cssText = `width:380px;padding:10px 10px 14px 0;overflow-y:auto;position:relative;`;
 
@@ -706,7 +726,6 @@ function openProductPopup(encoded, slug) {
           }
         }
 
-        // Bảng thông tin
         const table = document.createElement("table");
         table.style.cssText = "width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;";
         const rows = [
@@ -728,7 +747,6 @@ function openProductPopup(encoded, slug) {
           table.appendChild(tr);
         });
         
-        // Nút hành động (Sticky)
         const actions = document.createElement("div");
         actions.style.cssText = `display:flex;gap:10px;margin: 20px 0 0 0;align-items:center;justify-content:center;position: sticky;bottom: -1px;background: #fefef5;padding: 12px 0; border-top: 1px solid #eee;box-shadow: 0 -5px 12px rgba(0,0,0,0.05);`;
         const buyBtn = document.createElement("button");
@@ -743,7 +761,6 @@ function openProductPopup(encoded, slug) {
         actions.appendChild(buyBtn);
         actions.appendChild(contactBtn);
 
-        // Nút đóng
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = "×";
         closeBtn.style.cssText = `position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;line-height:0.9;`;
@@ -752,7 +769,6 @@ function openProductPopup(encoded, slug) {
         right.appendChild(table);
         right.appendChild(actions); 
         
-        // Media Query cho mobile
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
           card.style.height = '90vh';
@@ -781,7 +797,6 @@ function openProductPopup(encoded, slug) {
         overlay.appendChild(closeBtn);
         document.body.appendChild(overlay);
 
-        // Logic đóng popup
         const closePopup = () => {
             stopAutoplay();
             overlay.remove();
@@ -797,7 +812,6 @@ function openProductPopup(encoded, slug) {
             }
         };
 
-        // Hành vi
         closeBtn.onclick = closePopup;
         overlay.addEventListener("click", (e) => { 
             if (e.target === overlay) closePopup();
@@ -811,7 +825,6 @@ function openProductPopup(encoded, slug) {
         buyBtn.onclick = () => openOrderForm(product, titleText, overlay);
         startAutoplay();
 
-        // Hiệu ứng CSS
         const style = document.createElement("style");
         style.textContent = `
           @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
@@ -1043,7 +1056,7 @@ async function handlePageLoadRouting() {
     const path = window.location.pathname; 
     
     // (*** SỬA: Thêm / (gốc) vào điều kiện ***)
-    if (path === '/' || path === '' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
+    if (path === '/' || path === '' || path === '/index.html' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
         renderProductGrid(); 
         return;
     }
@@ -1067,7 +1080,7 @@ async function handlePageLoadRouting() {
 }
 
 window.addEventListener('popstate', (event) => {
-    const overlay = document.querySelector('.i10-popup-overlay');
+    const overlay = document.querySelector('.i10-lightbox-overlay, .i10-popup-overlay'); // (*** SỬA: Đóng cả lightbox ***)
     
     if (event.state && event.state.slug) {
         if (!overlay) {
@@ -1095,8 +1108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (siteLogo) siteLogo.src = SITE_LOGO;
     
     // (*** SỬA: Cập nhật nút Hotline (nếu có) ***)
-    const hotlineLogo = document.getElementById("hotline-logo-icon");
-    if (hotlineLogo) hotlineLogo.src = SITE_LOGO; // (Nếu dùng nút v3 màu vàng)
+    // (Bỏ qua #hotline-logo-icon vì bạn đang dùng nút đỏ)
     
     renderBanner();
     handlePageLoadRouting();
