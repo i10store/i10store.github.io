@@ -254,3 +254,143 @@
     border-color: #ddd;
     opacity: 0.6;
 }
+
+
+/* =========================================================
+   CSS CHO Ô LỌC GIÁ (V11)
+   ========================================================= */
+
+#i10-controls {
+    /* Đảm bảo #i10-controls (do JS tạo ra) là flexbox */
+    /* (CSS này đã có trong file của bạn, đây là bổ sung) */
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* (MỚI) Wrapper cho Tìm kiếm và Lọc giá */
+.search-price-container {
+    display: flex;
+    flex-grow: 1; /* Cho phép co giãn, chiếm hết không gian */
+    gap: 10px;
+}
+/* (MỚI) Ô tìm kiếm chính */
+.main-search-input {
+    flex-grow: 1; /* Cho phép ô tìm kiếm co giãn */
+    min-width: 200px;
+    /* Ghi đè style inline (nếu có) */
+    flex: 1 !important; 
+    padding: 5px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 6px;
+}
+
+.price-filter-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f4f4f4;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    flex-shrink: 0; /* Không bị co lại */
+}
+.price-filter-wrap span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    padding: 0 6px;
+
+}
+.price-filter-wrap input.price-search-input {
+    width: 80px; /* Chiều rộng cố định */
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+/* Ẩn mũi tên tăng/giảm của ô input number */
+.price-filter-wrap input[type=number]::-webkit-inner-spin-button, 
+.price-filter-wrap input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.price-filter-wrap input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* (MỚI) Style cho nút xóa */
+.clear-btn {
+    background:#e74c3c;
+    color:#fff;
+    border:none;
+    padding:6px 14px;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background 0.2s;
+}
+
+/* Tùy chỉnh cho mobile (giữ nguyên từ file bạn gửi) */
+@media (max-width: 480px){
+  /* (CSS cũ của bạn) */
+  #i10-controls{gap:6px;}
+  #i10-controls select{width:100%;}
+  #i10-controls button{padding:8px 10px;font-size:13px;flex-shrink:0;}
+  
+  /* (MỚI) Tùy chỉnh ô giá cho mobile */
+  .search-price-container {
+      width: 100%;
+      gap: 8px;
+  }
+  .main-search-input {
+      min-width: 100px; /* Cho phép co lại */
+  }
+  .price-filter-wrap {
+      /* Nó sẽ tự co lại dựa trên nội dung */
+  }
+  .price-filter-wrap input.price-search-input {
+      width: 60px; /* Thu hẹp ô số */
+  }
+}
+
+
+/* =========================================================
+   (MỚI) CSS CHO LIGHTBOX (V12)
+   ========================================================= */
+.i10-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100000; /* Phải cao hơn z-index của popup (9999) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+.i10-lightbox-overlay img {
+    display: block;
+    max-width: 95vw;  /* Chiếm 95% chiều rộng */
+    max-height: 95vh; /* Chiếm 95% chiều cao */
+    object-fit: contain;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border-radius: 8px;
+}
+.i10-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 40px;
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    line-height: 45px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+/* Hiệu ứng (đã có ở popup) */
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }

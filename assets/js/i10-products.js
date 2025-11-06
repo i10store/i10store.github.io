@@ -1,22 +1,27 @@
 /* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v4 - SEO & UI/UX)
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12 - Bố cục cũ)
    Bao gồm:
-   1. Tối ưu SEO (Clean URLs /san-pham/...)
-   2. Tối ưu UI/UX Popup (Sticky buttons, Mobile 90vh, Scroll-lock)
+   1. Tối ưu SEO (Clean URLs) + Fix 404
+   2. Tối ưu UI/UX Popup (Logo 0.39 opacity, no-cors)
    3. Tối ưu Cache (localStorage cho Banner & Products)
-   4. Logic Routing (Tự mở popup từ URL, xử lý nút Back)
+   4. Nâng cấp Logic:
+      - Sắp xếp (Ưu tiên còn hàng + Giá min) (v9)
+      - Lọc trùng lặp (v10)
+      - Lọc theo khoảng giá (v11)
+      - Đổi tên cột thành "GPU"
+      - (MỚI) Sửa hiển thị PRICE SEGMENT (v12)
+      - (MỚI) Thêm Lightbox cho ảnh Popup (v12)
    ========================================================= */
 
-/* ========== CONFIG (CẬP NHẬT LẠI CỦA BẠN) ========== */
-// (*** QUAN TRỌNG: Thay link API và Logo của bạn vào đây ***)
-const SHEET_API = "https://script.google.com/macros/s/AKfycbzFUG2MRTNqPfQdPEUrzFFYagvLBwz8KHpiY3Hk36Et8Dzzxu_t8v3_L6XagFlcgv1J1Q/exec"; 
+/* ========== CONFIG (Lấy từ file của bạn) ========== */
+const SHEET_API = "https://script.google.com/macros/s/AKfycbwZWCz7sN2key_M-0_yrKdiIbPupONdyjzL14quGzQsbpP9Evp_LmctKK2DL0usSmAOWQ/exec"; 
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
-const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000"; //Hiển thị logo ở danh sách sản phẩm, dán ID drive vào trước =s1000 là ok
+const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 
-const THEME = "#76b500"; // Màu chủ đạo
-const CACHE_KEY = "i10_products_cache_v2"; // Key cache sản phẩm
-const CACHE_KEY_BANNER = "i10_banner_cache_v2"; // Key cache banner
-const CACHE_TTL = 30 * 60 * 1000; // 30 phút
+const THEME = "#76b500";
+const CACHE_KEY = "i10_products_cache_v2"; 
+const CACHE_KEY_BANNER = "i10_banner_cache_v2";
+const CACHE_TTL = 30 * 60 * 1000;
 
 /* === TÊN WEBSITE (DÙNG CHO SEO) === */
 const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
@@ -44,15 +49,15 @@ function debounce(fn, wait=250){
 function createSlug(text) {
     if (!text) return "";
     return text.toString().toLowerCase()
-        .replace(/\s+/g, '-')           // Thay thế khoảng trắng bằng -
-        .replace(/[^\w\-]+/g, '')       // Xóa ký tự đặc biệt
-        .replace(/\-\-+/g, '-')         // Thay thế nhiều - bằng 1 -
-        .replace(/^-+/, '')             // Xóa - ở đầu
-        .replace(/-+$/, '');            // Xóa - ở cuối
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
 }
 
 
-/* Render control bar: sort + search */
+/* Render control bar: sort + search + price range */
 function renderControls(container, onChange) {
   const ctrl = document.createElement('div');
   ctrl.id = "i10-controls";
@@ -67,88 +72,82 @@ function renderControls(container, onChange) {
   `;
   ctrl.appendChild(sel);
 
+  const searchWrap = document.createElement('div');
+  searchWrap.className = "search-price-container";
+
   const input = document.createElement('input');
   input.type = "search";
   input.placeholder = "Tìm theo tên, GPU, máy trạm, văn phòng,...";
-  input.style.cssText = "flex:1;min-width:350px;padding:5px;border-radius:4px;border:1px solid #ccc;";
-  ctrl.appendChild(input);
+  input.className = "main-search-input";
+  searchWrap.appendChild(input);
 
+  const priceWrap = document.createElement('div');
+  priceWrap.className = 'price-filter-wrap';
+  const priceLabel = document.createElement('span');
+  priceLabel.textContent = 'Giá khoảng (tr):';
+  priceWrap.appendChild(priceLabel);
+  const priceInput = document.createElement('input');
+  priceInput.type = "number";
+  priceInput.id = "price_query_input";
+  priceInput.className = "form-control price-search-input";
+  priceInput.placeholder = "Vd: 8";
+  priceInput.min = "0";
+  priceWrap.appendChild(priceInput);
+  searchWrap.appendChild(priceWrap);
+  ctrl.appendChild(searchWrap);
+  
   const clearBtn = document.createElement('button');
   clearBtn.textContent = "🧹 Xóa";
-  clearBtn.style.cssText = `
-    background:#e74c3c;
-    color:#fff;
-    border:none;
-    padding:8px 14px;
-    border-radius:6px;
-    font-weight:600;
-    cursor:pointer;
-    transition:background 0.2s;
-  `;
+  clearBtn.className = "clear-btn";
   clearBtn.style.marginLeft = "6px";
   clearBtn.onclick = ()=>{
     input.value = "";
     sel.value = "default";
-    onChange({ q:"", sort:"default" });
+    priceInput.value = ""; 
+    onChange({ q:"", sort:"default", priceQuery: "" });
   };
   ctrl.appendChild(clearBtn);
 
   container.prepend(ctrl);
 
-  const trigger = debounce(()=> onChange({ q: input.value.trim(), sort: sel.value }), 180);
-  input.addEventListener('input', trigger);
-  sel.addEventListener('change', ()=> onChange({ q: input.value.trim(), sort: sel.value }));
+  const trigger = debounce(()=> onChange({ 
+      q: input.value.trim(), 
+      sort: sel.value,
+      priceQuery: priceInput.value.trim()
+  }), 180);
   
-  return { input, sel };
+  input.addEventListener('input', trigger);
+  sel.addEventListener('change', trigger);
+  priceInput.addEventListener('input', trigger);
+  
+  return { input, sel, priceInput };
 }
-
-/* Convert price field to number for sorting */
-function extractPriceNum(p) {
-  if (p == null) return Infinity;
-  if (typeof p === 'number') return p;
-  const s = String(p).replace(/[^\d.,]/g, '').replace(',', '.');
-  const m = parseFloat(s);
-  return isNaN(m) ? Infinity : m;
-}
-
 
 /* -----------------------------------------------------
    LOGIC LẤY DATA SẢN PHẨM (TỐI ƯU SEO)
    ----------------------------------------------------- */
-
-// Biến toàn cục để lưu data, tránh fetch nhiều lần
 let globalProductData = null;
 let globalProductPromise = null;
 
-/**
- * Hàm lấy data sản phẩm (chỉ fetch 1 lần)
- */
 async function getProductData() {
-    if (globalProductData) {
-        return globalProductData;
-    }
-    if (globalProductPromise) {
-        return globalProductPromise;
-    }
+    if (globalProductData) return globalProductData;
+    if (globalProductPromise) return globalProductPromise;
 
-    // Hàm fetch
     const fetchData = async () => {
         let data = null;
         try {
             const cached = localStorage.getItem(CACHE_KEY);
             if (cached) {
                 const { timestamp, items } = JSON.parse(cached);
-                if (Date.now() - timestamp < CACHE_TTL) {
-                    data = items;
-                }
+                if (Date.now() - timestamp < CACHE_TTL) data = items;
             }
         } catch (e) { /* ignore */ }
 
         if (!data) {
-            // Hiển thị loading tạm thời
             const container = document.getElementById("i10-product");
-            if (container) container.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
-            
+            if (container && !container.querySelector("#i10-controls")) { 
+                container.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
+            }
             data = await fetchJSON(SHEET_API);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 timestamp: Date.now(),
@@ -158,7 +157,6 @@ async function getProductData() {
 
         if (!Array.isArray(data)) throw new Error("Dữ liệu trả về không phải mảng");
 
-        // Tạo slug (link sạch) cho mỗi sản phẩm
         data.forEach((p, i) => {
             const slugText = [
                 p["Model"] || p["Name"],
@@ -167,8 +165,6 @@ async function getProductData() {
                 p["RESOLUTION"],
                 p["GPU"]
             ].filter(Boolean).join(' ');
-
-            // Dùng link từ Sheet hoặc tạo link fallback (dạng sạch)
             p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
         });
         
@@ -181,298 +177,393 @@ async function getProductData() {
 }
 
 
+/**
+ * (Hàm render chính)
+ * Hàm này chứa toàn bộ logic (v12)
+ */
+async function renderProductGridLegacy(container, controlsEl, gridEl, paginationEl) {
+    const ITEMS_PER_PAGE = 30;
+
+    try {
+        const rawData = await getProductData();
+
+        // (*** LOGIC LỌC TRÙNG LẶP ***)
+        const seenKeys = new Set();
+        const data = [];
+        const fieldsToCompare = ["Brand", "Model", "CPU", "RAM", "SSD", "GPU", "RESOLUTION"];
+        for (const p of rawData) {
+            const key = fieldsToCompare
+                .map(field => (p[field] || "").toLowerCase().trim())
+                .join('|');
+            if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                data.push(p);
+            }
+        }
+        
+        const params = new URLSearchParams(window.location.search);
+        const filter = params.get("filter");
+        
+        // (Hàm lọc applyUrlFilter)
+        function applyUrlFilter(fullList, filterKey) {
+            if (!filterKey) return fullList;
+            const key = filterKey.toLowerCase();
+            let simpleQueryString = "";
+            const norm = (s) => (s || "").toLowerCase();
+            switch (key) {
+                case "vanphong":
+                    return fullList.filter(p => {
+                        const phanLoai = norm(p["Phân loại"]);
+                        const gpu = norm(p["GPU"]);
+                        return phanLoai.includes("văn phòng") || phanLoai.includes("mỏng nhẹ") || gpu.includes("onboard") || gpu.includes("intel");
+                    });
+                case "maytram":
+                    return fullList.filter(p => {
+                        const phanLoai = norm(p["Phân loại"]);
+                        const gpu = norm(p["GPU"]);
+                        const isWorkstation = phanLoai.includes("máy trạm") || phanLoai.includes("workstation");
+                        const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
+                        return isWorkstation || isDedicatedGpu;
+                    });
+                case "available": simpleQueryString = "còn"; break;
+                case "sold": simpleQueryString = "đã bán"; break;
+                case "thinkpad": simpleQueryString = "thinkpad"; break;
+                case "dell": simpleQueryString = "dell"; break;
+                case "blackberry": simpleQueryString = "blackberry"; break;
+                default: simpleQueryString = key;
+            }
+            if (simpleQueryString) {
+                return fullList.filter(p => {
+                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                    return fields.includes(simpleQueryString);
+                });
+            }
+            return fullList;
+        }
+
+        const filteredData = applyUrlFilter(data, filter);
+        
+        let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
+
+        // (Hàm renderPaginationHTML)
+        function renderPaginationHTML(totalPages, currentPage) {
+            if (totalPages <= 1) return "";
+            let html = `<ul class="pagination">`;
+            html += `<li class="${(currentPage === 1) ? 'disabled' : ''}"><a href="#" data-page="${currentPage - 1}" aria-label="Previous"><span aria-hidden="true">«</span></a></li>`;
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            if (startPage > 1) {
+                html += `<li><a href="#" data-page="1">1</a></li>`;
+                if (startPage > 2) html += `<li class="disabled"><span>...</span></li>`;
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<li class="${(i === currentPage) ? 'active' : ''}"><a href="#" data-page="${i}">${i}</a></li>`;
+            }
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<li class="disabled"><span>...</span></li>`;
+                html += `<li><a href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+            }
+            html += `<li class="${(currentPage === totalPages) ? 'disabled' : ''}"><a href="#" data-page="${currentPage + 1}" aria-label="Next"><span aria-hidden="true">»</span></a></li>`;
+            html += `</ul>`;
+            return html;
+        }
+        
+        // (Hàm isSold)
+        const isSold = (product) => {
+            const status = (product["T.THÁI"] || "").toLowerCase();
+            if (status.includes("đã bán") || status.includes("tạm hết")) return true;
+            const priceVal = product["Price"];
+            const segmentVal = product["PRICE SEGMENT"];
+            if ((priceVal == null || priceVal === "") && (segmentVal == null || segmentVal === "")) return true;
+            return false;
+        };
+        
+        // (Hàm getComparablePrice)
+        const getComparablePrice = (product) => {
+            let priceVal = product["Price"];
+            if (priceVal != null && !isNaN(parseFloat(priceVal))) return parseFloat(priceVal);
+            let segmentStr = product["PRICE SEGMENT"] || "";
+            const match = segmentStr.match(/(\d+[\.,]?\d*)/); 
+            if (match) return parseFloat(match[1].replace(',', '.'));
+            return Infinity;
+        };
+
+        // (Helper getProductPriceNum)
+        const getProductPriceNum = (product) => {
+            let priceVal = product["Price"];
+            if (priceVal != null && !isNaN(parseFloat(priceVal))) return parseFloat(priceVal);
+            return null;
+        };
+        
+        // (Helper getProductSegmentRange)
+        const getProductSegmentRange = (product) => {
+            let segmentStr = product["PRICE SEGMENT"] || "";
+            const numbers = segmentStr.match(/(\d+[\.,]?\d*)/g);
+            if (!numbers) return null;
+            const nums = numbers.map(n => parseFloat(n.replace(',', '.')));
+            if (nums.length === 1) return [nums[0], nums[0]];
+            if (nums.length > 1) return [Math.min(nums[0], nums[1]), Math.max(nums[0], nums[1])];
+            return null;
+        };
+        
+        // 4. Hàm doRender
+        const doRender = ({ q, sort, priceQuery } = {}) => {
+            if (q !== undefined) state.q = q;
+            if (sort !== undefined) state.sort = sort;
+            if (priceQuery !== undefined) state.priceQuery = priceQuery; 
+
+            const qstr = (state.q || "").toLowerCase();
+            const priceNum = parseFloat(state.priceQuery); 
+            
+            let list = state.items;
+
+            if (qstr) {
+                list = list.filter(p => {
+                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                    return fields.includes(qstr);
+                });
+            }
+
+            if (!isNaN(priceNum) && priceNum > 0) {
+                const minSearch = priceNum - 2;
+                const maxSearch = priceNum + 2;
+                list = list.filter(p => {
+                    const exactPrice = getProductPriceNum(p);
+                    const segmentRange = getProductSegmentRange(p);
+                    if (exactPrice !== null && exactPrice >= minSearch && exactPrice <= maxSearch) return true;
+                    if (segmentRange !== null) {
+                        const [segMin, segMax] = segmentRange;
+                        if (segMax >= minSearch && segMin <= maxSearch) return true;
+                    }
+                    return false;
+                });
+            }
+
+            if (state.sort === "price_asc" || state.sort === "price_desc") {
+                list.sort((a, b) => {
+                    const soldA = isSold(a);
+                    const soldB = isSold(b);
+                    if (soldA && !soldB) return 1;
+                    if (!soldA && soldB) return -1;
+                    const priceA = getComparablePrice(a);
+                    const priceB = getComparablePrice(b);
+                    if (state.sort === "price_asc") return priceA - priceB;
+                    else return priceB - priceA;
+                });
+            }
+
+            const totalItems = list.length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (state.currentPage > totalPages && totalPages > 0) state.currentPage = totalPages;
+            if (state.currentPage < 1) state.currentPage = 1;
+            const startIndex = (state.currentPage - 1) * ITEMS_PER_PAGE;
+            const paginatedList = list.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+            // Logic render HTML
+            const html = paginatedList.map((p) => {
+                const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+                const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
+                const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2; 
+                
+                let priceText = "Liên hệ";
+                let priceStyle = `color:${THEME};font-weight:800;`;
+                
+                // (*** SỬA HIỂN THỊ GIÁ v12 ***)
+                if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
+                  priceText = "Tạm hết hàng";
+                  priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
+                } else if (p["Price"]) {
+                  const num = parseFloat(p["Price"]) * 1000000;
+                  priceText = `~${num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+                } else if (p["PRICE SEGMENT"]) {
+                  const segmentStr = p["PRICE SEGMENT"] || "";
+                  const numbers = segmentStr.match(/(\d+[\.,]?\d*)/g);
+                  if (numbers) {
+                      const nums = numbers.map(n => parseFloat(n.replace(',', '.')) * 1000000);
+                      if (nums.length === 1) {
+                          priceText = `~${nums[0].toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+                      } else if (nums.length > 1) {
+                          const min = Math.min(nums[0], nums[1]);
+                          const max = Math.max(nums[0], nums[1]);
+                          priceText = `${min.toLocaleString('vi-VN', { minimumFractionDigits: 0 })} - ${max.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+                      }
+                  } else {
+                      priceText = p["PRICE SEGMENT"];
+                  }
+                }
+                
+                let config = [];
+                if (p["CPU"]) config.push(p["CPU"]);
+                if (p["RAM"]) config.push(p["RAM"]);
+                if (p["SSD"]) config.push(p["SSD"]);
+                if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
+                
+                const jsonData = encodeURIComponent(JSON.stringify(p));
+                return `
+                  <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
+                    <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
+                      <div class="thumb">
+                        <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
+                      </div>
+                      <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
+                        <div>
+                          <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
+                          <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
+                        </div>
+                        <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
+                      </div>
+                    </a>
+                  </div>`;
+            }).join("");
+
+            gridEl.innerHTML = `<div class="row">${html}</div>`; 
+
+            document.querySelectorAll("#" + gridEl.id + " .product-card").forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault(); 
+                    const jsonData = this.getAttribute('data-json');
+                    const slug = this.getAttribute('data-slug');
+                    openProductPopup(jsonData, slug);
+                });
+            });
+            
+            paginationEl.innerHTML = renderPaginationHTML(totalPages, state.currentPage);
+              
+        }; // Hết hàm doRender
+            
+        // 5. Khởi tạo
+        controlsEl.innerHTML = ''; 
+        renderControls(controlsEl, ({ q, sort, priceQuery }) => {
+            state.currentPage = 1;
+            doRender({ q, sort, priceQuery });
+        });
+        
+        paginationEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('[data-page]');
+            if (!target) return;
+            const newPage = parseInt(target.dataset.page, 10);
+            
+            const qstr = (state.q || "").toLowerCase();
+            const priceNum = parseFloat(state.priceQuery);
+            let list = state.items.filter(p => {
+                 if (!qstr) return true;
+                 const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                 return fields.includes(qstr);
+            });
+            if (!isNaN(priceNum) && priceNum > 0) {
+                const minSearch = priceNum - 2;
+                const maxSearch = priceNum + 2;
+                list = list.filter(p => {
+                    const exactPrice = getProductPriceNum(p);
+                    const segmentRange = getProductSegmentRange(p);
+                    if (exactPrice !== null && exactPrice >= minSearch && exactPrice <= maxSearch) return true;
+                    if (segmentRange !== null) {
+                        const [segMin, segMax] = segmentRange;
+                        if (segMax >= minSearch && segMin <= maxSearch) return true;
+                    }
+                    return false;
+                });
+            }
+
+            const totalItems = list.length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (newPage === state.currentPage || newPage < 1 || newPage > totalPages) return;
+            state.currentPage = newPage;
+            doRender({});
+            
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+            
+        doRender();
+            
+        if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
+             const searchInput = document.querySelector('#' + controlsEl.id + ' input[type="search"]');
+             let simpleQueryString = filter;
+             if (filter === 'available') simpleQueryString = 'còn';
+             if (filter === 'sold') simpleQueryString = 'đã bán';
+             if (searchInput) searchInput.value = simpleQueryString;
+        }
+
+    } catch (err) {
+        const errorHtml = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
+          <i class="fa fa-exclamation-triangle fa-2x"></i>
+          <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
+          <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
+        </div>`;
+        if (gridEl) { gridEl.innerHTML = errorHtml; } 
+        else if (container) { container.innerHTML = errorHtml; }
+        console.error(err);
+    }
+}
 
 /**
- * Render danh sách sản phẩm (v9 - Giữ Bố cục cũ + Sắp xếp tùy chỉnh)
+ * (Hàm render "mồi")
  */
 async function renderProductGrid() {
-  const container = document.getElementById("i10-product");
-  if (!container) return;
+    const container = document.getElementById("i10-product");
+    if (!container) return;
 
-  const ITEMS_PER_PAGE = 30; // 30 sản phẩm mỗi trang
+    const controlsEl_new = document.getElementById('i10-controls-placeholder');
+    const gridEl_new = document.getElementById('i10-grid-placeholder');
+    const paginationEl_new = document.getElementById('i10-pagination-placeholder');
 
-  try {
-    const data = await getProductData();
-
-    // (*** GIỮ NGUYÊN BỐ CỤC CŨ: Tự tạo div ***)
-    container.innerHTML = `
-        <div id="i10-controls"></div>
-        <div id="i10-grid"></div>
-        <div id="i10-pagination"></div> 
-    `;
-    
-    const controlsEl = document.getElementById('i10-controls');
-    const gridEl = document.getElementById('i10-grid');
-    const paginationEl = document.getElementById('i10-pagination');
-
-    const params = new URLSearchParams(window.location.search);
-    const filter = params.get("filter");
+    if (controlsEl_new && gridEl_new && paginationEl_new) {
+        // --- BỐ CỤC MỚI (TOP-BAR) ---
+        await renderProductGridLegacy(container, controlsEl_new, gridEl_new, paginationEl_new);
+    } else {
+        // --- BỐ CỤC CŨ (BẠN ĐANG DÙNG) ---
+        container.innerHTML = `
+            <div id="i10-controls"></div>
+            <div id="i10-grid"></div>
+            <div id="i10-pagination"></div> 
+        `;
+        const controlsEl_old = document.getElementById('i10-controls');
+        const gridEl_old = document.getElementById('i10-grid');
+        const paginationEl_old = document.getElementById('i10-pagination');
         
-    // (Hàm lọc applyUrlFilter - giữ nguyên)
-    function applyUrlFilter(fullList, filterKey) {
-        if (!filterKey) return fullList;
-        const key = filterKey.toLowerCase();
-        let simpleQueryString = "";
-        const norm = (s) => (s || "").toLowerCase();
-        switch (key) {
-            case "vanphong":
-                return fullList.filter(p => {
-                    const phanLoai = norm(p["Phân loại"]);
-                    const gpu = norm(p["GPU - CARD"]);
-                    return phanLoai.includes("văn phòng") || phanLoai.includes("mỏng nhẹ") || gpu.includes("onboard") || gpu.includes("intel");
-                });
-            case "maytram":
-                return fullList.filter(p => {
-                    const phanLoai = norm(p["Phân loại"]);
-                    const gpu = norm(p["GPU - CARD"]);
-                    const isWorkstation = phanLoai.includes("máy trạm") || phanLoai.includes("workstation");
-                    const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
-                    return isWorkstation || isDedicatedGpu;
-                });
-            case "available": simpleQueryString = "còn"; break;
-            case "sold": simpleQueryString = "đã bán"; break;
-            case "thinkpad": simpleQueryString = "thinkpad"; break;
-            case "dell": simpleQueryString = "dell"; break;
-            case "blackberry": simpleQueryString = "blackberry"; break;
-            default: simpleQueryString = key;
-        }
-        if (simpleQueryString) {
-            return fullList.filter(p => {
-                const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
-                return fields.includes(simpleQueryString);
-            });
-        }
-        return fullList;
+        await renderProductGridLegacy(container, controlsEl_old, gridEl_old, paginationEl_old);
     }
-
-    const filteredData = applyUrlFilter(data, filter);
-        
-    let state = { 
-        q: "", 
-        sort: "default", 
-        items: filteredData,
-        currentPage: 1 
-    };
-
-    // (Hàm renderPaginationHTML - giữ nguyên)
-    function renderPaginationHTML(totalPages, currentPage) {
-        if (totalPages <= 1) return "";
-        let html = `<ul class="pagination">`;
-        html += `<li class="${(currentPage === 1) ? 'disabled' : ''}">
-                    <a href="#" data-page="${currentPage - 1}" aria-label="Previous"><span aria-hidden="true">«</span></a>
-                 </li>`;
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, currentPage + 2);
-        if (startPage > 1) {
-            html += `<li><a href="#" data-page="1">1</a></li>`;
-            if (startPage > 2) html += `<li class="disabled"><span>...</span></li>`;
-        }
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<li class="${(i === currentPage) ? 'active' : ''}">
-                        <a href="#" data-page="${i}">${i}</a>
-                     </li>`;
-        }
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) html += `<li class="disabled"><span>...</span></li>`;
-            html += `<li><a href="#" data-page="${totalPages}">${totalPages}</a></li>`;
-        }
-        html += `<li class="${(currentPage === totalPages) ? 'disabled' : ''}">
-                    <a href="#" data-page="${currentPage + 1}" aria-label="Next"><span aria-hidden="true">»</span></a>
-                 </li>`;
-        html += `</ul>`;
-        return html;
-    }
-
-    // (*** MỚI: Hàm kiểm tra Hết hàng (Sold) ***)
-    const isSold = (product) => {
-        const status = (product["T.THÁI"] || "").toLowerCase();
-        if (status.includes("đã bán") || status.includes("tạm hết")) {
-            return true;
-        }
-        const priceVal = product["Price"];
-        const segmentVal = product["PRICE SEGMENT"];
-        if ((priceVal == null || priceVal === "") && (segmentVal == null || segmentVal === "")) {
-            return true; // "Liên hệ"
-        }
-        return false;
-    };
-    
-    // (*** MỚI: Hàm lấy giá trị SỐ để so sánh ***)
-    const getComparablePrice = (product) => {
-        let priceVal = product["Price"];
-        if (priceVal != null && !isNaN(parseFloat(priceVal))) {
-            return parseFloat(priceVal);
-        }
-        let segmentStr = product["PRICE SEGMENT"] || "";
-        const match = segmentStr.match(/(\d+[\.,]?\d*)/); 
-        if (match) {
-            return parseFloat(match[1].replace(',', '.'));
-        }
-        return Infinity;
-    };
-
-    // 4. Hàm doRender (Đã cập nhật logic Sắp xếp)
-    const doRender = ({ q, sort } = {}) => {
-        if (q !== undefined) state.q = q;
-        if (sort !== undefined) state.sort = sort;
-
-        const qstr = (state.q || "").toLowerCase();
-          
-        let list = state.items.filter(p => {
-            if (!qstr) return true;
-            const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
-            return fields.includes(qstr);
-        });
-
-        // (*** THAY ĐỔI: LOGIC SẮP XẾP MỚI ***)
-        if (state.sort === "price_asc" || state.sort === "price_desc") {
-            list.sort((a, b) => {
-                const soldA = isSold(a);
-                const soldB = isSold(b);
-                if (soldA && !soldB) return 1;
-                if (!soldA && soldB) return -1;
-                const priceA = getComparablePrice(a);
-                const priceB = getComparablePrice(b);
-                if (state.sort === "price_asc") {
-                    return priceA - priceB;
-                } else {
-                    return priceB - priceA;
-                }
-            });
-        }
-        // (*** HẾT LOGIC SẮP XẾP MỚI ***)
-
-        // Logic phân trang (giữ nguyên)
-        const totalItems = list.length;
-        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-        if (state.currentPage > totalPages && totalPages > 0) state.currentPage = totalPages;
-        if (state.currentPage < 1) state.currentPage = 1;
-        const startIndex = (state.currentPage - 1) * ITEMS_PER_PAGE;
-        const paginatedList = list.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-        // Logic render HTML (giữ nguyên)
-        const html = paginatedList.map((p) => {
-            const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-            const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-            
-            // (*** THAY ĐỔI: Dùng SITE_LOGO_2 theo config của bạn ***)
-            const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2;
-            
-            let priceText = "Liên hệ";
-            let priceStyle = `color:${THEME};font-weight:800;`;
-            if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
-              priceText = "Tạm hết hàng";
-              priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
-            } else if (p["Price"]) {
-              const num = parseFloat(p["Price"]) * 1000000;
-              priceText = `~${num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
-            } else if (p["PRICE SEGMENT"]) {
-              priceText = p["PRICE SEGMENT"];
-            }
-            let config = [];
-            if (p["CPU"]) config.push(p["CPU"]);
-            if (p["RAM"]) config.push(p["RAM"]);
-            if (p["SSD"]) config.push(p["SSD"]);
-            if (p["GPU - CARD"] && p["GPU - CARD"].toLowerCase() !== "onboard") config.push(p["GPU - CARD"]);
-            const jsonData = encodeURIComponent(JSON.stringify(p));
-            return `
-              <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
-                  <div class="thumb">
-                    <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
-                  </div>
-                  <div style="padding:12px 14px;display:flex;flex-direction:column;justify:content:space-between;flex:1;">
-                    <div>
-                      <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
-                      <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
-                    </div>
-                    <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                  </div>
-                </a>
-              </div>`;
-        }).join("");
-
-        gridEl.innerHTML = `<div class="row">${html}</div>`;
-
-        // Gắn sự kiện click (giữ nguyên)
-        document.querySelectorAll("#i10-grid .product-card").forEach(card => {
-            card.addEventListener('click', function(e) {
-                e.preventDefault(); 
-                const jsonData = this.getAttribute('data-json');
-                const slug = this.getAttribute('data-slug');
-                openProductPopup(jsonData, slug);
-            });
-        });
-
-        // (Render các nút phân trang - giữ nguyên)
-        paginationEl.innerHTML = renderPaginationHTML(totalPages, state.currentPage);
-          
-    }; // Hết hàm doRender
-        
-    // 5. Khởi tạo (giữ nguyên)
-    renderControls(controlsEl, ({ q, sort }) => {
-        state.currentPage = 1; // QUAN TRỌNG
-        doRender({ q, sort });
-    });
-
-    // (Gắn sự kiện click cho phân trang - giữ nguyên)
-    paginationEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = e.target.closest('[data-page]');
-        if (!target) return;
-        
-        const newPage = parseInt(target.dataset.page, 10);
-        
-        const qstr = (state.q || "").toLowerCase();
-        const totalItems = state.items.filter(p => {
-             if (!qstr) return true;
-             const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU - CARD"] || ""].join(' ').toLowerCase();
-             return fields.includes(qstr);
-        }).length;
-        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-
-        if (newPage === state.currentPage || newPage < 1 || newPage > totalPages) {
-            return;
-        }
-
-        state.currentPage = newPage;
-        doRender({});
-        
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-        
-    // Chạy render lần đầu
-    doRender();
-        
-    // (Logic điền ô tìm kiếm - giữ nguyên)
-    if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
-         const searchInput = document.querySelector('#i10-controls input[type="search"]');
-         let simpleQueryString = filter;
-         if (filter === 'available') simpleQueryString = 'còn';
-         if (filter === 'sold') simpleQueryString = 'đã bán';
-         if (searchInput) searchInput.value = simpleQueryString;
-    }
-
-  } catch (err) {
-    // Xử lý lỗi (giữ nguyên)
-    container.innerHTML = `<div style="padding:40px;text-align:center;color:red;border:1px solid #f00;border-radius:10px;">
-      <i class="fa fa-exclamation-triangle fa-2x"></i>
-      <p style="margin-top:10px;">Lỗi tải sản phẩm: ${err.message}</p>
-      <button class="btn btn-warning" onclick="localStorage.removeItem('${CACHE_KEY}'); location.reload();" style="margin-top:10px;">Thử lại</button>
-    </div>`;
-    console.error(err);
-  }
 }
 
 
-      /* -----------------------------------------------------
+/* (*** MỚI: LIGHTBOX ***) */
+function openLightbox(src) {
+    // Tìm và xóa lightbox cũ (nếu có)
+    const oldLightbox = document.querySelector(".i10-lightbox-overlay");
+    if (oldLightbox) oldLightbox.remove();
+
+    const lightbox = document.createElement("div");
+    lightbox.className = "i10-lightbox-overlay";
+    
+    const closeBtn = document.createElement("div");
+    closeBtn.className = "i10-lightbox-close";
+    closeBtn.innerHTML = "×";
+    
+    const img = document.createElement("img");
+    img.src = src;
+
+    lightbox.appendChild(img);
+    lightbox.appendChild(closeBtn);
+    document.body.appendChild(lightbox);
+    
+    // Close actions
+    closeBtn.onclick = () => lightbox.remove();
+    lightbox.onclick = (e) => {
+        if (e.target === lightbox) { // Chỉ đóng khi click nền
+            lightbox.remove();
+        }
+    };
+}
+
+
+/* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
+   (*** ĐÃ CẬP NHẬT (v12) ***)
    ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
-    // (*** MỚI - UI/UX ***) Khóa cuộn trang web
     document.body.style.overflow = 'hidden';
 
-    // (*** MỚI - SEO ***) Cập nhật URL bằng History API
     if (slug && window.location.pathname !== `/${slug}`) {
         history.pushState({ json: encoded, slug: slug }, "", `/${slug}`); 
     }
@@ -481,81 +572,46 @@ function openProductPopup(encoded, slug) {
         const product = JSON.parse(decodeURIComponent(encoded));
         const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
 
-        // (*** MỚI - SEO ***) Cập nhật Tiêu đề trang
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
         
-        // (*** MỚI - SEO ***) Cập nhật Meta Description
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
             const description = product["Meta Description"] || 
                                 `Cấu hình: ${[product["CPU"], product["RAM"], product["SSD"], product["GPU"]].filter(Boolean).join(' • ')}. Liên hệ i10 Store.`;
-            metaDesc.setAttribute('content', description.substring(0, 155)); // Cắt ngắn 155 ký tự
+            metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-        // === HÌNH ẢNH ===
         const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
+        const images = sortedImgs.map(x => (x.url || x.thumb || "").replace("=s220", "=s1600")).filter(Boolean); // (*** SỬA: Ưu tiên URL gốc ***)
         if (!images.length) images.push(SITE_LOGO); 
 
         let currentIndex = 0;
         let autoplayTimer = null;
 
-        // Overlay
         const overlay = document.createElement("div");
         overlay.className = "i10-popup-overlay";
-        overlay.style.cssText = `
-          position:fixed;inset:0;background:rgba(0,0,0,0.7);
-          display:flex;align-items:center;justify-content:center;z-index:9999;
-          padding:10px;animation:fadeIn 0.3s ease;
-        `;
+        overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:10px;animation:fadeIn 0.3s ease;`;
 
-        // Card container
         const card = document.createElement("div");
-        card.style.cssText = `
-          width:100%;max-width:1000px;background:#fefef5;border-radius:18px;
-          display:flex;gap:20px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,0.3);
-          transform:translateY(30px);opacity:0;animation:slideUpFade .45s ease forwards;
-          padding:20px 24px;position:relative;max-height:90vh;
-        `;
+        card.style.cssText = `width:100%;max-width:1000px;background:#fefef5;border-radius:18px;display:flex;gap:20px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,0.3);transform:translateY(30px);opacity:0;animation:slideUpFade .45s ease forwards;padding:20px 24px;position:relative;max-height:90vh;`;
+        
         const left = document.createElement("div");
-        left.style.cssText = `
-          flex:1;min-width:420px;display:flex;flex-direction:column;align-items:center;
-          justify-content:center;position:relative;margin-left:12px;
-        `;
+        left.style.cssText = `flex:1;min-width:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-left:12px;`;
 
-        // Ảnh chính
         const mainImgWrap = document.createElement("div");
-        mainImgWrap.style.cssText = `
-          height:100%;display:flex;align-items:center;justify-content:center;
-          min-height:400px;border-radius:16px;position:relative;overflow:hidden;
-        `;
+        mainImgWrap.style.cssText = `height:100%;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:16px;position:relative;overflow:hidden;`;
+        
         const mainImg = document.createElement("img");
         mainImg.src = images[currentIndex];
-        mainImg.style.cssText = `
-          max-width:100%;max-height:400px;object-fit:contain;border-radius:16px;
-          transition:opacity .3s ease, transform .3s ease;
-        `;
+        mainImg.style.cssText = `max-width:100%;max-height:400px;object-fit:contain;border-radius:16px;transition:opacity .3s ease, transform .3s ease;cursor: zoom-in;`;
+        // (*** MỚI: LIGHTBOX Click ***)
+        mainImg.onclick = () => openLightbox(images[currentIndex]); // (*** SỬA: Lấy link full ***)
         mainImgWrap.appendChild(mainImg);
 
-        // Logo (Đã cập nhật vị trí Top-Center và Opacity)
+        // Logo (Đã cập nhật vị trí Top-Center và Opacity 0.39)
         const logo = document.createElement("img");
         logo.src = SITE_LOGO;
-        logo.style.cssText = `
-          position: absolute;
-          top: 10px; /* Vị trí trên */
-          left: 50%; /* Căn giữa ngang (bước 1) */
-          transform: translateX(-50%); /* Căn giữa ngang (bước 2) */
-          width: 60px;
-          height: 60px;
-          object-fit: cover;
-          border-radius: 10px;
-          background: #fff;
-          padding: 2px;
-          opacity: 0.39; /* (Yêu cầu 39%) */
-          box-shadow: 0 0 8px rgba(0,0,0,0.25);
-          z-index: 5; /* Đảm bảo logo nằm trên ảnh */
-          pointer-events: none; /* Cho phép click xuyên qua logo */
-        `;
+        logo.style.cssText = `position: absolute;top: 10px;left: 50%;transform: translateX(-50%);width: 60px;height: 60px;object-fit: cover;border-radius: 10px;background: #fff;padding: 2px;opacity: 0.39;box-shadow: 0 0 8px rgba(0,0,0,0.25);z-index: 5;pointer-events: none;`;
         mainImgWrap.appendChild(logo);
 
         // Nút chuyển ảnh
@@ -563,39 +619,27 @@ function openProductPopup(encoded, slug) {
         const nextBtn = document.createElement("button");
         [prevBtn, nextBtn].forEach((b, i) => {
           b.innerHTML = i === 0 ? "❮" : "❯";
-          b.style.cssText = `
-            position:absolute;${i === 0 ? "left" : "right"}:10px;top:50%;transform:translateY(-50%);
-            background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;
-            width:40px;height:40px;cursor:pointer;font-size:18px;z-index:5;
-          `;
+          b.style.cssText = `position:absolute;${i === 0 ? "left" : "right"}:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px;z-index:5;`;
           mainImgWrap.appendChild(b);
         });
 
         // Thumbnails
         const thumbsWrap = document.createElement("div");
-        thumbsWrap.style.cssText = `
-          position:relative;width:100%;overflow:hidden;margin-top:12px;
-          padding:6px 0;display:flex;justify-content:center;
-        `;
+        thumbsWrap.style.cssText = `position:relative;width:100%;overflow:hidden;margin-top:12px;padding:6px 0;display:flex;justify-content:center;`;
         const thumbsInner = document.createElement("div");
-        thumbsInner.style.cssText = `
-          display:flex;gap:8px;transition:transform 0.32s ease;align-items:center;justify-content:center;
-        `;
+        thumbsInner.style.cssText = `display:flex;gap:8px;transition:transform 0.32s ease;align-items:center;justify-content:center;`;
         thumbsWrap.appendChild(thumbsInner);
 
         const thumbElems = [];
         images.forEach((src, i) => {
           const t = document.createElement("img");
-          t.src = src;
-          t.style.cssText = `
-            width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;
-            cursor:pointer;opacity:${i === 0 ? 1 : 0.6};flex-shrink:0;
-          `;
+          t.src = src; // Dùng link full
+          t.style.cssText = `width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;opacity:${i === 0 ? 1 : 0.6};flex-shrink:0;`;
           t.onclick = () => {
             currentIndex = i;
             mainImg.src = src;
+            mainImg.onclick = () => openLightbox(src);
             thumbElems.forEach((el, idx) => (el.style.opacity = idx === i ? "1" : "0.6"));
-            ensureVisible();
             startAutoplay();
           };
           thumbsInner.appendChild(t);
@@ -603,50 +647,34 @@ function openProductPopup(encoded, slug) {
         });
 
         let ensureVisible = () => {}; 
-
         left.appendChild(mainImgWrap);
         left.appendChild(thumbsWrap);
 
         // Autoplay
-        function startAutoplay() {
-          stopAutoplay();
-          autoplayTimer = setInterval(() => changeImage(1), 3000);
-        }
-        function stopAutoplay() {
-          if (autoplayTimer) { clearInterval(autoplayTimer); autoplayTimer = null; }
-        }
+        function startAutoplay() { stopAutoplay(); autoplayTimer = setInterval(() => changeImage(1), 3000); }
+        function stopAutoplay() { if (autoplayTimer) { clearInterval(autoplayTimer); autoplayTimer = null; } }
         const changeImage = (dir) => {
           currentIndex = (currentIndex + dir + images.length) % images.length;
           mainImg.style.opacity = 0;
           setTimeout(() => {
             mainImg.src = images[currentIndex];
+            mainImg.onclick = () => openLightbox(images[currentIndex]);
             mainImg.style.opacity = 1;
           }, 150);
           thumbElems.forEach((el, idx) => (el.style.opacity = idx === currentIndex ? "1" : "0.6"));
-          ensureVisible();
         };
         prevBtn.onclick = () => { changeImage(-1); startAutoplay(); };
         nextBtn.onclick = () => { changeImage(1); startAutoplay(); };
 
-
-        // === RIGHT: Thông tin sản phẩm (TỐI ƯU UI/UX) ===
+        // === RIGHT: Thông tin sản phẩm ===
         const right = document.createElement("div");
-        right.style.cssText = `
-          width:380px;padding:10px 10px 14px 0;
-          overflow-y:auto; /* Cuộn (Desktop) */
-          position:relative; /* Cha cho nút sticky */
-        `;
+        right.style.cssText = `width:380px;padding:10px 10px 14px 0;overflow-y:auto;position:relative;`;
 
-        // Tên sản phẩm
         const titleBox = document.createElement("div");
-        titleBox.style.cssText = `
-          background:rgba(240,240,240,0.9);padding:10px 14px;border-radius:8px;
-          margin-bottom:10px;font-weight:800;font-size:22px;color:#222;
-          box-shadow:inset 0 0 6px rgba(0,0,0,0.1);
-        `;
+        titleBox.style.cssText = `background:rgba(240,240,240,0.9);padding:10px 14px;border-radius:8px;margin-bottom:10px;font-weight:800;font-size:22px;color:#222;box-shadow:inset 0 0 6px rgba(0,0,0,0.1);`;
         titleBox.textContent = titleText;
 
-        // Xử lý giá
+        // (*** SỬA HIỂN THỊ GIÁ v12 ***)
         let priceText = "Liên hệ";
         let priceColor = THEME;
         if (product["T.THÁI"] && product["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -654,9 +682,22 @@ function openProductPopup(encoded, slug) {
           priceColor = "#e74c3c";
         } else if (product["Price"]) {
           const num = parseFloat(product["Price"]) * 1000000;
-          priceText = `~${num.toLocaleString("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₫`;
+          priceText = `~${num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
         } else if (product["PRICE SEGMENT"]) {
-          priceText = product["PRICE SEGMENT"];
+          const segmentStr = product["PRICE SEGMENT"] || "";
+          const numbers = segmentStr.match(/(\d+[\.,]?\d*)/g);
+          if (numbers) {
+              const nums = numbers.map(n => parseFloat(n.replace(',', '.')) * 1000000);
+              if (nums.length === 1) {
+                  priceText = `~${nums[0].toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+              } else if (nums.length > 1) {
+                  const min = Math.min(nums[0], nums[1]);
+                  const max = Math.max(nums[0], nums[1]);
+                  priceText = `${min.toLocaleString('vi-VN', { minimumFractionDigits: 0 })} - ${max.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+              }
+          } else {
+              priceText = product["PRICE SEGMENT"];
+          }
         }
 
         // Bảng thông tin
@@ -671,79 +712,57 @@ function openProductPopup(encoded, slug) {
           ["GPU", product["GPU"] || "Onboard"],
           ["Phân loại", product["Phân loại"] || "Laptop"],
           ["Trạng thái", product["T.THÁI"] || "Đang bán"],
-          // (*** MỚI - UI/UX ***) Thêm giá vào bảng
           ["Giá", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
           ["Ghi chú", product["NOTE"] || "Không có"]
         ];
         rows.forEach((r, i) => {
           const tr = document.createElement("tr");
           tr.style.background = i % 2 === 0 ? "#fff" : "#f8faf8";
-          tr.innerHTML = `
-            <td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">${r[0]}</td>
-            <td style="padding:8px;border:1px solid #eee">${r[1]}</td>`;
+          tr.innerHTML = `<td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">${r[0]}</td><td style="padding:8px;border:1px solid #eee">${r[1]}</td>`;
           table.appendChild(tr);
         });
         
-        // (*** MỚI - UI/UX ***) Nút hành động (Sticky)
+        // Nút hành động (Sticky)
         const actions = document.createElement("div");
-        actions.style.cssText = `
-          display:flex;gap:10px;margin: 20px 0 0 0;
-          align-items:center;justify-content:center;
-          position: sticky;
-          bottom: -1px; /* Bám sát đáy */
-          background: #fefef5; /* Nền che nội dung */
-          padding: 12px 0; 
-          border-top: 1px solid #eee;
-          box-shadow: 0 -5px 12px rgba(0,0,0,0.05);
-        `;
+        actions.style.cssText = `display:flex;gap:10px;margin: 20px 0 0 0;align-items:center;justify-content:center;position: sticky;bottom: -1px;background: #fefef5;padding: 12px 0; border-top: 1px solid #eee;box-shadow: 0 -5px 12px rgba(0,0,0,0.05);`;
         const buyBtn = document.createElement("button");
         buyBtn.textContent = "Mua Ngay";
         buyBtn.className = "btn btn-success";
         buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 22px;border-radius:6px;color:#fff;flex:1;`;
         const contactBtn = document.createElement("a");
-        contactBtn.href = "contact.html"; 
+        contactBtn.href = "/contact.html"; // (*** SỬA: Đường dẫn tuyệt đối ***)
         contactBtn.textContent = "Liên Hệ";
         contactBtn.className = "btn btn-warning";
         contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;flex:1;";
         actions.appendChild(buyBtn);
         actions.appendChild(contactBtn);
 
-        // Nút đóng (closeBtn)
+        // Nút đóng
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = "×";
-        closeBtn.style.cssText = `
-          position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;
-          border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;
-          line-height:0.9;
-        `;
+        closeBtn.style.cssText = `position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;line-height:0.9;`;
 
-        // Gắn kết cấu trúc
         right.appendChild(titleBox);
         right.appendChild(table);
         right.appendChild(actions); 
         
-        // (*** MỚI - UI/UX ***) Media Query cho mobile
+        // Media Query cho mobile
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
           card.style.height = '90vh';
           card.style.maxHeight = '90vh';
           card.style.padding = '15px';
-          // (*** THAY ĐỔI ***) Toàn bộ card sẽ cuộn
           card.style.overflowY = 'auto'; 
-          
           left.style.minWidth = 'auto';
           left.style.flex = '0 0 auto';
           left.style.margin = '0';
-          
           mainImgWrap.style.minHeight = '0';
           mainImgWrap.style.height = '250px';
           mainImg.style.maxHeight = '250px'; 
-
           right.style.width = '100%';
           right.style.padding = '10px 0 0 0';
-          right.style.flex = '0 0 auto'; // (*** THAY ĐỔI ***) Bỏ cuộn riêng
-          right.style.overflow = 'visible'; // (*** THAY ĐỔI ***) Bỏ cuộn riêng
-
+          right.style.flex = '0 0 auto';
+          right.style.overflow = 'visible';
           closeBtn.style.right = '10px';
           closeBtn.style.top = '10px';
           closeBtn.style.height = '40px';
@@ -760,16 +779,11 @@ function openProductPopup(encoded, slug) {
         const closePopup = () => {
             stopAutoplay();
             overlay.remove();
-            
             document.body.style.overflow = 'auto'; 
             
-            // (*** MỚI - SEO ***) Quay lại URL gốc (trang chủ)
-            const basePath = window.location.pathname.includes('.html') ? 
-                             window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : 
-                             '/';
+            const basePath = window.location.pathname.includes('.html') ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : '/';
             history.pushState(null, null, basePath);
             
-            // (*** MỚI - SEO ***) Khôi phục Title và Meta gốc
             document.title = SITE_TITLE_HOME;
             const metaDesc = document.querySelector('meta[name="description"]');
             if (metaDesc) {
@@ -780,9 +794,7 @@ function openProductPopup(encoded, slug) {
         // Hành vi
         closeBtn.onclick = closePopup;
         overlay.addEventListener("click", (e) => { 
-            if (e.target === overlay) { 
-                closePopup();
-            } 
+            if (e.target === overlay) closePopup();
         });
         document.addEventListener("keydown", function escHandler(e) {
           if (e.key === "Escape") { 
@@ -805,14 +817,14 @@ function openProductPopup(encoded, slug) {
         document.head.appendChild(style);
     } catch (err) {
         console.error("Lỗi mở popup:", err);
-        document.body.style.overflow = 'auto'; // Đảm bảo khôi phục cuộn nếu lỗi
+        document.body.style.overflow = 'auto';
         alert("Lỗi hiển thị sản phẩm: " + err.message);
     }
 }
 
 
 /* -----------------------------------------------------
-   POPUP ĐẶT HÀNG
+   POPUP ĐẶT HÀNG (v11)
    ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
@@ -849,29 +861,19 @@ function openOrderForm(product, titleText, parentOverlay) {
     msgEl.style.color = 'black'; msgEl.textContent = "Đang gửi...";
     modal.querySelector('#order_submit').disabled = true;
 
-    // ...
     try {
       await fetch(SHEET_API, {
         method: 'POST',
-        mode: 'no-cors', // <-- ĐÃ SỬA
+        mode: 'no-cors', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            product: titleText, 
-            name, 
-            phone, 
-            note 
-        })
+        body: JSON.stringify({ product: titleText, name, phone, note })
       });
       
-      // (*** THÊM VÀO ***)
-      // Vì dùng no-cors, ta không thể đọc "response.ok".
-      // Chúng ta giả định thành công (giống hệt contact.html)
       msgEl.style.color = 'green';
       msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
       setTimeout(()=> modal.remove(), 2000);
 
     } catch (err) {
-      // Lỗi này giờ đây chủ yếu là lỗi mạng (ví dụ: rớt mạng)
       msgEl.style.color = 'red';
       msgEl.textContent = "Lỗi gửi: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
     } finally {
@@ -883,6 +885,7 @@ function openOrderForm(product, titleText, parentOverlay) {
 
 /* -----------------------------------------------------
    BANNER (TỐI ƯU CACHE localStorage)
+   (*** ĐÃ CẬP NHẬT (v12) ***)
    ----------------------------------------------------- */
 async function renderBanner() {
   const bannerContainer = document.getElementById("banner");
@@ -894,27 +897,22 @@ async function renderBanner() {
   let banners = null;
 
   try {
-    // Đọc cache
     try {
       const cached = localStorage.getItem(CACHE_KEY_BANNER);
       if (cached) {
         const { timestamp, items } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_TTL) { 
-          banners = items;
-        }
+        if (Date.now() - timestamp < CACHE_TTL) banners = items;
       }
     } catch (e) {
       console.warn("Lỗi đọc cache banner, đang tải lại...");
       localStorage.removeItem(CACHE_KEY_BANNER);
     }
 
-    // Fetch nếu không có cache
     if (!banners) {
       if (placeholder) placeholder.textContent = "Đang tải banner mới...";
       const res = await fetch(`${SHEET_API}?mode=banner`, { cache: "no-store" });
       if (!res.ok) throw new Error("Không thể tải banner từ server");
       banners = await res.json();
-      
       localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({
         timestamp: Date.now(),
         items: banners
@@ -924,27 +922,27 @@ async function renderBanner() {
     if (!Array.isArray(banners) || banners.length === 0)
       throw new Error("Không có dữ liệu banner");
 
-    // === HTML hiển thị khung ===
     bannerContainer.innerHTML = `
       <div class="banner-row">
         <button class="banner-nav prev">❮</button>
-        <div class="banner-track" id="banner-track">
-          </div>
+        <div class="banner-track" id="banner-track"></div>
         <button class="banner-nav next">❯</button>
       </div>
     `;
 
-    // (*** LOGIC RENDER SLIDE GIỮ NGUYÊN ***)
+    // (*** LOGIC RENDER SLIDE (v12) ***)
     const track = document.getElementById("banner-track");
     const prevBtn = bannerContainer.querySelector(".banner-nav.prev");
     const nextBtn = bannerContainer.querySelector(".banner-nav.next");
     const total = banners.length;
     let currentIndex = 0;
+    
     const MAX_STACK = window.innerWidth > 768 ? 3 : 1;
     const STACK_OVERLAP_PX = window.innerWidth > 768 ? 20 : 15;
     const SCALE_STEP = 0.1;
     const ITEM_SIZE = window.innerWidth > 768 ? 220 : 150;
     const BASE_SHIFT = window.innerWidth > 768 ? 130 : 90;
+    
     let bannerItems = [];
     for (let i = 0; i < total; i++) {
       const item = document.createElement('div');
@@ -966,14 +964,14 @@ async function renderBanner() {
       track.appendChild(item);
       bannerItems.push(item);
     }
-    function getIndex(index) {
-      return (index % total + total) % total;
-    }
+    function getIndex(index) { return (index % total + total) % total; }
+    
     function updateLayout() {
-      const currentMaxStack = window.innerWidth > 768 ? 5 : 1;
+      const currentMaxStack = window.innerWidth > 768 ? 3 : 1; 
       const currentItemSize = window.innerWidth > 768 ? 220 : 150;
-      const currentBaseShift = window.innerWidth > 768 ? 90 : 90;
+      const currentBaseShift = window.innerWidth > 768 ? 130 : 90; 
       const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
+      
       bannerItems.forEach((item, index) => {
         let offset = index - currentIndex;
         if (offset > total / 2) offset -= total;
@@ -982,13 +980,9 @@ async function renderBanner() {
         const direction = offset / (absOffset || 1);
         const isVisible = absOffset <= currentMaxStack;
         if (isVisible) {
-          let translateX;
-          let scale;
-          let zIndex;
+          let translateX; let scale; let zIndex;
           if (offset === 0) {
-            scale = 1;
-            zIndex = 10;
-            translateX = '-50%';
+            scale = 1; zIndex = 10; translateX = '-50%';
           } else {
             const stackLayer = absOffset;
             scale = 1 - stackLayer * SCALE_STEP;
@@ -1002,35 +996,28 @@ async function renderBanner() {
             translateX = `calc(-50% + ${direction * (currentBaseShift + accumulatedShift)}px)`;
           }
           item.style.cssText += `
-                    opacity: 1; 
-                    z-index: ${zIndex};
-                    left: 50%;
-                    width: ${currentItemSize}px; 
-                    height: ${currentItemSize}px; 
-                    transform: translateX(${translateX}) scale(${scale});
-                `;
+            opacity: 1; z-index: ${zIndex}; left: 50%;
+            width: ${currentItemSize}px; height: ${currentItemSize}px; 
+            transform: translateX(${translateX}) scale(${scale});
+          `;
         } else {
-          item.style.opacity = 0;
-          item.style.zIndex = 0;
+          item.style.opacity = 0; item.style.zIndex = 0;
           item.style.transform = 'translateY(100%) scale(0.5)';
         }
       });
     }
-    function nextSlide() {
-      currentIndex = getIndex(currentIndex + 1);
-      updateLayout();
-    }
-    function prevSlide() {
-      currentIndex = getIndex(currentIndex + 1);
-      updateLayout();
-    }
+    
+    function nextSlide() { currentIndex = getIndex(currentIndex + 1); updateLayout(); }
+    function prevSlide() { currentIndex = getIndex(currentIndex - 1); updateLayout(); }
+    
     updateLayout();
     nextBtn.onclick = () => { nextSlide(); restartAuto(); };
     prevBtn.onclick = () => { prevSlide(); restartAuto(); };
-    let autoTimer = setInterval(nextSlide, 3000);
+    
+    let autoTimer = setInterval(nextSlide, 4000);
     function restartAuto() {
       clearInterval(autoTimer);
-      autoTimer = setInterval(nextSlide, 3000);
+      autoTimer = setInterval(nextSlide, 4000);
     }
     window.addEventListener('resize', debounce(updateLayout, 100));
 
@@ -1043,33 +1030,28 @@ async function renderBanner() {
 
 /* -----------------------------------------------------
    KHỞI TẠO VÀ ROUTING (TỐI ƯU SEO)
+   (*** ĐÃ CẬP NHẬT (v12) ***)
    ----------------------------------------------------- */
 
-/**
- * (MỚI - SEO) Hàm đọc URL khi tải trang và mở popup nếu cần
- */
 async function handlePageLoadRouting() {
-    const path = window.location.pathname; // Ví dụ: /san-pham/thinkpad-x1
+    const path = window.location.pathname; 
     
-    // Nếu là trang chủ, hoặc trang con khác (contact.html)
-    if (path === '/' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
-        renderProductGrid(); // Chỉ cần render grid
+    // (*** SỬA: Thêm / (gốc) vào điều kiện ***)
+    if (path === '/' || path === '' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
+        renderProductGrid(); 
         return;
     }
     
-    // Nếu là link sản phẩm (ví dụ: /san-pham/thinkpad-x1)
-    
-    // 1. Render grid (để nền không bị trống)
     renderProductGrid();
     
-    // 2. Lấy data và tìm sản phẩm
-    const slugToFind = path.substring(1); // Bỏ dấu / ở đầu
     const allData = await getProductData();
+    if (!allData) return; 
+    
+    const slugToFind = path.substring(1); 
     const productToOpen = allData.find(p => p.slug === slugToFind);
 
     if (productToOpen) {
         const jsonData = encodeURIComponent(JSON.stringify(productToOpen));
-        // Đợi 1 chút để grid render xong rồi hẵng mở
         setTimeout(() => {
             openProductPopup(jsonData, productToOpen.slug);
         }, 100); 
@@ -1078,21 +1060,16 @@ async function handlePageLoadRouting() {
     }
 }
 
-/**
- * (MỚI - SEO) Hàm xử lý nút Back/Fwd của trình duyệt
- */
 window.addEventListener('popstate', (event) => {
     const overlay = document.querySelector('.i10-popup-overlay');
     
     if (event.state && event.state.slug) {
-        // Mở lại popup sản phẩm từ state
         if (!overlay) {
             openProductPopup(event.state.json, event.state.slug);
         }
     } else {
-        // Đóng popup (nếu đang mở)
         if (overlay) {
-            overlay.remove(); // Xóa thủ công
+            overlay.remove(); 
             document.body.style.overflow = 'auto';
             document.title = SITE_TITLE_HOME;
             const metaDesc = document.querySelector('meta[name="description"]');
@@ -1111,9 +1088,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");
     if (siteLogo) siteLogo.src = SITE_LOGO;
     
-    renderBanner();
+    // (*** SỬA: Cập nhật nút Hotline (nếu có) ***)
+    const hotlineLogo = document.getElementById("hotline-logo-icon");
+    if (hotlineLogo) hotlineLogo.src = SITE_LOGO; // (Nếu dùng nút v3 màu vàng)
     
-    // (*** THAY ĐỔI ***)
-    // renderProductGrid(); // CŨ
-    handlePageLoadRouting(); // MỚI
+    renderBanner();
+    handlePageLoadRouting();
 });
