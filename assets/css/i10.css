@@ -394,4 +394,48 @@
 }
 /* Hiệu ứng (đã có ở popup) */
 @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+/* (*** DÁN KHỐI MỚI NÀY VÀO ***) */
+.i10-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    
+    /* (YÊU CẦU 2: Độ trong suốt) */
+    background: rgba(0,0,0,0.39); 
+    color: #fff;
+    border: none;
+    border-radius: 12px; /* Bo góc to hơn */
+    cursor: pointer;
+    
+    /* (YÊU CẦU 1: To hơn) */
+    font-size: 50px; 
+    font-weight: 100;
+    padding: 25px 15px; /* To hơn */
+    
+    line-height: 1;
+    z-index: 100001; 
+    transition: background 0.3s;
+}
+.i10-lightbox-nav:hover {
+    background: rgba(0,0,0,0.6); /* Đậm hơn khi hover */
+}
+
+/* (YÊU CẦU 3: Nằm 2 bên ảnh) */
+.i10-lightbox-nav.prev {
+    left: 20px;
+}
+.i10-lightbox-nav.next {
+    right: 20px;
+}
+
+@media (max-width: 768px) {
+    .i10-lightbox-nav {
+        /* Vẫn giữ kích thước vừa phải trên mobile */
+        padding: 15px 8px;
+        font-size: 24px;
+        top: 50%;
+    }
+    .i10-lightbox-nav.prev { left: 10px; }
+    .i10-lightbox-nav.next { right: 10px; }
+}
 
