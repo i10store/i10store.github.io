@@ -1,35 +1,24 @@
 /* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.2 - Bố cục cũ)
-   Bao gồm:
-   1. Tối ưu SEO (Clean URLs) + Fix 404
-   2. Tối ưu UI/UX Popup (Logo 0.39 opacity, no-cors)
-   3. Tối ưu Cache (localStorage cho Banner & Products)
-   4. Nâng cấp Logic:
-      - Sắp xếp (Ưu tiên còn hàng + Giá min) (v9)
-      - Lọc trùng lặp (v10)
-      - Lọc theo khoảng giá (v11)
-      - Đổi tên cột thành "GPU"
-      - Sửa hiển thị PRICE SEGMENT (v12)
-      - Thêm Lightbox NÂNG CAO (có nút < >) (v12.2)
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.4 - ĐÃ DỌN DẸP)
+   - Đã gộp renderProductGrid và renderProductGridLegacy
+   - Đã xóa code thừa trong getProductData
+   - Giữ nguyên bố cục cũ (phân trang dưới)
+   - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
    ========================================================= */
 
-/* ========== CONFIG (Lấy từ file của bạn) ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbzhUKbmdVb-anMp5W_z6U5asMisC92FUkxgLfO8qvNNt7zUsBRB4ID5M1ji44KBYaAjjw/exec"; 
+/* ========== CONFIG ========== */
+const SHEET_API = "https://script.google.com/macros/s/AKfycbx2GwR1G8xSY9t8Oq_stEevW5XWp14ASL7SR41J_eT3hU8Eat7vrFsGriT5C7B7-fuE0Q/exec"; // <== Chỉ dùng cho Gửi Form
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
-
 const THEME = "#76b500";
 const CACHE_KEY = "i10_products_cache_v2"; 
 const CACHE_KEY_BANNER = "i10_banner_cache_v2";
 const CACHE_TTL = 30 * 60 * 1000;
-
-/* === TÊN WEBSITE (DÙNG CHO SEO) === */
 const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
 const SITE_TITLE_SUFFIX = "- i10 STORE";
 const SITE_META_DESC_HOME = "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
 
-
-/* Helper: fetch JSON */
+/* === HELPERS === */
 async function fetchJSON(url, opts = {}) {
   const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts));
   if (!res.ok) {
@@ -38,26 +27,18 @@ async function fetchJSON(url, opts = {}) {
   }
   return res.json();
 }
-
-/* Utility: debounce */
 function debounce(fn, wait=250){
   let t;
   return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
 }
-
-/* Helper: Tạo slug (link) */
 function createSlug(text) {
     if (!text) return "";
     return text.toString().toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '');
+        .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
 }
 
-
-/* Render control bar: sort + search + price range (v11) */
+/* === CONTROLS RENDERER === */
 function renderControls(container, onChange) {
   const ctrl = document.createElement('div');
   ctrl.id = "i10-controls";
@@ -123,9 +104,7 @@ function renderControls(container, onChange) {
   return { input, sel, priceInput };
 }
 
-/* -----------------------------------------------------
-   LOGIC LẤY DATA SẢN PHẨM (TỐI ƯU SEO)
-   ----------------------------------------------------- */
+/* === DATA LOADER === */
 let globalProductData = null;
 let globalProductPromise = null;
 
@@ -144,11 +123,9 @@ async function getProductData() {
         } catch (e) { /* ignore */ }
 
         if (!data) {
-            const container = document.getElementById("i10-product");
-            if (container && !container.querySelector("#i10-controls")) { 
-                container.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
-            }
-            data = await fetchJSON(SHEET_API);
+            // (*** TỐI ƯU: Đã xóa code chèn HTML thừa ***)
+            const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
+            data = await fetchJSON("/assets/js/products.json" + cacheBuster);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 timestamp: Date.now(),
                 items: data
@@ -178,16 +155,32 @@ async function getProductData() {
 
 
 /**
- * (Hàm render chính)
- * Hàm này chứa toàn bộ logic (v12.2)
+ * (*** TỐI ƯU: Đã gộp 2 hàm render làm 1 ***)
+ * (v12.4)
  */
-async function renderProductGridLegacy(container, controlsEl, gridEl, paginationEl) {
+async function renderProductGrid() {
+    const container = document.getElementById("i10-product");
+    if (!container) return;
+
     const ITEMS_PER_PAGE = 30;
+
+    // (*** TỐI ƯU: Tạo HTML bố cục cũ tại đây ***)
+    container.innerHTML = `
+        <div id="i10-controls"></div>
+        <div id="i10-grid"></div>
+        <div id="i10-pagination"></div> 
+    `;
+    const controlsEl = document.getElementById('i10-controls');
+    const gridEl = document.getElementById('i10-grid');
+    const paginationEl = document.getElementById('i10-pagination');
+    
+    // Hiển thị loading (thay thế placeholder)
+    gridEl.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
 
     try {
         const rawData = await getProductData();
 
-        // (*** LOGIC LỌC TRÙNG LẶP ***)
+        // (LOGIC LỌC TRÙNG LẶP)
         const seenKeys = new Set();
         const data = [];
         const fieldsToCompare = ["Brand", "Model", "CPU", "RAM", "SSD", "GPU", "RESOLUTION"];
@@ -229,7 +222,8 @@ async function renderProductGridLegacy(container, controlsEl, gridEl, pagination
                 case "sold": simpleQueryString = "đã bán"; break;
                 case "thinkpad": simpleQueryString = "thinkpad"; break;
                 case "dell": simpleQueryString = "dell"; break;
-                case "blackberry": simpleQueryString = "blackberry"; break;
+                case "x1 carbon": simpleQueryString = "x1 carbon"; break;
+                case "x1 yoga": simpleQueryString = "x1 yoga"; break;
                 default: simpleQueryString = key;
             }
             if (simpleQueryString) {
@@ -368,7 +362,6 @@ async function renderProductGridLegacy(container, controlsEl, gridEl, pagination
                 let priceText = "Liên hệ";
                 let priceStyle = `color:${THEME};font-weight:800;`;
                 
-                // (*** SỬA HIỂN THỊ GIÁ v12 ***)
                 if (p["T.THÁI"] && p["T.THÁI"].toLowerCase().includes("đã bán")) {
                   priceText = "Tạm hết hàng";
                   priceStyle = `color:#e74c3c;font-weight:700;font-size:15px;`;
@@ -477,7 +470,8 @@ async function renderProductGridLegacy(container, controlsEl, gridEl, pagination
             
         doRender();
             
-        if (filter && ["available", "sold", "thinkpad", "dell", "blackberry"].includes(filter)) {
+        // (*** SỬA: Đã thêm lại filter X1 của bạn ***)
+        if (filter && ["available", "sold", "thinkpad", "dell", "blackberry", "x1 carbon", "x1 yoga"].includes(filter)) {
              const searchInput = document.querySelector('#' + controlsEl.id + ' input[type="search"]');
              let simpleQueryString = filter;
              if (filter === 'available') simpleQueryString = 'còn';
@@ -497,34 +491,8 @@ async function renderProductGridLegacy(container, controlsEl, gridEl, pagination
     }
 }
 
-/**
- * (Hàm render "mồi")
- */
-async function renderProductGrid() {
-    const container = document.getElementById("i10-product");
-    if (!container) return;
 
-    const controlsEl_new = document.getElementById('i10-controls-placeholder');
-    const gridEl_new = document.getElementById('i10-grid-placeholder');
-    const paginationEl_new = document.getElementById('i10-pagination-placeholder');
-
-    if (controlsEl_new && gridEl_new && paginationEl_new) {
-        await renderProductGridLegacy(container, controlsEl_new, gridEl_new, paginationEl_new);
-    } else {
-        container.innerHTML = `
-            <div id="i10-controls"></div>
-            <div id="i10-grid"></div>
-            <div id="i10-pagination"></div> 
-        `;
-        const controlsEl_old = document.getElementById('i10-controls');
-        const gridEl_old = document.getElementById('i10-grid');
-        const paginationEl_old = document.getElementById('i10-pagination');
-        await renderProductGridLegacy(container, controlsEl_old, gridEl_old, paginationEl_old);
-    }
-}
-
-
-/* (*** MỚI: LIGHTBOX NÂNG CAO v12.2 ***) */
+/* (*** LIGHTBOX NÂNG CAO v12.2 ***) */
 function openAdvancedLightbox(images, startIndex) {
     const oldLightbox = document.querySelector(".i10-lightbox-overlay");
     if (oldLightbox) oldLightbox.remove();
@@ -590,7 +558,7 @@ function openAdvancedLightbox(images, startIndex) {
 
 /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
-   (*** ĐÃ CẬP NHẬT (v12.2) ***)
+   (*** ĐÃ CẬP NHẬT (v12.3) ***)
    ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
@@ -628,7 +596,7 @@ function openProductPopup(encoded, slug) {
         card.style.cssText = `width:100%;max-width:1000px;background:#fefef5;border-radius:18px;display:flex;gap:20px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,0.3);transform:translateY(30px);opacity:0;animation:slideUpFade .45s ease forwards;padding:20px 24px;position:relative;max-height:90vh;`;
         
         const left = document.createElement("div");
-        left.style.cssText = `flex:1;min-width:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-left:12px;`;
+        left.style.cssText = `flex: 0 1 68%; min-width: 360px; display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-left:12px;`;
 
         const mainImgWrap = document.createElement("div");
         mainImgWrap.style.cssText = `height:100%;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:16px;position:relative;overflow:hidden;`;
@@ -673,8 +641,7 @@ function openProductPopup(encoded, slug) {
           thumbsInner.appendChild(t);
           thumbElems.push(t);
         });
-
-        let ensureVisible = () => {}; 
+        
         left.appendChild(mainImgWrap);
         left.appendChild(thumbsWrap);
 
@@ -694,13 +661,12 @@ function openProductPopup(encoded, slug) {
         nextBtn.onclick = () => { changeImage(1); startAutoplay(); };
 
         const right = document.createElement("div");
-        right.style.cssText = `width:380px;padding:10px 10px 14px 0;overflow-y:auto;position:relative;`;
+        right.style.cssText = `flex: 0 1 60%; width: 60%; padding:10px 10px 14px 0;overflow-y:auto;position:relative;`;
 
         const titleBox = document.createElement("div");
         titleBox.style.cssText = `background:rgba(240,240,240,0.9);padding:10px 14px;border-radius:8px;margin-bottom:10px;font-weight:800;font-size:22px;color:#222;box-shadow:inset 0 0 6px rgba(0,0,0,0.1);`;
         titleBox.textContent = titleText;
 
-        // (*** SỬA HIỂN THỊ GIÁ v12 ***)
         let priceText = "Liên hệ";
         let priceColor = THEME;
         if (product["T.THÁI"] && product["T.THÁI"].toLowerCase().includes("đã bán")) {
@@ -748,18 +714,19 @@ function openProductPopup(encoded, slug) {
         });
         
         const actions = document.createElement("div");
-        actions.style.cssText = `display:flex;gap:10px;margin: 20px 0 0 0;align-items:center;justify-content:center;position: sticky;bottom: -1px;background: #fefef5;padding: 12px 0; border-top: 1px solid #eee;box-shadow: 0 -5px 12px rgba(0,0,0,0.05);`;
-        const buyBtn = document.createElement("button");
-        buyBtn.textContent = "Mua Ngay";
-        buyBtn.className = "btn btn-success";
-        buyBtn.style.cssText = `background:${THEME};border:none;font-weight:700;padding:12px 22px;border-radius:6px;color:#fff;flex:1;`;
-        const contactBtn = document.createElement("a");
-        contactBtn.href = "/contact.html"; 
-        contactBtn.textContent = "Liên Hệ";
-        contactBtn.className = "btn btn-warning";
-        contactBtn.style.cssText = "background:#f1c40f;color:#000;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;flex:1;";
-        actions.appendChild(buyBtn);
-        actions.appendChild(contactBtn);
+        actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
+        
+        actions.innerHTML = `
+          <a href="tel:0838288000" class="btn btn-danger" style="background:#e74c3c;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-phone"></i> 0838.288.000</a>
+          <a href="https://zalo.me/0838288000" target="_blank" class="btn btn-primary" style="background:#0068ff;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-comment"></i> Chat Zalo</a>
+        `;
+        
+        const orderBtn = document.createElement("button");
+        orderBtn.className = "btn btn-success";
+        orderBtn.innerHTML = `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
+        orderBtn.style.cssText = `background:${THEME};color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;border:none;min-width:110px;`;
+        orderBtn.onclick = () => openOrderForm(product, titleText, overlay);
+        actions.appendChild(orderBtn);
 
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = "×";
@@ -789,6 +756,13 @@ function openProductPopup(encoded, slug) {
           closeBtn.style.top = '10px';
           closeBtn.style.height = '40px';
           closeBtn.style.width = '40px';
+          actions.style.position = 'sticky';
+          actions.style.bottom = '-15px';
+          actions.style.marginLeft = '-15px';
+          actions.style.marginRight = '-15px';
+          actions.style.paddingLeft = '10px';
+          actions.style.paddingRight = '10px';
+          actions.style.flexWrap = 'wrap';
         }
 
         card.appendChild(left);
@@ -822,7 +796,7 @@ function openProductPopup(encoded, slug) {
             document.removeEventListener("keydown", escHandler);
           }
         });
-        buyBtn.onclick = () => openOrderForm(product, titleText, overlay);
+        
         startAutoplay();
 
         const style = document.createElement("style");
@@ -843,7 +817,7 @@ function openProductPopup(encoded, slug) {
 
 
 /* -----------------------------------------------------
-   POPUP ĐẶT HÀNG (v11)
+   POPUP ĐẶT HÀNG (v12.3)
    ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
@@ -863,13 +837,16 @@ function openOrderForm(product, titleText, parentOverlay) {
   `;
 
   document.body.appendChild(modal);
-  modal.querySelector('#order_cancel').onclick = ()=> modal.remove();
+  const submitBtn = modal.querySelector('#order_submit');
+  const cancelBtn = modal.querySelector('#order_cancel');
+  const msgEl = modal.querySelector('#order_msg');
+  
+  cancelBtn.onclick = ()=> modal.remove();
 
-  modal.querySelector('#order_submit').onclick = async ()=>{
+  submitBtn.onclick = async ()=>{
     const name = modal.querySelector('#order_name').value.trim();
     const phone = modal.querySelector('#order_phone').value.trim();
     const note = modal.querySelector('#order_note').value.trim();
-    const msgEl = modal.querySelector('#order_msg');
     
     if (!name || !phone) { 
       msgEl.style.color = 'red'; 
@@ -877,8 +854,10 @@ function openOrderForm(product, titleText, parentOverlay) {
       return; 
     }
 
-    msgEl.style.color = 'black'; msgEl.textContent = "Đang gửi...";
-    modal.querySelector('#order_submit').disabled = true;
+    msgEl.style.color = 'red'; 
+    msgEl.textContent = "Đang gửi, chờ xác nhận... 3";
+    submitBtn.disabled = true;
+    cancelBtn.disabled = true;
 
     try {
       await fetch(SHEET_API, {
@@ -888,23 +867,31 @@ function openOrderForm(product, titleText, parentOverlay) {
         body: JSON.stringify({ product: titleText, name, phone, note })
       });
       
-      msgEl.style.color = 'green';
-      msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
-      setTimeout(()=> modal.remove(), 2000);
+      msgEl.style.color = 'blue';
+      msgEl.textContent = "Đang gửi, chờ xác nhận... 2";
+      
+      setTimeout(() => {
+        msgEl.textContent = "Đang gửi, chờ xác nhận... 1";
+      }, 1000);
+      
+      setTimeout(() => {
+        msgEl.style.color = 'green';
+        msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
+        setTimeout(()=> modal.remove(), 1000);
+      }, 2000);
 
     } catch (err) {
       msgEl.style.color = 'red';
-      msgEl.textContent = "Lỗi gửi: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
-    } finally {
-      modal.querySelector('#order_submit').disabled = false;
+      msgEl.textContent = "Lỗi mạng: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
+      submitBtn.disabled = false;
+      cancelBtn.disabled = false;
     }
   };
 }
 
-
 /* -----------------------------------------------------
    BANNER (TỐI ƯU CACHE localStorage)
-   (*** ĐÃ CẬP NHẬT (v12) ***)
+   (*** ĐÃ SỬA: TẢI FILE banners.json TĨNH ***)
    ----------------------------------------------------- */
 async function renderBanner() {
   const bannerContainer = document.getElementById("banner");
@@ -929,9 +916,10 @@ async function renderBanner() {
 
     if (!banners) {
       if (placeholder) placeholder.textContent = "Đang tải banner mới...";
-      const res = await fetch(`${SHEET_API}?mode=banner`, { cache: "no-store" });
-      if (!res.ok) throw new Error("Không thể tải banner từ server");
-      banners = await res.json();
+      
+      const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
+      banners = await fetchJSON("/assets/js/banners.json" + cacheBuster);
+      
       localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({
         timestamp: Date.now(),
         items: banners
@@ -956,6 +944,7 @@ async function renderBanner() {
     const total = banners.length;
     let currentIndex = 0;
     
+    // (Lấy logic style từ i10.css của bạn)
     const MAX_STACK = window.innerWidth > 768 ? 3 : 1;
     const STACK_OVERLAP_PX = window.innerWidth > 768 ? 20 : 15;
     const SCALE_STEP = 0.1;
@@ -986,9 +975,10 @@ async function renderBanner() {
     function getIndex(index) { return (index % total + total) % total; }
     
     function updateLayout() {
+      // Cập nhật lại các biến khi resize
       const currentMaxStack = window.innerWidth > 768 ? 3 : 1; 
-      const currentItemSize = window.innerWidth > 768 ? 220 : 150;
-      const currentBaseShift = window.innerWidth > 768 ? 130 : 90; 
+      const currentItemSize = window.innerWidth > 768 ? (window.innerWidth > 992 ? 220 : 180) : 120; // Thu nhỏ 1 chút
+      const currentBaseShift = window.innerWidth > 768 ? (window.innerWidth > 992 ? 130 : 110) : 80; 
       const currentStackOverlap = window.innerWidth > 768 ? 20 : 15;
       
       bannerItems.forEach((item, index) => {
@@ -1049,13 +1039,11 @@ async function renderBanner() {
 
 /* -----------------------------------------------------
    KHỞI TẠO VÀ ROUTING (TỐI ƯU SEO)
-   (*** ĐÃ CẬP NHẬT (v12) ***)
    ----------------------------------------------------- */
 
 async function handlePageLoadRouting() {
     const path = window.location.pathname; 
     
-    // (*** SỬA: Thêm / (gốc) vào điều kiện ***)
     if (path === '/' || path === '' || path === '/index.html' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
         renderProductGrid(); 
         return;
@@ -1080,7 +1068,7 @@ async function handlePageLoadRouting() {
 }
 
 window.addEventListener('popstate', (event) => {
-    const overlay = document.querySelector('.i10-lightbox-overlay, .i10-popup-overlay'); // (*** SỬA: Đóng cả lightbox ***)
+    const overlay = document.querySelector('.i10-lightbox-overlay, .i10-popup-overlay'); 
     
     if (event.state && event.state.slug) {
         if (!overlay) {
@@ -1106,9 +1094,6 @@ window.addEventListener('popstate', (event) => {
 document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");
     if (siteLogo) siteLogo.src = SITE_LOGO;
-    
-    // (*** SỬA: Cập nhật nút Hotline (nếu có) ***)
-    // (Bỏ qua #hotline-logo-icon vì bạn đang dùng nút đỏ)
     
     renderBanner();
     handlePageLoadRouting();
