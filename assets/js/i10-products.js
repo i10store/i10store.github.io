@@ -608,10 +608,6 @@ function openProductPopup(encoded, slug) {
         mainImg.onclick = () => openAdvancedLightbox(images, currentIndex);
         mainImgWrap.appendChild(mainImg);
 
-        const logo = document.createElement("img");
-        logo.src = SITE_LOGO;
-        logo.style.cssText = `position: absolute;top: 10px;left: 50%;transform: translateX(-50%);width: 60px;height: 60px;object-fit: cover;border-radius: 10px;background: #fff;padding: 2px;opacity: 0.39;box-shadow: 0 0 8px rgba(0,0,0,0.25);z-index: 5;pointer-events: none;`;
-        mainImgWrap.appendChild(logo);
 
         const prevBtn = document.createElement("button");
         const nextBtn = document.createElement("button");
