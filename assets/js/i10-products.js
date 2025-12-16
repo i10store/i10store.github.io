@@ -1,11 +1,13 @@
 /* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.5 - FIX SEO OG IMAGE)
-   - Đã thêm logic cập nhật thẻ OG:Image khi mở popup sản phẩm.
-   - Sửa lỗi nhỏ: Lấy lại URL gốc sau khi đóng popup.
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.4 - ĐÃ DỌN DẸP)
+   - Đã gộp renderProductGrid và renderProductGridLegacy
+   - Đã xóa code thừa trong getProductData
+   - Giữ nguyên bố cục cũ (phân trang dưới)
+   - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
    ========================================================= */
 
 /* ========== CONFIG ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbx2GwR1G8xSY9t8Oq_stEevW5XWp14ASL7SR41J_eT3hU8Eat7vrFsGriT5C7B7-fuE0Q/exec"; // <== Chỉ dùng cho Gửi Form
+const SHEET_API = "https://script.google.com/macros/s/AKfycbznhJ7zhczP25hA0jXz_UKShXl-kxEXqNYkcQqz1STDcEHFkTZJ5s8P-wk-ZOU_ARH4pw/exec"; // <== Chỉ dùng cho Gửi Form
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
@@ -35,21 +37,6 @@ function createSlug(text) {
         .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
 }
-
-/**
- * (*** MỚI: Helper để đặt thẻ Meta ***)
- * Đảm bảo các thẻ OG được tạo/cập nhật chính xác.
- */
-function setMetaTag(property, content) {
-    let tag = document.querySelector(`meta[property="${property}"]`);
-    if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('property', property);
-        document.head.appendChild(tag);
-    }
-    tag.setAttribute('content', content);
-}
-
 
 /* === CONTROLS RENDERER === */
 function renderControls(container, onChange) {
@@ -136,6 +123,7 @@ async function getProductData() {
         } catch (e) { /* ignore */ }
 
         if (!data) {
+            // (*** TỐI ƯU: Đã xóa code chèn HTML thừa ***)
             const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
             data = await fetchJSON("/assets/js/products.json" + cacheBuster);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
@@ -155,7 +143,7 @@ async function getProductData() {
                 p["RESOLUTION"],
                 p["GPU"]
             ].filter(Boolean).join(' ');
-            p.slug = p["Web Link"]; // Lấy link đã định nghĩa
+            p.slug = p["Web Link"] /* || `san-pham/${createSlug(slugText || `product-${i}`)}` */;
         });
         
         globalProductData = data;
@@ -571,12 +559,11 @@ function openAdvancedLightbox(images, startIndex) {
 
 /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
-   (*** ĐÃ CẬP NHẬT (v12.5 - FIX OG IMAGE) ***)
+   (*** ĐÃ CẬP NHẬT (v12.3) ***)
    ----------------------------------------------------- */
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
 
-    // 1. Cập nhật URL (Luôn chạy trước)
     if (slug && window.location.pathname !== `/${slug}`) {
         history.pushState({ json: encoded, slug: slug }, "", `/${slug}`); 
     }
@@ -585,31 +572,19 @@ function openProductPopup(encoded, slug) {
         const product = JSON.parse(decodeURIComponent(encoded));
         const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
 
-        // 2. Lấy ảnh chính của sản phẩm
-        const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        const mainProductImage = (sortedImgs[0]?.thumb || sortedImgs[0]?.url || "").replace("=s220", "=s1600");
-        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
-        if (!images.length) images.push(SITE_LOGO); 
-
-        // 3. Cập nhật Meta Tags (Title, Description, OG:Image)
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
         
-        const metaDescContent = product["Meta Description"] || 
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            const description = product["Meta Description"] || 
                                 `Cấu hình: ${[product["CPU"], product["RAM"], product["SSD"], product["GPU"]].filter(Boolean).join(' • ')}. Liên hệ i10 Store.`;
-        
-        const metaDescTag = document.querySelector('meta[name="description"]');
-        if (metaDescTag) {
-            metaDescTag.setAttribute('content', metaDescContent.substring(0, 155));
+            metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-        // (*** MỚI: Cập nhật OG Tags cho chia sẻ ***)
-        const ogImageURL = mainProductImage || SITE_LOGO;
-        setMetaTag('og:title', titleText);
-        setMetaTag('og:description', metaDescContent.substring(0, 155));
-        setMetaTag('og:image', ogImageURL);
-        setMetaTag('og:image:width', '600');
-        setMetaTag('og:image:height', '600');
-
+        const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        
+        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
+        if (!images.length) images.push(SITE_LOGO); 
 
         let currentIndex = 0;
         let autoplayTimer = null;
@@ -802,21 +777,14 @@ function openProductPopup(encoded, slug) {
             overlay.remove();
             document.body.style.overflow = 'auto'; 
             
-            // 4. (*** MỚI: Reset Meta Tags về trạng thái ban đầu ***)
             const basePath = window.location.pathname.includes('.html') ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : '/';
             history.pushState(null, null, basePath);
             
             document.title = SITE_TITLE_HOME;
-            const metaDescTag = document.querySelector('meta[name="description"]');
-            if (metaDescTag) {
-                metaDescTag.setAttribute('content', SITE_META_DESC_HOME);
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', SITE_META_DESC_HOME);
             }
-            
-            setMetaTag('og:title', SITE_TITLE_HOME);
-            setMetaTag('og:description', SITE_META_DESC_HOME);
-            setMetaTag('og:image', SITE_LOGO);
-            setMetaTag('og:image:width', '600');
-            setMetaTag('og:image:height', '600');
         };
 
         closeBtn.onclick = closePopup;
@@ -1079,13 +1047,6 @@ async function handlePageLoadRouting() {
     
     if (path === '/' || path === '' || path === '/index.html' || path.endsWith('/') || path.endsWith('.html') || !path.startsWith('/san-pham/')) {
         renderProductGrid(); 
-        
-        // (*** MỚI: Đặt lại OG tags mặc định cho trang chủ ***)
-        setMetaTag('og:title', SITE_TITLE_HOME);
-        setMetaTag('og:description', SITE_META_DESC_HOME);
-        setMetaTag('og:image', SITE_LOGO);
-        setMetaTag('og:image:width', '600');
-        setMetaTag('og:image:height', '600');
         return;
     }
     
@@ -1104,13 +1065,6 @@ async function handlePageLoadRouting() {
         }, 100); 
     } else {
         console.warn(`Không tìm thấy sản phẩm với slug: ${slugToFind}`);
-        
-        // (*** MỚI: Đặt lại OG tags mặc định nếu không tìm thấy SP ***)
-        setMetaTag('og:title', SITE_TITLE_HOME);
-        setMetaTag('og:description', SITE_META_DESC_HOME);
-        setMetaTag('og:image', SITE_LOGO);
-        setMetaTag('og:image:width', '600');
-        setMetaTag('og:image:height', '600');
     }
 }
 
@@ -1130,13 +1084,6 @@ window.addEventListener('popstate', (event) => {
             if (metaDesc) {
                 metaDesc.setAttribute('content', SITE_META_DESC_HOME);
             }
-            
-            // (*** MỚI: Reset Meta OG Tags khi đóng popup ***)
-            setMetaTag('og:title', SITE_TITLE_HOME);
-            setMetaTag('og:description', SITE_META_DESC_HOME);
-            setMetaTag('og:image', SITE_LOGO);
-            setMetaTag('og:image:width', '600');
-            setMetaTag('og:image:height', '600');
         }
     }
 });
