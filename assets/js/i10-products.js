@@ -155,10 +155,7 @@ async function getProductData() {
 }
 
 
-/**
- * (*** TỐI ƯU: Đã gộp 2 hàm render làm 1 ***)
- * (v12.4)
- */
+
 async function renderProductGrid() {
     const container = document.getElementById("i10-product");
     if (!container) return;
