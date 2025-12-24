@@ -155,7 +155,6 @@ async function getProductData() {
 }
 
 
-
 async function renderProductGrid() {
     const container = document.getElementById("i10-product");
     if (!container) return;
