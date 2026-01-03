@@ -7,7 +7,7 @@
    ========================================================= */
 
 /* ========== CONFIG ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbznhJ7zhczP25hA0jXz_UKShXl-kxEXqNYkcQqz1STDcEHFkTZJ5s8P-wk-ZOU_ARH4pw/exec"; // <== Chỉ dùng cho Gửi Form
+const SHEET_API = "https://script.google.com/macros/s/AKfycbx35npBD0hfuLajv6-AzY37RMI83-qvcSjTAyg_rpPVPwFe72_YApBv91kICiC2iyqptA/exec"; // <== Chỉ dùng cho Gửi Form
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
