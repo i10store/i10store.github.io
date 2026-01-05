@@ -386,6 +386,7 @@ async function renderProductGrid() {
                 if (p["CPU"]) config.push(p["CPU"]);
                 if (p["RAM"]) config.push(p["RAM"]);
                 if (p["SSD"]) config.push(p["SSD"]);
+                if (p["RESOLUTION"]) config.push(p["RESOLUTION"]);
                 if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
