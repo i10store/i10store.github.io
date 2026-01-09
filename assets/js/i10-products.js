@@ -554,6 +554,25 @@ function openAdvancedLightbox(images, startIndex) {
 }
 
 
+
+function updateMetaTags(product) {
+    const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+    const firstImg = (product.images && product.images.length > 0) 
+                     ? product.images[0].url 
+                     : SITE_LOGO;
+
+    // 1. Cập nhật Meta Title cho mạng xã hội
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", titleText + " " + SITE_TITLE_SUFFIX);
+
+    // 2. Cập nhật Meta Image - Đây là phần quan trọng nhất để hiện ảnh khi gửi link
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage) ogImage.setAttribute("content", firstImg);
+
+    // 3. Cập nhật Meta URL
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute("content", window.location.href);
+}
 /* -----------------------------------------------------
    POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
    (*** ĐÃ CẬP NHẬT (v12.3) ***)
@@ -567,6 +586,7 @@ function openProductPopup(encoded, slug) {
 
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
+        updateMetaTags(product);
         const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
 
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
