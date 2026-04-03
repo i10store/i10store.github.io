@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="description" content="Hình ảnh khách hàng đã tin tưởng và sử dụng sản phẩm tại i10 STORE.">
+<meta name="keywords" content="Khách hàng i10 Store, feedback i10 Store, ảnh thật sản phẩm laptop">
+<meta name="robots" content="index, follow">
+<title>i10 STORE - Hợp đồng mua bán</title>
+
+<link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/i10.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 10px 12%; }
+        .app-container > * { position: relative; }
+
+        /* === COL 1: FORM === */
+        .form-panel { width: 400px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; }
+        .form-panel h2 { text-align: center; margin-bottom: 8px; color: #333; font-size: 14px; }
+        .form-group { margin-bottom: 5px; position: relative; }
+        .form-group input[type="text"],
+        .form-group input[type="number"] { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .form-group input:focus { border-color: #04922c; outline: none; box-shadow: 0 0 3px rgba(74,144,217,0.3); }
+        .form-group input::placeholder { color: #aaa; font-style: italic; font-size: 11px; }
+        .form-group input[readonly] { background: #f5f5f5; color: #333; cursor: default; }
+        .form-group .inline-group { display: flex; gap: 5px; align-items: center; }
+        .form-group .inline-group input { flex: 1; }
+        .form-group .inline-group .btn-icon { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; white-space: nowrap; }
+        .form-group .inline-group .btn-icon:hover { background: #e8e8e8; }
+        .section-title { background: #04922c; color: #fff; padding: 5px 8px; margin: 8px 0 5px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .section-title:hover { background: #04531a; }
+        .section-title .toggle-icon { font-size: 10px; }
+        .section-body { overflow: hidden; transition: max-height 0.3s ease; }
+        .section-body.collapsed { max-height: 0 !important; }
+        .commitment-editor { display: none; margin-bottom: 6px; }
+        .commitment-editor.show { display: block; }
+        .commitment-editor textarea { width: 100%; height: 100px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; resize: vertical; font-family: Arial, sans-serif; }
+        .commitment-editor textarea:focus { border-color: #04922c; outline: none; }
+        .commitment-btns { display: flex; gap: 5px; margin-top: 3px; }
+        .payment-group { margin-bottom: 5px; }
+        .payment-group label.pg-title { font-size: 11px; color: #555; font-weight: bold; display: block; margin-bottom: 3px; }
+        .payment-options { display: flex; gap: 5px; flex-wrap: wrap; }
+        .payment-options label { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #333; cursor: pointer; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; transition: all 0.2s; }
+        .payment-options label:hover { background: #e8f0fe; border-color: #04922c; }
+        .payment-options input[type="radio"] { accent-color: #04922c; }
+        .payment-options label.selected { background: #e8f0fe; border-color: #04922c; font-weight: bold; }
+        .payment-custom { display: none; margin-top: 3px; }
+        .payment-custom.show { display: block; }
+        .payment-custom input { width: 100%; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .btn-group { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.2s; }
+        .btn-print { background: #04922c; color: #fff; } .btn-print:hover { background: #1c7703; }
+        .btn-pdf { background: #b8c103; color: #fff; } .btn-pdf:hover { background: #8a8f05; }
+        .btn-png { background: #073a9f; color: #fff; } .btn-png:hover { background: #021360; }
+        .btn-save { background: #f39c12; color: #fff; } .btn-save:hover { background: #d68910; }
+        .btn-clear { background: #95a5a6; color: #fff; } .btn-clear:hover { background: #7f8c8d; }
+        .btn-sm { padding: 3px 8px; font-size: 10px; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+        /* === COL 2: PREVIEW === */
+        .preview-panel { flex: 1; padding: 12px; display: flex; flex-direction: column; align-items: center; background: #e8eaed; border-radius: 8px; position: sticky; top: 0; height: fit-content; align-self: flex-start; }
+        .a6-wrapper { background: #bbb; padding: 12px; border-radius: 4px; overflow: hidden; }
+        .a6-page { width: 105mm; min-height: 60vh; max-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; transform-origin: top left; }
+        .a6-page .header { text-align: center; margin-bottom: 2px; font-size: var(--fs, 10px); }
+        .a6-page .header .title1 { font-size: var(--fs, 10px); font-weight: bold; }
+        .a6-page .header .title2 { font-size: var(--fs, 10px); }
+        .a6-page .contract-title { text-align: center; font-size: var(--fs, 10px); font-weight: bold; margin: 4px 0; }
+        .a6-page .so-phieu { text-align: right; font-style: italic; font-size: var(--fs, 10px); margin: 2px 0; }
+        .a6-page .date-line { font-weight: 400; font-size: var(--fs, 10px); margin: 2px 0; }
+        .a6-page .section-label { font-weight: bold; font-size: var(--fs, 10px); margin: 4px 0 1px; }
+        .a6-page .info-line { padding-left: 12px; font-size: var(--fs, 10px); margin: 1px 0; }
+        .a6-page .info-line .field { font-weight: bold; }
+        .a6-page .info-line .value { border-bottom: 1px dotted #999; min-width: 40px; display: inline-block; }
+        .a6-page .commitment { padding-left: 12px; font-size: var(--fs, 10px); margin: 2px 0; line-height: 1.45; }
+        .a6-page .signatures { display: flex; justify-content: space-around; margin-top: 8px; font-size: var(--fs, 10px); font-weight: bold; }
+        .a6-page .signatures div { text-align: center; width: 40%; }
+        .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; }
+        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; }
+        .a6-page .signatures .sig-label { margin-bottom: 30px; }
+
+        /* === COL 3: CONTROLS === */
+        .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; }
+        .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
+        .ctrl-group { margin-bottom: 6px; }
+        .ctrl-group label { font-size: 11px; color: #555; display: block; margin-bottom: 2px; }
+        .ctrl-group input[type="range"] { width: 100%; }
+        .ctrl-group .ctrl-val { font-size: 11px; color: #056d28; text-align: right; font-weight: bold; display: block; margin-top: 1px; }
+        .ctrl-btn-group { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .ctrl-btn-group .btn { width: 100%; padding: 10px; font-size: 13px; }
+        .status-msg { padding: 6px 10px; border-radius: 4px; margin-top: 6px; font-size: 11px; display: none; }
+        .status-msg.success { background: #d4edda; color: #155724; display: block; }
+        .status-msg.error { background: #f8d7da; color: #721c24; display: block; }
+
+        @media print {
+            body { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+            body > *:not(.app-container) { display: none !important; }
+            .app-container { display: block !important; }
+            .app-container > *:not(.preview-panel) { display: none !important; }
+            .preview-panel { 
+                display: block !important; 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                padding: 0 !important; 
+                background: transparent !important;
+            }
+            .print-target { 
+                display: block !important;
+                position: relative !important; 
+                width: 105mm !important; 
+                height: 148mm !important; 
+                padding: 6mm 8mm !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+                border: none !important; 
+                background: #fff !important; 
+                overflow: hidden !important;
+                visibility: visible !important;
+            }
+            .print-target * { 
+                visibility: visible !important;
+            }
+            .print-target .title1,
+            .print-target .contract-title { 
+                font-size: 12px !important; 
+            }
+            .print-target .so-phieu, 
+            .print-target .date-line { 
+                font-size: 9px !important; 
+            }
+            @page { size: 105mm 148mm; margin: 0; page-break-after: always; }
+            .print-target { page-break-after: always; }
+        }
+
+        .footer { display: block !important; position: relative; }
+        .header-style-1 { display: block; position: relative; flex-shrink: 0; }
+    </style>
+
+
+<style>
+/* (CSS Giữ nguyên từ file của bạn) */
+.customer-banner-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 250px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px; 
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 25px; 
+}
+.banner-track {
+  display: flex;
+  transition: transform 0.6s ease;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.banner-item {
+    position: absolute;
+    height: 180px; 
+    width: 180px; 
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.7); 
+    cursor: pointer;
+}
+.banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.customer-banner-row .banner-nav {
+    display: none;
+}
+#gallery-container {
+    position: relative; 
+    padding-top: 10px;
+}
+.customer-filters {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.customer-filters .btn {
+    background: var(--i10);
+    border-color: var(--i10-dark);
+    color: #fff;
+    font-weight: bold;
+    padding: 6px;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+.customer-filters .btn:hover {
+    background: var(--i10-dark);
+    color: #fff;
+    transform: translateY(-2px);
+}
+#gallery-controls {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.global-banner-nav {
+    display: inline-block;
+    background: rgba(0,0,0,0.3); 
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 38px;
+    font-weight: 100;
+    padding: 10px;
+    line-height: 1;
+    z-index: 99;
+    transition: background 0.3s;
+    margin: 0 15px;
+}
+.global-banner-nav:hover { background: rgba(0,0,0,0.6); }
+@media (max-width: 768px) {
+    .global-banner-nav {
+        font-size: 30px;
+        padding: 10px 15px;
+        margin: 0 10px;
+    }
+    .customer-banner-row { height: 150px; }
+    .banner-item { height: 120px; width: 120px; }
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.customer-banner-row, .customer-filters, #gallery-controls {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+.customer-filters { animation-delay: 0.1s; }
+#gallery-controls { animation-delay: 0.2s; }
+#gallery-row-1 { animation-delay: 0.3s; }
+#gallery-row-2 { animation-delay: 0.4s; }
+#gallery-row-3 { animation-delay: 0.5s; }
+#gallery-loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 16px;
+    width: 100%;
+}
+</style>
+</head>
+<body class="cnt-home">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="/index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
+              i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
+            </marquee>
+          </div>
+       </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<div class="app-container">
+
+    <!-- ====== COL 1: FORM ====== -->
+    <div class="form-panel">
+        <h2 style="border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>HỢP ĐỒNG MUA BÁN LAPTOP</strong></h2>
+
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN CHUNG <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="soHD" placeholder="Số hợp đồng (VD: 001/2026)" value="001/2026"></div>
+            <div class="form-group"><input type="text" id="ngayThangNam" placeholder="Ngày/Tháng/Năm (VD: 05/04/2026)" value="05/04/2026"></div>
+            <div class="form-group"><input type="text" id="noiLap" placeholder="Nơi lập hợp đồng" value="07 Đô Đốc Tuyết, Hòa Xuân"></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">BÊN BÁN (BÊN A) <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="tenA" placeholder="Họ và tên bên bán"></div>
+            <div class="form-group"><input type="text" id="cccdA" placeholder="Số CCCD bên bán" value="Khách hàng không cung cấp"></div>
+            <div class="form-group"><input type="text" id="ngayCapA" placeholder="Ngày cấp CCCD (VD: 15/03/2020)"></div>
+            <div class="form-group"><input type="text" id="diaChiA" placeholder="Địa chỉ thường trú bên bán" value="Khách hàng muốn cung cấp"></div>
+            <div class="form-group"><input type="text" id="sdtA" placeholder="Số điện thoại bên bán"></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">BÊN MUA (BÊN B) <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="tenB" placeholder="Họ và tên bên mua" value="Nguyễn Quang Hiếu"></div>
+            <div class="form-group"><input type="text" id="cccdB" placeholder="Số CCCD bên mua" value="049092009999"></div>
+            <div class="form-group"><input type="text" id="ngayCapB" placeholder="Ngày cấp CCCD (VD: 20/05/2021)" value="15/11/2022"></div>
+            <div class="form-group"><input type="text" id="diaChiB" placeholder="Địa chỉ thường trú bên mua" value="Thôn Cổ Châu, xã Thu Bồn, Đà Nẵng"></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN LAPTOP <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="model" placeholder="Tên máy / Model (VD: Thinkpad X1 Carbon Gen 11)" value="Thinkpad X1 Carbon Gen 11"></div>
+            <div class="form-group"><input type="text" id="serial" placeholder="Số Serial (S/N)"></div>
+            <div class="form-group"><input type="text" id="cauHinh" placeholder="Cấu hình (VD: i7-1365u / 16GB / 512GB/ 4K)" value="i7/ 16GB / 512GB/ 4K"></div>
+            <div class="form-group"><input type="text" id="tinhTrang" placeholder="Tình trạng máy (VD: Đẹp 95%, hoạt động tốt)" value="Máy khá đẹp 95%, hoạt động tốt"></div>
+            <div class="form-group"><input type="text" id="giaTien" placeholder="Giá mua bán (nhập số, VD: 8500000)" oninput="autoConvertMoney()"></div>
+            <div class="form-group">
+                <div class="inline-group">
+                    <input type="text" id="giaTienChu" placeholder="Bằng chữ (tự động)" readonly>
+                    <span class="btn-icon" onclick="toggleEditMoney()" title="Sửa số tiền bằng chữ">Sửa</span>
+                </div>
+            </div>
+            <div class="payment-group">
+                <label class="pg-title">Hình thức thanh toán</label>
+                <div class="payment-options">
+                    <label id="lblCK" onclick="selectPayment('Chuyển khoản')"><input type="radio" name="payment"> Chuyển khoản</label>
+                    <label id="lblTM" onclick="selectPayment('Tiền mặt')"><input type="radio" name="payment"> Tiền mặt</label>
+                    <label id="lblKHAC" onclick="selectPayment('khac')"><input type="radio" name="payment"> Khác:</label>
+                </div>
+                <div class="payment-custom" id="paymentCustom">
+                    <input type="text" id="thanhToanCustom" placeholder="Nhập hình thức thanh toán khác..." oninput="selectPayment(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">CAM KẾT CỦA BÊN BÁN <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div id="commitmentDefault" style="font-size:10px; color:#666; padding:4px; line-height:1.4;">
+                - Bên A cam kết là chủ sở hữu hợp pháp của tài sản nêu trên, máy không phải là hàng trộm cắp, tranh chấp hay vi phạm pháp luật.<br>
+                - Bên A hoàn toàn chịu trách nhiệm trước pháp luật về nguồn gốc và quyền sở hữu của thiết bị.<br>
+                - Mọi thông tin về định danh cung cấp ở trên là chính xác.<br>
+                - Giấy này được lập thành 02 bản có giá trị như nhau.
+            </div>
+            <div class="commitment-editor" id="commitmentEditor">
+                <textarea id="commitmentText">- Bên A cam kết là chủ sở hữu hợp pháp của tài sản nêu trên, máy không phải là hàng trộm cắp, tranh chấp hay vi phạm pháp luật.
+- Bên A hoàn toàn chịu trách nhiệm trước pháp luật về nguồn gốc và quyền sở hữu của thiết bị.
+- Mọi thông tin về định danh cung cấp ở trên là chính xác.
+- Giấy này được lập thành 02 bản có giá trị như nhau.</textarea>
+                <div class="commitment-btns">
+                    <button class="btn btn-print btn-sm" onclick="applyCommitment()">Áp dụng</button>
+                    <button class="btn btn-clear btn-sm" onclick="resetCommitment()">Mặc định</button>
+                    <button class="btn btn-clear btn-sm" onclick="toggleCommitmentEditor()">Đóng</button>
+                </div>
+            </div>
+            <button class="btn btn-save btn-sm" onclick="toggleCommitmentEditor()" style="margin-top:3px;">Chỉnh sửa cam kết</button>
+        </div>
+
+        <div class="btn-group" style="margin-top: 10px;">
+            <button class="btn btn-clear" onclick="clearForm()">Xóa trắng</button>
+            <button class="btn btn-save" id="btnSaveSheet" onclick="saveToSheet()">Lưu Google Sheet</button>
+        </div>
+        <div id="statusMsg" class="status-msg"></div>
+    </div>
+
+    <!-- ====== COL 2: PREVIEW ====== -->
+    <div class="preview-panel">
+        <div class="a6-wrapper">
+            <div class="a6-page print-target" id="a6Page">
+                <div class="header">
+                    <div class="title1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                    <div class="title2">Độc lập - Tự do - Hạnh phúc</div>
+                </div>
+                <div class="contract-title">HỢP ĐỒNG MUA BÁN LAPTOP CŨ</div>
+                <div class="so-phieu">Số: <span id="p_soHD"></span></div>
+                <div class="date-line">Hôm nay, ngày <span id="p_ngayThangNam"></span>, tại: <span id="p_noiLap"></span></div>
+
+                <div class="section-label">I. BÊN BÁN (Bên A)</div>
+                <div class="info-line"><span class="field">Họ và tên:</span> <span class="value" id="p_tenA"></span></div>
+                <div class="info-line"><span class="field">Số CCCD:</span> <span class="value" id="p_cccdA"></span> &nbsp;&nbsp; <span class="field">Ngày cấp:</span> <span class="value" id="p_ngayCapA"></span></div>
+                <div class="info-line"><span class="field">Địa chỉ thường trú:</span> <span class="value" id="p_diaChiA"></span></div>
+                <div class="info-line"><span class="field">Số điện thoại:</span> <span class="value" id="p_sdtA"></span></div>
+
+                <div class="section-label">II. BÊN MUA (Bên B)</div>
+                <div class="info-line"><span class="field">Họ và tên:</span> <span class="value" id="p_tenB"></span></div>
+                <div class="info-line"><span class="field">Số CCCD:</span> <span class="value" id="p_cccdB"></span> &nbsp;&nbsp; <span class="field">Ngày cấp:</span> <span class="value" id="p_ngayCapB"></span></div>
+                <div class="info-line"><span class="field">Địa chỉ thường trú:</span> <span class="value" id="p_diaChiB"></span></div>
+
+                <div class="section-label">III. NỘI DUNG GIAO DỊCH:</div>
+                <div class="info-line">Bên A đồng ý bán cho Bên B chiếc laptop có thông tin như sau:</div>
+                <div class="info-line"><span class="field">Tên máy (Model):</span> <span class="value" id="p_model"></span></div>
+                <div class="info-line"><span class="field">Số Serial (S/N):</span> <span class="value" id="p_serial"></span></div>
+                <div class="info-line"><span class="field">Cấu hình (CPU/RAM/SSD...):</span> <span class="value" id="p_cauHinh"></span></div>
+                <div class="info-line"><span class="field">Tình trạng máy:</span> <span class="value" id="p_tinhTrang"></span></div>
+                <div class="info-line"><span class="field">Giá mua bán (đồng):</span> <span class="value" id="p_giaTien"></span></div>
+                <div class="info-line"><span class="field">Bằng chữ:</span> <span class="value" id="p_giaTienChu"></span></div>
+                <div class="info-line"><span class="field">Hình thức thanh toán:</span> <span class="value" id="p_thanhToan"></span></div>
+
+                <div class="section-label">IV. CAM KẾT CỦA BÊN BÁN:</div>
+                <div class="commitment" id="p_commitment">
+                    - Bên A cam kết là chủ sở hữu hợp pháp của tài sản nêu trên, máy không phải là hàng trộm cắp, tranh chấp hay vi phạm pháp luật.<br>
+                    - Bên A hoàn toàn chịu trách nhiệm trước pháp luật về nguồn gốc và quyền sở hữu của thiết bị.<br>
+                    - Mọi thông tin về định danh cung cấp ở trên là chính xác.<br>
+                    - Giấy này được lập thành 02 bản có giá trị như nhau.
+                </div>
+
+                <div class="signatures">
+                    <div class="sig-left"><div class="sig-label">Bên mua</div></div>
+                    <div class="sig-right"><div class="sig-label">Bên bán</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== COL 3: CONTROLS ====== -->
+    <div class="controls-panel">
+        <h3 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>ĐIỀU KHIỂN IN ẤN</strong></h3>
+
+        <div class="ctrl-group"><label>Cỡ chữ</label><input type="range" id="fontSize" min="7" max="14" value="10" step="0.5" oninput="updatePreview()"><span class="ctrl-val" id="valFS">10px</span></div>
+        <div class="ctrl-group"><label>Phóng to trang (%)</label><input type="range" id="pageScale" min="60" max="140" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valScale">100%</span></div>
+        <div class="ctrl-group"><label>Căn lề trái</label><input type="range" id="marginL" min="0" max="15" value="8" oninput="updatePreview()"><span class="ctrl-val" id="valML">8mm</span></div>
+        <div class="ctrl-group"><label>Căn lề phải</label><input type="range" id="marginR" min="0" max="15" value="8" oninput="updatePreview()"><span class="ctrl-val" id="valMR">8mm</span></div>
+        <div class="ctrl-group"><label>Căn lề trên</label><input type="range" id="marginT" min="0" max="15" value="6" oninput="updatePreview()"><span class="ctrl-val" id="valMT">6mm</span></div>
+        <div class="ctrl-group"><label>Căn lề dưới</label><input type="range" id="marginB" min="0" max="15" value="6" oninput="updatePreview()"><span class="ctrl-val" id="valMB">6mm</span></div>
+        <div class="ctrl-group"><label>Độ đậm chữ (%)</label><input type="range" id="density" min="50" max="150" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valDen">100%</span></div>
+        <div class="ctrl-group"><label>Tốc độ in (giây)</label><input type="range" id="printSpeed" min="0" max="5" value="0.5" step="0.5" oninput="updateSpeed()"><span class="ctrl-val" id="valSpd">0.5s</span></div>
+
+        <div class="ctrl-btn-group">
+            <button class="btn btn-print" onclick="printContract()">In hợp đồng</button>
+            <button class="btn btn-pdf" onclick="savePDF()">Lưu PDF</button>
+            <button class="btn btn-png" onclick="savePNG()">Lưu PNG</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// === FIELDS ===
+var fieldIds = ['soHD','ngayThangNam','noiLap','tenA','cccdA','ngayCapA','diaChiA','sdtA','tenB','cccdB','ngayCapB','diaChiB','model','serial','cauHinh','tinhTrang','giaTien','giaTienChu'];
+var previewIds = ['p_soHD','p_ngayThangNam','p_noiLap','p_tenA','p_cccdA','p_ngayCapA','p_diaChiA','p_sdtA','p_tenB','p_cccdB','p_ngayCapB','p_diaChiB','p_model','p_serial','p_cauHinh','p_tinhTrang','p_giaTien','p_giaTienChu'];
+
+// Bind inputs to preview
+fieldIds.forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function() {
+        document.getElementById(previewIds[i]).textContent = el.value;
+    });
+});
+
+// === INIT DEFAULT VALUES & PREVIEW ===
+function initDefaults() {
+    // Set today's date
+    var now = new Date();
+    var ngayThangNamEl = document.getElementById('ngayThangNam');
+    var dd = String(now.getDate()).padStart(2, '0');
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var yyyy = now.getFullYear();
+    if (!ngayThangNamEl.value) { ngayThangNamEl.value = dd + '/' + mm + '/' + yyyy; }
+
+    // Sync ALL default input values to preview
+    fieldIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        var pEl = document.getElementById('p_' + id);
+        if (el && pEl && el.value) {
+            pEl.textContent = el.value;
+        }
+    });
+}
+
+// === SECTION TOGGLE ===
+function toggleSection(el) {
+    var body = el.nextElementSibling;
+    var icon = el.querySelector('.toggle-icon');
+    body.classList.toggle('collapsed');
+    icon.textContent = body.classList.contains('collapsed') ? '▶' : '▼';
+}
+
+// === VIETNAMESE NUMBER TO WORDS (CORRECTED) ===
+var DV = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
+var HANG = ['','nghìn','triệu','tỷ'];
+
+function readGroup3(n) {
+    var t = Math.floor(n / 100);
+    var c = Math.floor((n % 100) / 10);
+    var d = n % 10;
+    var p = [];
+    if (t > 0) {
+        p.push(DV[t], 'trăm');
+        if (c === 0 && d > 0) p.push('linh');
+    }
+    if (c > 1) {
+        p.push(DV[c], 'mươi');
+        if (d === 1) p.push('mốt');
+        else if (d === 5) p.push('lăm');
+        else if (d > 0) p.push(DV[d]);
+    } else if (c === 1) {
+        p.push('mười');
+        if (d === 1) p.push('một');
+        else if (d === 5) p.push('lăm');
+        else if (d > 0) p.push(DV[d]);
+    } else {
+        if (d > 0) {
+            if (t > 0) p.push('linh');
+            p.push(DV[d]);
+        }
+    }
+    return p.join(' ');
+}
+
+function numberToWords(num) {
+    if (num === null || num === undefined || num === '') return '';
+    num = parseInt(String(num).replace(/[^0-9]/g, ''));
+    if (isNaN(num) || num === 0) return 'Không đồng';
+    var groups = [];
+    while (num > 0) { groups.push(num % 1000); num = Math.floor(num / 1000); }
+    var result = '';
+    for (var i = groups.length - 1; i >= 0; i--) {
+        var g = groups[i];
+        if (g === 0) continue;
+        var txt = readGroup3(g);
+        if (i > 0 && HANG[i]) txt += ' ' + HANG[i];
+        result = result ? result + ' ' + txt : txt;
+    }
+    if (!result) return 'Không đồng';
+    return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
+}
+
+var moneyEditable = false;
+function autoConvertMoney() {
+    if (moneyEditable) return;
+    var raw = document.getElementById('giaTien').value.replace(/[^0-9]/g, '');
+    var num = parseInt(raw);
+    if (!isNaN(num) && num > 0) {
+        var words = numberToWords(num);
+        document.getElementById('giaTienChu').value = words;
+        document.getElementById('p_giaTienChu').textContent = words;
+        document.getElementById('p_giaTien').textContent = num.toLocaleString('vi-VN') + ' VNĐ';
+    } else {
+        document.getElementById('giaTienChu').value = '';
+        document.getElementById('p_giaTienChu').textContent = '';
+        document.getElementById('p_giaTien').textContent = '';
+    }
+}
+
+function toggleEditMoney() {
+    moneyEditable = !moneyEditable;
+    var el = document.getElementById('giaTienChu');
+    if (moneyEditable) {
+        el.removeAttribute('readonly');
+        el.style.background = '#fff';
+        el.style.borderColor = '#f39c12';
+        el.focus();
+        el.addEventListener('input', syncMoneyWords);
+        showStatus('Đang chỉnh sửa số tiền bằng chữ', 'success');
+    } else {
+        el.setAttribute('readonly', true);
+        el.style.background = '#f5f5f5';
+        el.style.borderColor = '#ccc';
+        el.removeEventListener('input', syncMoneyWords);
+        document.getElementById('p_giaTienChu').textContent = el.value;
+        showStatus('Đã khóa chỉnh sửa', 'success');
+    }
+}
+function syncMoneyWords() {
+    document.getElementById('p_giaTienChu').textContent = document.getElementById('giaTienChu').value;
+}
+
+// === PAYMENT METHOD ===
+var paymentValue = '';
+
+function selectPayment(val) {
+    document.getElementById('lblCK').className = '';
+    document.getElementById('lblTM').className = '';
+    document.getElementById('lblKHAC').className = '';
+    var customDiv = document.getElementById('paymentCustom');
+
+    if (val === 'Chuyển khoản') {
+        document.getElementById('lblCK').className = 'selected';
+        customDiv.classList.remove('show');
+    } else if (val === 'Tiền mặt') {
+        document.getElementById('lblTM').className = 'selected';
+        customDiv.classList.remove('show');
+    } else if (val === 'khac') {
+        document.getElementById('lblKHAC').className = 'selected';
+        customDiv.classList.add('show');
+        val = document.getElementById('thanhToanCustom').value || '';
+        document.getElementById('thanhToanCustom').focus();
+    }
+    // val is now the actual text (or empty for "khac" initial click)
+    if (val !== 'khac') {
+        paymentValue = val;
+        document.getElementById('p_thanhToan').textContent = val;
+    }
+}
+
+// === COMMITMENT EDITOR ===
+function toggleCommitmentEditor() { document.getElementById('commitmentEditor').classList.toggle('show'); }
+
+function applyCommitment() {
+    var text = document.getElementById('commitmentText').value.trim();
+    if (text) {
+        document.getElementById('p_commitment').innerHTML = text.replace(/\n/g, '<br>');
+        document.getElementById('commitmentDefault').innerHTML = text.replace(/\n/g, '<br>');
+        showStatus('Đã áp dụng cam kết mới', 'success');
+    }
+    document.getElementById('commitmentEditor').classList.remove('show');
+}
+
+function resetCommitment() {
+    var txt = '- Bên A cam kết là chủ sở hữu hợp pháp của tài sản nêu trên, máy không phải là hàng trộm cắp, tranh chấp hay vi phạm pháp luật.\n- Bên A hoàn toàn chịu trách nhiệm trước pháp luật về nguồn gốc và quyền sở hữu của thiết bị.\n- Mọi thông tin về định danh cung cấp ở trên là chính xác.\n- Giấy này được lập thành 02 bản có giá trị như nhau.';
+    document.getElementById('commitmentText').value = txt;
+    document.getElementById('p_commitment').innerHTML = txt.replace(/\n/g, '<br>');
+    document.getElementById('commitmentDefault').innerHTML = txt.replace(/\n/g, '<br>');
+    showStatus('Đã khôi phục cam kết mặc định', 'success');
+    document.getElementById('commitmentEditor').classList.remove('show');
+}
+
+// === PREVIEW UPDATE ===
+function updatePreview() {
+    var fs = document.getElementById('fontSize').value;
+    var scale = document.getElementById('pageScale').value;
+    var ml = document.getElementById('marginL').value;
+    var mr = document.getElementById('marginR').value;
+    var mt = document.getElementById('marginT').value;
+    var mb = document.getElementById('marginB').value;
+    var den = document.getElementById('density').value;
+
+    document.getElementById('valFS').textContent = fs + 'px';
+    document.getElementById('valScale').textContent = scale + '%';
+    document.getElementById('valML').textContent = ml + 'mm';
+    document.getElementById('valMR').textContent = mr + 'mm';
+    document.getElementById('valMT').textContent = mt + 'mm';
+    document.getElementById('valMB').textContent = mb + 'mm';
+    document.getElementById('valDen').textContent = den + '%';
+
+    var page = document.getElementById('a6Page');
+    page.style.setProperty('--fs', fs + 'px', 'important');
+    page.style.padding = mt + 'mm ' + mr + 'mm ' + mb + 'mm ' + ml + 'mm';
+    page.style.filter = 'contrast(' + den + '%)';
+    page.style.transform = 'scale(' + (scale / 100) + ')';
+    page.style.transformOrigin = 'top left';
+
+    var w = page.parentElement;
+    w.style.width = (105 * scale / 100) + 'mm';
+    page.style.maxHeight = (148 * scale / 100) + 'mm';
+}
+
+function updateSpeed() {
+    document.getElementById('valSpd').textContent = document.getElementById('printSpeed').value + 's';
+}
+
+// === FORM DATA ===
+function getFormData() {
+    var data = {};
+    fieldIds.forEach(function(id) { data[id] = document.getElementById(id).value; });
+    data.thanhToan = paymentValue;
+    data.commitment = document.getElementById('commitmentText').value;
+    data.timestamp = new Date().toLocaleString('vi-VN');
+    return data;
+}
+
+function showStatus(msg, type) {
+    var el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status-msg ' + type;
+    setTimeout(function() { el.className = 'status-msg'; }, 5000);
+}
+
+function clearForm() {
+    fieldIds.forEach(function(id) { document.getElementById(id).value = ''; });
+    previewIds.forEach(function(id) { document.getElementById(id).textContent = ''; });
+    resetCommitment();
+    // Reset payment
+    paymentValue = '';
+    document.getElementById('lblCK').className = '';
+    document.getElementById('lblTM').className = '';
+    document.getElementById('lblKHAC').className = '';
+    document.getElementById('paymentCustom').classList.remove('show');
+    document.getElementById('thanhToanCustom').value = '';
+    document.getElementById('p_thanhToan').textContent = '';
+    var radios = document.querySelectorAll('input[name="payment"]');
+    radios.forEach(function(r) { r.checked = false; });
+    showStatus('Đã xóa trắng form', 'success');
+}
+
+// === CAPTURE ===
+async function captureCanvas() {
+    var page = document.getElementById('a6Page');
+    var origT = page.style.transform;
+    page.style.transform = 'none';
+    var canvas = await html2canvas(page, { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: page.offsetWidth, height: page.offsetHeight });
+    page.style.transform = origT;
+    return canvas;
+}
+
+// === CAPTURE ===
+async function captureCanvas() {
+    var page = document.getElementById('a6Page');
+    var origT = page.style.transform;
+    page.style.transform = 'none';
+    var canvas = await html2canvas(page, { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: page.offsetWidth, height: page.offsetHeight });
+    page.style.transform = origT;
+    return canvas;
+}
+
+// === PRINT ===
+function printContract() {
+    var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
+    showStatus('Đang chuẩn bị in...', 'success');
+    var page = document.getElementById('a6Page');
+    var origT = page.style.transform;
+    var origW = page.parentElement.style.width;
+    var origH = page.parentElement.style.height;
+    page.style.transform = 'none';
+    page.parentElement.style.width = '105mm';
+    page.parentElement.style.height = '148mm';
+    setTimeout(function() {
+        window.print();
+        setTimeout(function() {
+            page.style.transform = origT;
+            page.parentElement.style.width = origW;
+            page.parentElement.style.height = origH;
+        }, 500);
+    }, speed);
+}
+
+
+// === SAVE PDF ===
+async function savePDF() {
+    showStatus('Đang tạo PDF...', 'success');
+    try {
+        var canvas = await captureCanvas();
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [105, 148] });
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 105, 148);
+        var name = 'HopDong_' + (document.getElementById('soHD').value || 'draft') + '.pdf';
+        pdf.save(name);
+        showStatus('Đã lưu PDF: ' + name, 'success');
+    } catch (e) { showStatus('Lỗi PDF: ' + e.message, 'error'); }
+}
+
+// === SAVE PNG ===
+async function savePNG() {
+    showStatus('Đang tạo PNG...', 'success');
+    try {
+        var canvas = await captureCanvas();
+        var link = document.createElement('a');
+        link.download = 'HopDong_' + (document.getElementById('soHD').value || 'draft') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showStatus('Đã lưu PNG', 'success');
+    } catch (e) { showStatus('Lỗi PNG: ' + e.message, 'error'); }
+}
+
+// === SAVE TO GOOGLE SHEET ===
+async function saveToSheet() {
+    var data = getFormData();
+    if (!data.tenA || !data.tenB || !data.model) {
+        alert('⚠️ Vui lòng nhập ít nhất:\n- Tên bên bán (A)\n- Tên bên mua (B)\n- Model máy');
+        return;
+    }
+
+    var btn = document.getElementById('btnSaveSheet');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
+    btn.style.opacity = '0.8';
+
+    showStatus('Đang gửi dữ liệu lên Google Sheet...', 'success');
+
+    var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwYuXoOp1FVyoSkwjJWvrcP_KLshnI5lzMfSduT2nJZIpHN2ImEHLPgdhtuFKrWqeZh/exec';
+
+    try {
+        await fetch(WEBAPP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        // no-cors: cannot read response, but request was sent
+        showStatus('Đã gửi dữ liệu lên Google Sheet!', 'success');
+        alert('✅ Đã gửi hợp đồng lên Google Sheet!\n\nSheet "HopDongMuaBan" sẽ được cập nhật trong giây lát.');
+    } catch (e) {
+        showStatus('Lỗi kết nối: ' + e.message, 'error');
+        alert('❌ Lỗi khi gửi dữ liệu:\n' + e.message + '\n\nKiểm tra:\n1. Web App URL trong code đã đúng\n2. Apps Script đã deploy lại\n3. Quyền truy cập: "Anyone"');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu Google Sheet';
+        btn.style.opacity = '1';
+    }
+}
+
+// === INIT ===
+initDefaults();
+updatePreview();
+updateSpeed();
+</script>
+
+
+<div class="hotline-phone-ring-wrap">
+    <div class="hotline-phone-ring">
+    <div class="hotline-phone-ring-circle"></div>
+    <div class="hotline-phone-ring-circle-fill"></div>
+    <div class="hotline-phone-ring-img-circle">
+    <a href="tel:0838288000" class="pps-btn-img">
+    <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" alt="Gọi điện thoại" width="50">
+    </a>
+    </div>
+    </div>
+    <div class="hotline-bar">
+    <a target="_blank" href="https://zalo.me/0838288000">
+    <span class="text-hotline">0838.288.000</span>
+    </a>
+    </div>
+</div>
+
+
+<footer id="footer" class="footer color-bg">
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="row">
+        
+        <div class="col-xs-12 col-sm-12 col-md-4">
+          <div class="module-heading">
+            <h4 class="module-title">i10 STORE - THINKPAD US</h4>
+          </div>
+          <div class="module-body">
+            <ul class="toggle-footer" style="">
+              <li class="media">
+                <div class="pull-left"> <span class="icon fa-stack fa-lg"> <i class="fa fa-map-marker fa-stack-1x fa-inverse"></i> </span> </div>
+                <div class="media-body">
+                  <p>07 Đô Đốc Tuyết, Hòa Xuân, Đà Nẵng</p>
+                </div>
+              </li>
+              <li class="media">
+                <div class="pull-left"> <span class="icon fa-stack fa-lg"> <i class="fa fa-phone fa-stack-1x fa-inverse"></i> </span> </div>
+                <div class="media-body">
+                  <p>Hotline/Zalo: <a href="tel:0838288000">0838.288.000</a></p>
+                </div>
+              </li>
+               <li class="media">
+                <div class="pull-left"> <span class="icon fa-stack fa-lg"> <i class="fa fa-facebook fa-stack-1x fa-inverse"></i> </span> </div>
+                <div class="media-body">
+                   <p><a target="_blank" href="https://www.facebook.com/ThinkpadUS">facebook.com/ThinkpadUS</a></p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading">
+            <h4 class="module-title">THÔNG TIN & HỖ TRỢ</h4>
+          </div>
+          <div class="module-body">
+            <ul class="list-unstyled">
+              <li><a href="/index.html"><i class="fa fa-caret-right"></i> Trang chủ</a></li>
+              <li><a href="/index.html?filter=available"><i class="fa fa-caret-right"></i> Sản phẩm sẵn hàng</a></li>
+              <li><a href="/index.html?filter=maytram"><i class="fa fa-caret-right"></i> Máy trạm (Workstation)</a></li>
+              <li><a href="/customer.html"><i class="fa fa-caret-right"></i> Khách hàng tin mua</a></li>
+              <li><a href="/contact.html"><i class="fa fa-caret-right"></i> Liên hệ & Gửi Form</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading">
+            <h4 class="module-title">THANH TOÁN</h4>
+          </div>
+          <div class="module-body">
+            <ul class="toggle-footer">
+              <li class="media">
+                <div class="pull-left"> <span class="icon fa-stack fa-lg"><i class="fa fa-bank fa-stack-1x fa-inverse"></i> </span> </div>
+                <div class="media-body">
+                  <p>NGÂN HÀNG TECHCOMBANK<br>
+                     Số tài khoản: **9179.000.000**<br>
+                     Chủ tài khoản: **NGUYEN QUANG HIEU**
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div></div></div><div class="copyright-bar">
+    <div class="container">
+      <div class="col-xs-12 col-sm-12 no-padding">
+        <p style="text-align:center; margin:0; padding:10px 0; border-top: 1px solid rgba(0,0,0,0.2);">
+          © 2025 i10 Store - Chuyên Laptop Thinkpad US.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
+<script src="/assets/js/scripts.js"></script>
+
+<script>
+    // (*** ĐỒNG BỘ: API URL và LOGO từ file JS gốc ***)
+    const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; 
+    const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+    const CACHE_KEY_BANNER = "i10_banner_cache_v2";
+    const CACHE_TTL = 30 * 60 * 1000;
+
+    // (*** TỐI ƯU: Chỉ định nghĩa các hàm CẦN THIẾT ***)
+    let globalCurrentIndex = 0;
+    let maxLen = 0;
+    let rowControllers = [];
+    let autoTimer = null;
+
+    async function fetchJSON(url, opts = {}) {
+        const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts));
+        if (!res.ok) throw new Error("Lỗi mạng: " + res.status);
+        return res.json();
+    }
+    function debounce(fn, wait=250){
+        let t;
+        return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const siteLogo = document.getElementById("site-logo");
+        if (siteLogo) siteLogo.src = SITE_LOGO;
+        fetchCustomerImages();
+    });
+
+   
+</script>
+
+</body>
+</html>
+

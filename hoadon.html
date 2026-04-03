@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hóa đơn bán hàng i10 STORE">
+    <meta name="robots" content="index, follow">
+    <title>i10 STORE - Hóa đơn bán hàng</title>
+
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/i10.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 10px 12%; }
+        .app-container > * { position: relative; }
+
+        /* === COL 1: FORM === */
+        .form-panel { width: 400px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; }
+        .form-panel h2 { text-align: center; margin-bottom: 8px; color: #333; font-size: 14px; }
+        .form-group { margin-bottom: 5px; position: relative; }
+        .form-group input[type="text"],
+        .form-group input[type="number"] { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .form-group input:focus { border-color: #04922c; outline: none; box-shadow: 0 0 3px rgba(74,144,217,0.3); }
+        .form-group input::placeholder { color: #aaa; font-style: italic; font-size: 11px; }
+        .form-group input[readonly] { background: #f5f5f5; color: #333; cursor: default; }
+        .form-group .inline-group { display: flex; gap: 5px; align-items: center; }
+        .form-group .inline-group input { flex: 1; }
+        .form-group .inline-group .btn-icon { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; white-space: nowrap; }
+        .form-group .inline-group .btn-icon:hover { background: #e8e8e8; }
+        .section-title { background: #04922c; color: #fff; padding: 5px 8px; margin: 8px 0 5px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .section-title:hover { background: #04531a; }
+        .section-title .toggle-icon { font-size: 10px; }
+        .section-body { overflow: hidden; transition: max-height 0.3s ease; }
+        .section-body.collapsed { max-height: 0 !important; }
+        .product-item { border: 1px solid #ddd; padding: 8px; margin-bottom: 8px; border-radius: 4px; background: #fafafa; }
+        .product-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .product-item-header span { font-size: 11px; font-weight: bold; color: #333; }
+        .product-item-remove { color: #c00; cursor: pointer; font-size: 12px; }
+        .product-item-remove:hover { color: #f00; }
+        .add-product-btn { width: 100%; padding: 8px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; color: #2e7d32; cursor: pointer; font-size: 12px; font-weight: bold; margin-top: 5px; }
+        .add-product-btn:hover { background: #c8e6c9; }
+        .payment-group { margin-bottom: 5px; }
+        .payment-group label.pg-title { font-size: 11px; color: #555; font-weight: bold; display: block; margin-bottom: 3px; }
+        .payment-options { display: flex; gap: 5px; flex-wrap: wrap; }
+        .payment-options label { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #333; cursor: pointer; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; transition: all 0.2s; }
+        .payment-options label:hover { background: #e8f0fe; border-color: #04922c; }
+        .payment-options input[type="radio"] { accent-color: #04922c; }
+        .payment-options label.selected { background: #e8f0fe; border-color: #04922c; font-weight: bold; }
+        .payment-custom { display: none; margin-top: 3px; }
+        .payment-custom.show { display: block; }
+        .payment-custom input { width: 100%; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .btn-group { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.2s; }
+        .btn-print { background: #04922c; color: #fff; } .btn-print:hover { background: #1c7703; }
+        .btn-pdf { background: #b8c103; color: #fff; } .btn-pdf:hover { background: #8a8f05; }
+        .btn-png { background: #073a9f; color: #fff; } .btn-png:hover { background: #021360; }
+        .btn-save { background: #f39c12; color: #fff; } .btn-save:hover { background: #d68910; }
+        .btn-clear { background: #95a5a6; color: #fff; } .btn-clear:hover { background: #7f8c8d; }
+        .btn-sm { padding: 3px 8px; font-size: 10px; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+        /* === COL 2: PREVIEW === */
+        .preview-panel { width: auto; flex: none; padding: 12px; display: flex; flex-direction: column; align-items: center; background: #e8eaed; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
+        .a6-wrapper { background: #bbb; padding: 12px; border-radius: 4px; overflow: hidden; display: inline-block; }
+        .a6-page { width: 105mm; min-height: 60vh; max-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; transform-origin: top left; position: relative; border: 1px solid #999; border-radius: 8px; }
+        
+        .a6-page .header { text-align: center; margin-bottom: 3px; position: relative; }
+        .a6-page .header-top { display: flex; align-items: flex-start; justify-content: flex-start; gap: 10px; margin-bottom: 3px; }
+        .a6-page .header-logo { width: 35px; height: 35px; border-radius: 2%; object-fit: cover; flex-shrink: 0; }
+        .a6-page .header .company-name-group { text-align: left; }
+        .a6-page .header .company-name { font-size: calc(var(--fs, 10px) + 2px); font-weight: bold; display: block; }
+        .a6-page .header .company-tagline { font-size: var(--fs, 10px); font-weight: normal; color: #555; }
+        .a6-page .header .company-info { font-size: var(--fs, 10px); text-align: left; }
+        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.29; width: 80%; max-width: 200px; z-index: 0; pointer-events: none; }
+        
+        .a6-page .invoice-title { text-align: center; font-size: calc(var(--fs, 10px) + 4px); font-weight: bold; text-transform: uppercase; margin: 5px 0; position: relative; z-index: 1; }
+        .a6-page .invoice-info { text-align: center; font-size: var(--fs, 10px); margin: 3px 0; }
+        .a6-page .invoice-number { text-align: right; font-style: italic; font-size: var(--fs, 10px); margin: 2px 0; }
+        .a6-page .date-line { font-size: var(--fs, 10px); margin: 2px 0; }
+        .a6-page .section-label { font-weight: bold; font-size: var(--fs, 10px); margin: 4px 0 1px; }
+        .a6-page .info-line { padding-left: 8px; font-size: var(--fs, 10px); margin: 1px 0; position: relative; z-index: 1; }
+        .a6-page .info-line .field { font-weight: bold; }
+        .a6-page .info-line .value { border-bottom: 1px dotted #999; min-width: 40px; display: inline-block; }
+        .a6-page .product-table { width: 100%; border-collapse: collapse; font-size: var(--fs, 10px); margin: 5px 0; position: relative; z-index: 1; }
+        .a6-page .product-table th { border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; background: #f5f5f5; }
+        .a6-page .product-table td { border: 1px solid #000; padding: 4px; }
+        .a6-page .product-table .stt { text-align: center; width: 30px; }
+        .a6-page .product-table .ten-sp { text-align: left; }
+        .a6-page .product-table .soluong { text-align: center; }
+        .a6-page .product-table .dongia { text-align: right; }
+        .a6-page .product-table .thanhtien { text-align: right; }
+        .a6-page .totals { margin-top: 5px; font-size: var(--fs, 10px); position: relative; z-index: 1; }
+        .a6-page .totals .total-line { display: flex; justify-content: space-between; padding: 2px 0; }
+        .a6-page .totals .total-line.final { font-weight: bold; font-size: calc(var(--fs, 10px) + 1px); }
+        .a6-page .payment-info { margin-top: 8px; font-size: var(--fs, 10px); position: relative; z-index: 1; }
+        .a6-page .signatures { display: flex; justify-content: space-around; margin-top: 15px; font-size: var(--fs, 10px); font-weight: bold; position: relative; z-index: 1; }
+        .a6-page .signatures div { text-align: center; width: 40%; }
+        .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
+        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
+        .a6-page .signatures .sig-label { margin-bottom: 25px; }
+
+        /* === COL 3: CONTROLS === */
+        .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
+        .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
+        .ctrl-group { margin-bottom: 6px; }
+        .ctrl-group label { font-size: 11px; color: #555; display: block; margin-bottom: 2px; }
+        .ctrl-group input[type="range"] { width: 100%; }
+        .ctrl-group .ctrl-val { font-size: 11px; color: #056d28; text-align: right; font-weight: bold; display: block; margin-top: 1px; }
+        .ctrl-btn-group { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .ctrl-btn-group .btn { width: 100%; padding: 10px; font-size: 13px; }
+        .status-msg { padding: 6px 10px; border-radius: 4px; margin-top: 6px; font-size: 11px; display: none; }
+        .status-msg.success { background: #d4edda; color: #155724; display: block; }
+        .status-msg.error { background: #f8d7da; color: #721c24; display: block; }
+
+        @media print {
+            body { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+            body > *:not(.app-container) { display: none !important; }
+            .app-container { display: block !important; }
+            .app-container > *:not(.preview-panel) { display: none !important; }
+            .preview-panel { 
+                display: block !important; 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                padding: 0 !important; 
+                background: transparent !important;
+            }
+            .print-target { 
+                display: block !important;
+                position: relative !important; 
+                width: 105mm !important; 
+                height: 148mm !important; 
+                padding: 6mm 8mm !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+                border: none !important; 
+                background: #fff !important; 
+                overflow: hidden !important;
+                visibility: visible !important;
+            }
+            .print-target * { 
+                visibility: visible !important;
+            }
+            @page { size: 105mm 148mm; margin: 0; page-break-after: always; page-break-inside: avoid; }
+            .print-target { page-break-after: always; page-break-inside: avoid; }
+        }
+
+        .footer { display: block !important; position: relative; }
+        .header-style-1 { display: block; position: relative; flex-shrink: 0; }
+    </style>
+</head>
+<body class="cnt-home">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="/index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
+              i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
+            </marquee>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="app-container">
+
+    <!-- ====== COL 1: FORM ====== -->
+    <div class="form-panel">
+        <h2 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>HÓA ĐƠN BÁN HÀNG</strong></h2>
+
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN HÓA ĐƠN <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="soHD" placeholder="Số hóa đơn (VD: HD-001/2026)" value="HD-001/2026"></div>
+            <div class="form-group"><input type="text" id="ngayThangNam" placeholder="Ngày/Tháng/Năm (VD: 05/04/2026)" value="05/04/2026" oninput="syncDate()"></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN KHÁCH HÀNG <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="tenKhachHang" placeholder="Tên khách hàng" value="Nguyễn Quang Hiếu"></div>
+            <div class="form-group"><input type="text" id="diaChiKhachHang" placeholder="Địa chỉ khách hàng" value="Thôn Cổ Châu, xã Thu Bồn, Đà Nẵng"></div>
+            <div class="form-group"><input type="text" id="sdtKhachHang" placeholder="Số điện thoại khách hàng"></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN SẢN PHẨM <span class="toggle-icon">▼</span></div>
+        <div class="section-body" id="productList">
+            <div class="product-item" id="product-1">
+                <div class="product-item-header">
+                    <span>Sản phẩm 1</span>
+                </div>
+                <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" value="Laptop Thinkpad X1 Carbon Gen 11" oninput="tinhTong()"></div>
+                <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
+                <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
+                <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
+                <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" value="8500000" oninput="tinhTong()"></div>
+            </div>
+        </div>
+        <button class="add-product-btn" onclick="addProduct()">+ Thêm sản phẩm</button>
+
+        <div class="form-group" style="margin-top: 10px;">
+            <div class="inline-group">
+                <input type="text" id="thanhTienChu" placeholder="Tổng tiền (bằng chữ)" readonly>
+                <span class="btn-icon" onclick="toggleEditTien()" title="Sửa số tiền">Sửa</span>
+            </div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">THANH TOÁN <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="payment-group">
+                <label class="pg-title">Hình thức thanh toán</label>
+                <div class="payment-options">
+                    <label id="lblCK" onclick="selectPayment('Chuyển khoản')"><input type="radio" name="payment"> Chuyển khoản</label>
+                    <label id="lblTM" onclick="selectPayment('Tiền mặt')"><input type="radio" name="payment"> Tiền mặt</label>
+                    <label id="lblKHAC" onclick="selectPayment('khac')"><input type="radio" name="payment"> Khác:</label>
+                </div>
+                <div class="payment-custom" id="paymentCustom">
+                    <input type="text" id="thanhToanCustom" placeholder="Nhập hình thức thanh toán khác..." oninput="selectPayment(this.value)">
+                </div>
+            </div>
+            <div class="form-group"><textarea id="ghiChu" placeholder="Ghi chú (nếu có)" rows="2" style="width:100%; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:12px; resize:vertical;">Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth.</textarea></div>
+        </div>
+
+        <div class="btn-group" style="margin-top: 10px;">
+            <button class="btn btn-save" id="btnSaveSheet" onclick="saveToSheet()">Lưu Google Sheet</button>
+            <button class="btn btn-clear" onclick="clearForm()">Xóa trắng</button>
+        </div>
+        <div id="statusMsg" class="status-msg"></div>
+    </div>
+
+    <!-- ====== COL 2: PREVIEW ====== -->
+    <div class="preview-panel">
+        <div class="a6-wrapper">
+            <div class="a6-page print-target" id="a6Page">
+                <img src="/assets/logo.png" class="watermark" alt="">
+                <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" class="header-logo" alt="Logo">
+                        <div style="display: flex; flex-direction: column; margin-left: 5px;">
+                            <span class="company-name">i10 STORE</span>
+                            <span class="company-tagline">Chuyên Thinkpad</span>
+                        </div>
+                    </div>
+                    <div class="company-info">07 Đô Đốc Tuyết, Hòa Xuân<br>0838.288.000 | i10store.com</div>
+                </div>
+                <div class="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
+                <div class="invoice-number">Số: <span id="p_soHD"></span></div>
+                <div class="invoice-info">Ngày <span id="p_ngayThangNam"></span></div>
+
+                <div class="section-label">THÔNG TIN KHÁCH HÀNG:</div>
+                <div class="info-line"><span class="field">  Tên khách hàng:</span> <span class="value" id="p_tenKhachHang"></span></div>
+                <div class="info-line"><span class="field">Địa chỉ:</span> <span class="value" id="p_diaChiKhachHang"></span></div>
+                <div class="info-line"><span class="field">Điện thoại:</span> <span class="value" id="p_sdtKhachHang"></span></div>
+
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th class="stt">STT</th>
+                            <th class="ten-sp">Tên sản phẩm</th>
+                            <th class="soluong">SL</th>
+                            <th class="dongia">Đơn giá</th>
+                            <th class="thanhtien">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="p_productTable">
+                        <tr>
+                            <td class="sttd">1</td>
+                            <td class="ten-sp">
+                                <span class="p_tenSanPham"></span><br>
+                                <span style="font-size: 9px; color: #666;" class="p_modelSanPham"></span><br>
+                                <span style="font-size: 9px; color: #666;" class="p_cauHinh"></span>
+                            </td>
+                            <td class="soluong p_soLuong">1</td>
+                            <td class="dongia p_donGia"></td>
+                            <td class="thanhtien p_thanhTien"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="totals">
+                    <div class="total-line final"><span>TỔNG CỘNG:</span><span id="p_thanhTienChu"></span></div>
+                </div>
+
+                <div class="payment-info">
+                    <strong>Phương thức thanh toán:</strong> <span id="p_thanhToan"></span>
+                </div>
+
+                <div class="info-line" style="margin-top: 5px;">
+                    <span class="field">Ghi chú:</span> <span class="value" id="p_ghiChu"></span>
+                </div>
+
+                <div class="signatures">
+                    <div class="sig-left"><div class="sig-label">Người mua</div></div>
+                    <div class="sig-right"><div class="sig-label">Người bán</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== COL 3: CONTROLS ====== -->
+    <div class="controls-panel">
+        <h3 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>ĐIỀU KHIỂN IN ẤN</strong></h3>
+
+        <div class="ctrl-group"><label>Cỡ chữ</label><input type="range" id="fontSize" min="7" max="14" value="10" step="0.5" oninput="updatePreview()"><span class="ctrl-val" id="valFS">10px</span></div>
+        <div class="ctrl-group"><label>Phóng to trang (%)</label><input type="range" id="pageScale" min="60" max="140" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valScale">100%</span></div>
+        <div class="ctrl-group"><label>Căn lề trái</label><input type="range" id="marginL" min="0" max="15" value="8" oninput="updatePreview()"><span class="ctrl-val" id="valML">8mm</span></div>
+        <div class="ctrl-group"><label>Căn lề phải</label><input type="range" id="marginR" min="0" max="15" value="8" oninput="updatePreview()"><span class="ctrl-val" id="valMR">8mm</span></div>
+        <div class="ctrl-group"><label>Căn lề trên</label><input type="range" id="marginT" min="0" max="15" value="6" oninput="updatePreview()"><span class="ctrl-val" id="valMT">6mm</span></div>
+        <div class="ctrl-group"><label>Căn lề dưới</label><input type="range" id="marginB" min="0" max="15" value="6" oninput="updatePreview()"><span class="ctrl-val" id="valMB">6mm</span></div>
+        <div class="ctrl-group"><label>Độ đậm chữ (%)</label><input type="range" id="density" min="50" max="150" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valDen">100%</span></div>
+        <div class="ctrl-group"><label>Tốc độ in (giây)</label><input type="range" id="printSpeed" min="0" max="5" value="0.5" step="0.5" oninput="updateSpeed()"><span class="ctrl-val" id="valSpd">0.5s</span></div>
+
+        <div class="ctrl-btn-group">
+            <button class="btn btn-print" onclick="printInvoice()">In hóa đơn</button>
+            <button class="btn btn-pdf" onclick="savePDF()">Lưu PDF</button>
+            <button class="btn btn-png" onclick="savePNG()">Lưu PNG</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+var productCount = 1;
+
+function syncDate() {
+    var dateStr = document.getElementById('ngayThangNam').value;
+    document.getElementById('p_ngayThangNam').textContent = dateStr;
+}
+
+function addProduct() {
+    productCount++;
+    var productList = document.getElementById('productList');
+    var newProduct = document.createElement('div');
+    newProduct.className = 'product-item';
+    newProduct.id = 'product-' + productCount;
+    newProduct.innerHTML = `
+        <div class="product-item-header">
+            <span>Sản phẩm ${productCount}</span>
+            <span class="product-item-remove" onclick="removeProduct(${productCount})">Xóa</span>
+        </div>
+        <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" oninput="tinhTong()"></div>
+        <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
+        <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
+        <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
+        <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" oninput="tinhTong()"></div>
+    `;
+    productList.appendChild(newProduct);
+    tinhTong();
+}
+
+function removeProduct(id) {
+    if (productCount > 1) {
+        var product = document.getElementById('product-' + id);
+        if (product) {
+            product.remove();
+            productCount--;
+            tinhTong();
+        }
+    }
+}
+
+function tinhTong() {
+    var products = document.querySelectorAll('.product-item');
+    var tableBody = document.getElementById('p_productTable');
+    tableBody.innerHTML = '';
+    
+    var tongTien = 0;
+    var stt = 1;
+    
+    products.forEach(function(product) {
+        var tenSP = product.querySelector('.tenSanPham').value;
+        var modelSP = product.querySelector('.modelSanPham').value;
+        var cauHinh = product.querySelector('.cauHinh').value;
+        var soLuong = parseInt(product.querySelector('.soLuong').value) || 0;
+        var donGia = parseInt(String(product.querySelector('.donGia').value).replace(/[^0-9]/g, '')) || 0;
+        var thanhTien = soLuong * donGia;
+        tongTien += thanhTien;
+        
+        var row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="sttd">${stt}</td>
+            <td class="ten-sp">
+                ${tenSP || ''}<br>
+                <span style="font-size: 9px; color: #666;">${modelSP || ''}</span><br>
+                <span style="font-size: 9px; color: #666;">${cauHinh || ''}</span>
+            </td>
+            <td class="soluong">${soLuong}</td>
+            <td class="dongia">${donGia.toLocaleString('vi-VN')}</td>
+            <td class="thanhtien">${thanhTien.toLocaleString('vi-VN')}</td>
+        `;
+        tableBody.appendChild(row);
+        stt++;
+    });
+    
+    if (tongTien > 0) {
+        var words = numberToWords(tongTien);
+        document.getElementById('thanhTienChu').value = words;
+        document.getElementById('p_thanhTienChu').textContent = tongTien.toLocaleString('vi-VN') + ' VNĐ (' + words + ')';
+    } else {
+        document.getElementById('thanhTienChu').value = '';
+        document.getElementById('p_thanhTienChu').textContent = '';
+    }
+}
+
+var DV = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
+var HANG = ['','nghìn','triệu','tỷ'];
+
+function readGroup3(n) {
+    var t = Math.floor(n / 100);
+    var c = Math.floor((n % 100) / 10);
+    var d = n % 10;
+    var p = [];
+    if (t > 0) { p.push(DV[t], 'trăm'); if (c === 0 && d > 0) p.push('linh'); }
+    if (c > 1) { p.push(DV[c], 'mươi'); if (d === 1) p.push('mốt'); else if (d === 5) p.push('lăm'); else if (d > 0) p.push(DV[d]); }
+    else if (c === 1) { p.push('mười'); if (d === 1) p.push('một'); else if (d === 5) p.push('lăm'); else if (d > 0) p.push(DV[d]); }
+    else { if (d > 0) { if (t > 0) p.push('linh'); p.push(DV[d]); } }
+    return p.join(' ');
+}
+
+function numberToWords(num) {
+    if (num === null || num === undefined || num === '') return '';
+    num = parseInt(String(num).replace(/[^0-9]/g, ''));
+    if (isNaN(num) || num === 0) return 'Không đồng';
+    var groups = [];
+    while (num > 0) { groups.push(num % 1000); num = Math.floor(num / 1000); }
+    var result = '';
+    for (var i = groups.length - 1; i >= 0; i--) {
+        var g = groups[i];
+        if (g === 0) continue;
+        var txt = readGroup3(g);
+        if (i > 0 && HANG[i]) txt += ' ' + HANG[i];
+        result = result ? result + ' ' + txt : txt;
+    }
+    if (!result) return 'Không đồng';
+    return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
+}
+
+var tienEditable = false;
+function toggleEditTien() {
+    tienEditable = !tienEditable;
+    var el = document.getElementById('thanhTienChu');
+    if (tienEditable) {
+        el.removeAttribute('readonly');
+        el.style.background = '#fff';
+        el.style.borderColor = '#f39c12';
+    } else {
+        el.setAttribute('readonly', true);
+        el.style.background = '#f5f5f5';
+        el.style.borderColor = '#ccc';
+    }
+}
+
+function toggleSection(el) {
+    var body = el.nextElementSibling;
+    var icon = el.querySelector('.toggle-icon');
+    body.classList.toggle('collapsed');
+    icon.textContent = body.classList.contains('collapsed') ? '▶' : '▼';
+}
+
+var paymentValue = '';
+function selectPayment(val) {
+    document.getElementById('lblCK').className = '';
+    document.getElementById('lblTM').className = '';
+    document.getElementById('lblKHAC').className = '';
+    var customDiv = document.getElementById('paymentCustom');
+
+    if (val === 'Chuyển khoản') { document.getElementById('lblCK').className = 'selected'; customDiv.classList.remove('show'); }
+    else if (val === 'Tiền mặt') { document.getElementById('lblTM').className = 'selected'; customDiv.classList.remove('show'); }
+    else if (val === 'khac') { document.getElementById('lblKHAC').className = 'selected'; customDiv.classList.add('show'); val = document.getElementById('thanhToanCustom').value || ''; document.getElementById('thanhToanCustom').focus(); }
+    
+    if (val !== 'khac') { paymentValue = val; document.getElementById('p_thanhToan').textContent = val; }
+}
+
+function initDefaults() {
+    document.getElementById('p_soHD').textContent = document.getElementById('soHD').value;
+    document.getElementById('p_ngayThangNam').textContent = document.getElementById('ngayThangNam').value;
+    document.getElementById('p_tenKhachHang').textContent = document.getElementById('tenKhachHang').value;
+    document.getElementById('p_diaChiKhachHang').textContent = document.getElementById('diaChiKhachHang').value;
+    document.getElementById('p_sdtKhachHang').textContent = document.getElementById('sdtKhachHang').value;
+    document.getElementById('p_ghiChu').textContent = document.getElementById('ghiChu').value;
+    tinhTong();
+    
+    document.getElementById('soHD').addEventListener('input', function() { document.getElementById('p_soHD').textContent = this.value; });
+    document.getElementById('tenKhachHang').addEventListener('input', function() { document.getElementById('p_tenKhachHang').textContent = this.value; });
+    document.getElementById('diaChiKhachHang').addEventListener('input', function() { document.getElementById('p_diaChiKhachHang').textContent = this.value; });
+    document.getElementById('sdtKhachHang').addEventListener('input', function() { document.getElementById('p_sdtKhachHang').textContent = this.value; });
+    document.getElementById('ghiChu').addEventListener('input', function() { document.getElementById('p_ghiChu').textContent = this.value; });
+}
+
+function updatePreview() {
+    var fs = document.getElementById('fontSize').value;
+    var scale = document.getElementById('pageScale').value;
+    var ml = document.getElementById('marginL').value;
+    var mr = document.getElementById('marginR').value;
+    var mt = document.getElementById('marginT').value;
+    var mb = document.getElementById('marginB').value;
+    var den = document.getElementById('density').value;
+
+    document.getElementById('valFS').textContent = fs + 'px';
+    document.getElementById('valScale').textContent = scale + '%';
+    document.getElementById('valML').textContent = ml + 'mm';
+    document.getElementById('valMR').textContent = mr + 'mm';
+    document.getElementById('valMT').textContent = mt + 'mm';
+    document.getElementById('valMB').textContent = mb + 'mm';
+    document.getElementById('valDen').textContent = den + '%';
+
+    var page = document.getElementById('a6Page');
+    page.style.setProperty('--fs', fs + 'px', 'important');
+    page.style.padding = mt + 'mm ' + mr + 'mm ' + mb + 'mm ' + ml + 'mm';
+    page.style.filter = 'contrast(' + den + '%)';
+    page.style.transform = 'scale(' + (scale / 100) + ')';
+    page.style.transformOrigin = 'top left';
+
+    var w = page.parentElement;
+    w.style.width = (105 * scale / 100) + 'mm';
+    page.style.maxHeight = (148 * scale / 100) + 'mm';
+}
+
+function updateSpeed() { document.getElementById('valSpd').textContent = document.getElementById('printSpeed').value + 's'; }
+
+function showStatus(msg, type) {
+    var el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status-msg ' + type;
+    setTimeout(function() { el.className = 'status-msg'; }, 5000);
+}
+
+function clearForm() {
+    document.getElementById('soHD').value = '';
+    document.getElementById('ngayThangNam').value = '';
+    document.getElementById('tenKhachHang').value = '';
+    document.getElementById('diaChiKhachHang').value = '';
+    document.getElementById('sdtKhachHang').value = '';
+    document.getElementById('ghiChu').value = 'Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth.';
+    document.getElementById('thanhTienChu').value = '';
+    
+    document.getElementById('p_soHD').textContent = '';
+    document.getElementById('p_ngayThangNam').textContent = '';
+    document.getElementById('p_tenKhachHang').textContent = '';
+    document.getElementById('p_diaChiKhachHang').textContent = '';
+    document.getElementById('p_sdtKhachHang').textContent = '';
+    document.getElementById('p_ghiChu').textContent = '';
+    document.getElementById('p_thanhTienChu').textContent = '';
+    
+    paymentValue = '';
+    document.getElementById('lblCK').className = '';
+    document.getElementById('lblTM').className = '';
+    document.getElementById('lblKHAC').className = '';
+    document.getElementById('paymentCustom').classList.remove('show');
+    document.getElementById('p_thanhToan').textContent = '';
+    
+    var products = document.querySelectorAll('.product-item');
+    products.forEach(function(p, index) {
+        if (index > 0) p.remove();
+    });
+    var firstProduct = document.querySelector('.product-item');
+    firstProduct.querySelector('.tenSanPham').value = '';
+    firstProduct.querySelector('.modelSanPham').value = '';
+    firstProduct.querySelector('.cauHinh').value = '';
+    firstProduct.querySelector('.soLuong').value = '1';
+    firstProduct.querySelector('.donGia').value = '';
+    
+    productCount = 1;
+    tinhTong();
+    showStatus('Đã xóa trắng form', 'success');
+}
+
+async function captureCanvas() {
+    var page = document.getElementById('a6Page');
+    var origT = page.style.transform;
+    page.style.transform = 'none';
+    var canvas = await html2canvas(page, { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: page.offsetWidth, height: page.offsetHeight });
+    page.style.transform = origT;
+    return canvas;
+}
+
+function printInvoice() {
+    var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
+    showStatus('Đang chuẩn bị in...', 'success');
+    setTimeout(function() { window.print(); }, speed);
+}
+
+async function savePDF() {
+    showStatus('Đang tạo PDF...', 'success');
+    try {
+        var canvas = await captureCanvas();
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [105, 148] });
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 105, 148);
+        var name = 'HoaDon_' + (document.getElementById('soHD').value || 'draft') + '.pdf';
+        pdf.save(name);
+        showStatus('Đã lưu PDF: ' + name, 'success');
+    } catch (e) { showStatus('Lỗi PDF: ' + e.message, 'error'); }
+}
+
+async function savePNG() {
+    showStatus('Đang tạo PNG...', 'success');
+    try {
+        var canvas = await captureCanvas();
+        var link = document.createElement('a');
+        link.download = 'HoaDon_' + (document.getElementById('soHD').value || 'draft') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showStatus('Đã lưu PNG', 'success');
+    } catch (e) { showStatus('Lỗi PNG: ' + e.message, 'error'); }
+}
+
+// === GET FORM DATA ===
+function getFormDataHoaDon() {
+    var data = {
+        soHD: document.getElementById('soHD').value,
+        ngayThangNam: document.getElementById('ngayThangNam').value,
+        tenKhachHang: document.getElementById('tenKhachHang').value,
+        diaChiKhachHang: document.getElementById('diaChiKhachHang').value,
+        sdtKhachHang: document.getElementById('sdtKhachHang').value,
+        ghiChu: document.getElementById('ghiChu').value,
+        thanhToan: paymentValue,
+        giaTienChu: document.getElementById('thanhTienChu').value,
+        timestamp: new Date().toLocaleString('vi-VN')
+    };
+    var products = document.querySelectorAll('.product-item');
+    var productData = [];
+    products.forEach(function(p) {
+        productData.push({
+            tenSanPham: p.querySelector('.tenSanPham').value,
+            modelSanPham: p.querySelector('.modelSanPham').value,
+            cauHinh: p.querySelector('.cauHinh').value,
+            soLuong: p.querySelector('.soLuong').value,
+            donGia: p.querySelector('.donGia').value
+        });
+    });
+    data.products = productData;
+    return data;
+}
+
+// === SAVE TO GOOGLE SHEET ===
+async function saveToSheet() {
+    var data = getFormDataHoaDon();
+    if (!data.tenKhachHang || !data.products[0].tenSanPham) {
+        alert('⚠️ Vui lòng nhập ít nhất:\n- Tên khách hàng\n- Tên sản phẩm');
+        return;
+    }
+
+    var btn = document.getElementById('btnSaveSheet');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
+    btn.style.opacity = '0.8';
+
+    showStatus('Đang gửi dữ liệu lên Google Sheet...', 'success');
+
+    var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwYuXoOp1FVyoSkwjJWvrcP_KLshnI5lzMfSduT2nJZIpHN2ImEHLPgdhtuFKrWqeZh/exec';
+
+    try {
+        await fetch(WEBAPP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        showStatus('Đã gửi dữ liệu lên Google Sheet!', 'success');
+        alert('✅ Đã gửi hóa đơn lên Google Sheet!\n\nSheet "HoaDon" sẽ được cập nhật trong giây lát.');
+    } catch (e) {
+        showStatus('Lỗi kết nối: ' + e.message, 'error');
+        alert('❌ Lỗi khi gửi dữ liệu:\n' + e.message + '\n\nKiểm tra:\n1. Web App URL trong code đã đúng\n2. Apps Script đã deploy lại\n3. Quyền truy cập: "Anyone"');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu Google Sheet';
+        btn.style.opacity = '1';
+    }
+}
+
+initDefaults();
+updatePreview();
+updateSpeed();
+</script>
+
+<div class="hotline-phone-ring-wrap">
+    <div class="hotline-phone-ring">
+    <div class="hotline-phone-ring-circle"></div>
+    <div class="hotline-phone-ring-circle-fill"></div>
+    <div class="hotline-phone-ring-img-circle">
+    <a href="tel:0838288000" class="pps-btn-img">
+    <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" alt="Gọi điện thoại" width="50">
+    </a>
+    </div>
+    </div>
+    <div class="hotline-bar">
+    <a target="_blank" href="https://zalo.me/0838288000">
+    <span class="text-hotline">0838.288.000</span>
+    </a>
+    </div>
+</div>
+
+<footer id="footer" class="footer color-bg">
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-4">
+          <div class="module-heading"><h4 class="module-title">i10 STORE - THINKPAD US</h4></div>
+          <div class="module-body">
+            <ul class="toggle-footer">
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-map-marker fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>07 Đô Đốc Tuyết, Phường Hòa Xuân, Đà Nẵng</p></div></li>
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-phone fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>Hotline/Zalo: <a href="tel:0838288000">0838.288.000</a></p></div></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading"><h4 class="module-title">THÔNG TIN & HỖ TRỢ</h4></div>
+          <div class="module-body">
+            <ul class="list-unstyled">
+              <li><a href="/index.html"><i class="fa fa-caret-right"></i> Trang chủ</a></li>
+              <li><a href="/hopdongmuaban.html"><i class="fa fa-caret-right"></i> Hợp đồng mua bán</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading"><h4 class="module-title">THANH TOÁN</h4></div>
+          <div class="module-body">
+            <ul class="toggle-footer">
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-bank fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>NGÂN HÀNG TECHCOMBANK<br>Số TK: 9179.000.000<br>Chủ TK: NGUYEN QUANG HIEU</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="copyright-bar">
+    <div class="container">
+      <div class="col-xs-12 col-sm-12 no-padding">
+        <p style="text-align:center; margin:0; padding:10px 0; border-top:1px solid rgba(0,0,0,0.2);">© 2023 i10 Store - Chuyên Laptop Thinkpad US.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="/assets/js/scripts.js"></script>
+
+<script>
+const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
+document.addEventListener("DOMContentLoaded", () => {
+    const siteLogo = document.getElementById("site-logo");
+    if (siteLogo) siteLogo.src = SITE_LOGO;
+});
+</script>
+
+</body>
+</html>
