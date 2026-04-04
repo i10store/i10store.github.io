@@ -83,6 +83,7 @@
         .a6-page .header .company-tagline { font-size: var(--fs, 10px); font-weight: normal; color: #555; }
         .a6-page .header .company-info { font-size: var(--fs, 10px); text-align: left; }
         .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.29; width: 80%; max-width: 200px; z-index: 0; pointer-events: none; }
+        .a6-page .watermark-text { position: absolute; top: 70%; left: 65%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 18px; font-weight: bold; opacity: 0.29; z-index: 0; pointer-events: none; white-space: nowrap; }
         
         .a6-page .invoice-title { text-align: center; font-size: calc(var(--fs, 10px) + 4px); font-weight: bold; text-transform: uppercase; margin: 5px 0; position: relative; z-index: 1; }
         .a6-page .invoice-info { text-align: center; font-size: var(--fs, 10px); margin: 3px 0; }
@@ -158,10 +159,15 @@
 
         .footer { display: block !important; position: relative; }
         .header-style-1 { display: block; position: relative; flex-shrink: 0; }
+        .password-group { margin-bottom: 10px; }
+        .password-group label { font-size: 11px; color: #555; display: block; margin-bottom: 3px; }
+        .password-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .password-group input:focus { border-color: #04922c; outline: none; box-shadow: 0 0 3px rgba(74,144,217,0.3); }
+        .password-group .error { color: #c00; font-size: 10px; display: none; margin-top: 3px; }
+        .password-group .error.show { display: block; }
     </style>
 </head>
 <body class="cnt-home">
-
 <header class="header-style-1"> 
   <div class="top-bar animate-dropdown"><div class="container"></div></div>
   <div class="main-header">
@@ -254,6 +260,7 @@
         <div class="a6-wrapper">
             <div class="a6-page print-target" id="a6Page">
                 <img src="/assets/logo.png" class="watermark" alt="">
+                <div class="watermark-text">i10store.com</div>
                 <div class="header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
                     <div style="display: flex; align-items: center;">
                         <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" class="header-logo" alt="Logo">
@@ -331,8 +338,13 @@
         <div class="ctrl-group"><label>Độ đậm chữ (%)</label><input type="range" id="density" min="50" max="150" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valDen">100%</span></div>
         <div class="ctrl-group"><label>Tốc độ in (giây)</label><input type="range" id="printSpeed" min="0" max="5" value="0.5" step="0.5" oninput="updateSpeed()"><span class="ctrl-val" id="valSpd">0.5s</span></div>
 
+        <div class="password-group">
+            <label>Mật khẩu để in ấn</label>
+            <input type="password" id="printPass" placeholder="Nhập mật khẩu..." onkeyup="if(event.key==='Enter')doPrintInvoice()">
+            <div class="error" id="printPassError">Mật khẩu không đúng!</div>
+        </div>
         <div class="ctrl-btn-group">
-            <button class="btn btn-print" onclick="printInvoice()">In hóa đơn</button>
+            <button class="btn btn-print" onclick="doPrintInvoice()">In hóa đơn</button>
             <button class="btn btn-pdf" onclick="savePDF()">Lưu PDF</button>
             <button class="btn btn-png" onclick="savePNG()">Lưu PNG</button>
         </div>
@@ -595,10 +607,23 @@ async function captureCanvas() {
     return canvas;
 }
 
-function printInvoice() {
+function doPrintInvoice() {
+    var passInput = document.getElementById('printPass');
+    var errorEl = document.getElementById('printPassError');
+    if (passInput.value !== 'i10laptop') {
+        errorEl.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+        return;
+    }
+    errorEl.classList.remove('show');
     var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
     showStatus('Đang chuẩn bị in...', 'success');
     setTimeout(function() { window.print(); }, speed);
+}
+
+function printInvoice() {
+    doPrintInvoice();
 }
 
 async function savePDF() {
@@ -669,7 +694,7 @@ async function saveToSheet() {
 
     showStatus('Đang gửi dữ liệu lên Google Sheet...', 'success');
 
-    var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwYuXoOp1FVyoSkwjJWvrcP_KLshnI5lzMfSduT2nJZIpHN2ImEHLPgdhtuFKrWqeZh/exec';
+    var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw6OWEEGCv2WCeY0LI6A3NDhZawPSnTC_gQN6Mmzu8nfBPu_qKobZDahv5GA2o7-PI/exec';
 
     try {
         await fetch(WEBAPP_URL, {
@@ -753,10 +778,13 @@ updateSpeed();
     </div>
   </div>
 </footer>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="/assets/js/scripts.js"></script>
+
+
 
 <script>
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
