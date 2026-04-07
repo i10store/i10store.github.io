@@ -738,7 +738,8 @@ function doPrintContract() {
     if (passInput.value !== 'i10laptop') {
         errorEl.classList.add('show');
         passInput.value = '';
-        passInput.focus();
+        
+        Input.focus();
         return;
     }
     errorEl.classList.remove('show');
