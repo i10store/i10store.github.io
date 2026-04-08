@@ -1,0 +1,1010 @@
+/**
+ * ==============================================
+ * i10 STORE - FULL APPS SCRIPT
+ * ==============================================
+ * DÁN TRỰC TIẾP VÀO CODE.GS
+ * 
+ * CÁCH SỬ DỤNG:
+ *   1. Mở Google Sheet > Extensions > Apps Script
+ *   2. XÓA TOÀN BỘ code cũ trong Code.gs
+ *   3. DÁN TOÀN BỘ file này vào
+ *   4. Lưu lại (Ctrl+S)
+ *   5. Deploy lại Web App (Deploy > Manage deployments > Edit > Deploy)
+ * ==============================================
+ */
+
+
+// ===========================
+// 📋 CONFIG - CẤU HÌNH HỆ THỐNG
+// ===========================
+
+const CONFIG = {
+  // Sheet names
+  STORE_SHEET_NAME: "Store",
+  SHEET_NAME: "Web",
+  ORDER_SHEET_NAME: "Order",
+  
+  // Drive IDs
+  DRIVE_ROOT_ID: "1ZO7AcpmyShKm2j0EVNorme7mYKRN2VcQ",
+  FOLDER_ID_BANNER: "1h1qRJQVMTtzTfXxyPPUgrIilyARr37o7",
+  STATIC_JSON_FOLDER_ID: "1vlL3LKoixYloAweJie1YbS1Vgro-oR_m",
+  
+  // File names
+  STATIC_JSON_FILE_NAME: "products.json",
+  STATIC_BANNER_FILE_NAME: "banners.json",
+  STATIC_CUSTOMER_FILE_NAME: "customer.json",
+  
+  // Cache keys
+  CACHE_KEY_PRODUCTS: "i10_cached_products",
+  CACHE_KEY_BANNER: "i10_cached_banner",
+  CACHE_KEY_CUSTOMER: "i10_cached_customer"
+};
+
+const STORE_SHEET_NAME = CONFIG.STORE_SHEET_NAME;
+const SHEET_NAME = CONFIG.SHEET_NAME;
+const CACHE_KEY_PRODUCTS = CONFIG.CACHE_KEY_PRODUCTS;
+const CACHE_KEY_BANNER = CONFIG.CACHE_KEY_BANNER;
+const DRIVE_ROOT_ID = CONFIG.DRIVE_ROOT_ID;
+const FOLDER_ID_BANNER = CONFIG.FOLDER_ID_BANNER;
+const STATIC_JSON_FOLDER_ID = CONFIG.STATIC_JSON_FOLDER_ID;
+const STATIC_JSON_FILE_NAME = CONFIG.STATIC_JSON_FILE_NAME;
+const STATIC_BANNER_FILE_NAME = CONFIG.STATIC_BANNER_FILE_NAME;
+
+
+/* =======================================================
+   MENU
+   ======================================================= */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu("🧰 I10 Tools")
+    .addItem("📁 Tạo / Đồng bộ Folder (vào 'Store')", "createProductFolders")
+    .addItem("✍️ Cập nhật/Tạo Link Web (vào 'Store')", "generateAndWriteWebLinks")
+    .addItem("🧹 Dọn dẹp Folder dư (theo 'Store')", "checkAndCleanExtraFolders")
+    .addItem("🔍 Kiểm tra link Folder (trên 'Store')", "checkDriveLinkMatch")
+    .addSeparator()
+    .addItem("🖼 Kiểm tra Folder rỗng (trên 'Web')", "checkEmptyImageFolders")
+    .addSeparator()
+    .addItem("🛒 Cập nhật Sản phẩm JSON (từ 'Web')", "updateProductJson")
+    .addItem("🖼 Cập nhật Banner JSON", "updateBannerJson")
+    .addItem("👤 Cập nhật Customer JSON", "updateCustomerJson")
+    .addItem("🚫 Xóa Cache JSON", "clearCachedJson")
+    .addSeparator()
+    .addItem("💾 Tải JSON về máy", "showDownloadJsonUI")
+    .addSeparator()
+    .addItem("📄 Mở Sheet Hợp Đồng", "openHopDongSheet")
+    .addItem("🌐 Mở WebApp", "openWebAppLink")
+    .addToUi();
+}
+
+
+/* =======================================================
+   WEBAPP
+   ======================================================= */
+function openWebAppLink() {
+  const url = ScriptApp.getService().getUrl();
+  if (url) {
+    SpreadsheetApp.getUi().alert("🌐 WebApp URL:\n" + url);
+  } else {
+    SpreadsheetApp.getUi().alert("⚠️ Chưa triển khai WebApp.\nVào menu: Deploy → New Deployment → Web app");
+  }
+}
+
+
+/* =======================================================
+   HỢP ĐỒNG MUA BÁN - MENU & HÀM MỞ SHEET
+   ======================================================= */
+function openHopDongSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("HopDongMuaBan");
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert("Sheet 'HopDongMuaBan' chưa tồn tại. Hãy tạo hợp đồng từ web trước.");
+    return;
+  }
+  ss.setActiveSheet(sheet);
+}
+
+
+/* =======================================================
+   HỢP ĐỒNG MUA BÁN - HÀM XỬ LÝ CHÍNH
+   ======================================================= */
+function handleHopDongMuaBan(data, timestamp) {
+  if (!data) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: "Không có dữ liệu gửi lên" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  const HD_SHEET_NAME = "HopDongMuaBan";
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(HD_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(HD_SHEET_NAME);
+    const headers = [
+      "Thời gian tạo",       // A
+      "Số hợp đồng",          // B
+      "Ngày lập",             // C
+      "Tháng",                // D
+      "Năm",                  // E
+      "Nơi lập",              // F
+      "Tên bên bán (A)",      // G
+      "CCCD bên bán",         // H
+      "Ngày cấp A",           // I
+      "Địa chỉ bên bán",      // J
+      "SĐT bên bán",          // K
+      "Tên bên mua (B)",      // L
+      "CCCD bên mua",         // M
+      "Ngày cấp B",           // N
+      "Địa chỉ bên mua",      // O
+      "Model máy",            // P
+      "Số Serial",            // Q
+      "Cấu hình",             // R
+      "Tình trạng",           // S
+      "Giá tiền (số)",        // T
+      "Giá tiền (chữ)",       // U
+      "Hình thức thanh toán",  // V
+      "Cam kết"               // W
+    ];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+    const hr = sheet.getRange(1, 1, 1, headers.length);
+    hr.setFontWeight("bold");
+    hr.setBackground("#2c3e50");
+    hr.setFontColor("#ffffff");
+    hr.setHorizontalAlignment("center");
+    hr.setVerticalAlignment("middle");
+    sheet.setFrozenRows(1);
+
+    const w = [150,100,60,60,60,120,150,130,100,180,100,150,130,100,180,150,130,180,150,120,200,150,250];
+    w.forEach(function(v, i) { sheet.setColumnWidth(i + 1, v); });
+  }
+
+  try {
+
+  const ts = timestamp || new Date();
+  const rowData = [
+    ts.toLocaleString("vi-VN"),
+    data.soHD || "",
+    data.ngay || "",
+    data.thang || "",
+    data.nam || "",
+    data.noiLap || "",
+    data.tenA || "",
+    data.cccdA || "",
+    data.ngayCapA || "",
+    data.diaChiA || "",
+    data.sdtA || "",
+    data.tenB || "",
+    data.cccdB || "",
+    data.ngayCapB || "",
+    data.diaChiB || "",
+    data.model || "",
+    data.serial || "",
+    data.cauHinh || "",
+    data.tinhTrang || "",
+    data.giaTien || "",
+    data.giaTienChu || "",
+    data.thanhToan || "",
+    data.commitment || ""
+  ];
+
+  sheet.appendRow(rowData);
+
+  const lastRow = sheet.getLastRow();
+  const rng = sheet.getRange(lastRow, 1, 1, rowData.length);
+  rng.setBorder(true, true, true, true, true, true);
+  if (lastRow % 2 === 0) {
+    rng.setBackground("#f0f8ff");
+  }
+
+  try {
+    const recipient = Session.getActiveUser().getEmail();
+    MailApp.sendEmail(
+      recipient,
+      "📄 HĐ Mua Bán: " + (data.model || "N/A") + " - " + (data.tenB || "N/A"),
+      "Hợp đồng mua bán laptop vừa được tạo:\n\n" +
+      "Số HĐ: " + (data.soHD || "N/A") + "\n" +
+      "Ngày: " + (data.ngay||"") + "/" + (data.thang||"") + "/" + (data.nam||"") + "\n" +
+      "Nơi lập: " + (data.noiLap || "N/A") + "\n\n" +
+      "Bên bán: " + (data.tenA || "N/A") + "\n" +
+      "CCCD: " + (data.cccdA || "N/A") + " | SĐT: " + (data.sdtA || "N/A") + "\n\n" +
+      "Bên mua: " + (data.tenB || "N/A") + "\n" +
+      "CCCD: " + (data.cccdB || "N/A") + "\n\n" +
+      "Model: " + (data.model || "N/A") + "\n" +
+      "Serial: " + (data.serial || "N/A") + "\n" +
+      "Cấu hình: " + (data.cauHinh || "N/A") + "\n" +
+      "Giá: " + (data.giaTien || "N/A") + " (" + (data.giaTienChu || "N/A") + ")\n" +
+      "Thanh toán: " + (data.thanhToan || "N/A") + "\n\n" +
+      "Thời gian: " + ts.toLocaleString("vi-VN")
+    );
+  } catch (e) {
+    Logger.log("Lỗi gửi email hợp đồng: " + e.message);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "ok", message: "Đã lưu hợp đồng!" }))
+    .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("Lỗi handleHopDongMuaBan: " + err.message);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+/* =======================================================
+   doPost - GỘP CHUNG: Hợp đồng + Đơn hàng + Liên hệ
+   ======================================================= */
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "error", message: "Không có dữ liệu POST" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = JSON.parse(e.postData.contents);
+    const timestamp = new Date();
+
+    // === HỢP ĐỒNG MUA BÁN ===
+    if (data.tenA !== undefined || data.tenB !== undefined || data.model !== undefined) {
+      return handleHopDongMuaBan(data, timestamp);
+    }
+
+    // === HÓA ĐƠN BÁN HÀNG ===
+    if (data.products !== undefined || data.tenKhachHang !== undefined) {
+      return handleHoaDon(data, timestamp);
+    }
+
+    // === ĐƠN HÀNG / LIÊN HỆ (code cũ) ===
+    const sheetName = "Order";
+    let rowData;
+    let emailSubject = "";
+    let emailBody = "";
+
+    if (data.product) {
+      rowData = [timestamp, data.name, data.phone, data.product, data.note];
+      emailSubject = "🛒 Bạn có đơn hàng mới từ Website: " + data.product;
+      emailBody = "Bạn vừa nhận được một đơn hàng mới:\n\n" +
+        "Sản phẩm: " + data.product + "\n" +
+        "Tên khách: " + data.name + "\n" +
+        "Điện thoại: " + data.phone + "\n" +
+        "Ghi chú: " + data.note + "\n" +
+        "Thời gian: " + timestamp.toLocaleString("vi-VN");
+
+    } else if (data.message) {
+      rowData = [timestamp, data.name, data.phone,
+        "LIÊN HỆ TỪ WEBSITE (Email: " + (data.email || 'N/A') + ")",
+        data.message];
+      emailSubject = "💬 Bạn có tin nhắn Liên hệ mới từ: " + data.name;
+      emailBody = "Bạn vừa nhận được một tin nhắn liên hệ mới (đã lưu vào sheet Order):\n\n" +
+        "Tên khách: " + data.name + "\n" +
+        "Điện thoại: " + data.phone + "\n" +
+        "Email: " + (data.email || 'Không cung cấp') + "\n" +
+        "Nội dung: " + data.message + "\n" +
+        "Thời gian: " + timestamp.toLocaleString("vi-VN");
+
+    } else {
+      throw new Error("Loại POST không xác định.");
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+
+    if (!sheet) {
+      throw new Error("Không tìm thấy sheet có tên là 'Order'.");
+    }
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Thời gian", "Tên", "Điện thoại", "Sản phẩm", "Ghi chú"]);
+    }
+
+    sheet.appendRow(rowData);
+
+    try {
+      const recipient = Session.getActiveUser().getEmail();
+      MailApp.sendEmail(recipient, emailSubject, emailBody);
+    } catch (emailErr) {
+      Logger.log("Lỗi gửi email: " + emailErr.message);
+      throw new Error("Đã lưu đơn hàng nhưng lỗi gửi email: " + emailErr.message);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("Lỗi doPost: " + err.message);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+/* =======================================================
+   doGet - Banner API
+   ======================================================= */
+function doGet(e) {
+  const mode = e && e.parameter ? e.parameter.mode : null;
+  const cache = CacheService.getScriptCache();
+
+  if (mode === "banner") {
+    const cached = cache.get(CACHE_KEY_BANNER);
+    if (cached) {
+      return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+    }
+    const banners = getImagesFromFolder(FOLDER_ID_BANNER);
+    const bannerJson = JSON.stringify(banners);
+    cache.put(CACHE_KEY_BANNER, bannerJson, 21600);
+    return ContentService.createTextOutput(bannerJson).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "OK", message: "Web App đang hoạt động" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/* =======================================================
+   HELPER: Drive & Folder
+   ======================================================= */
+function updateFileInDrive(folderId, fileName, jsonContent) {
+  try {
+    const folder = DriveApp.getFolderById(folderId);
+    const files = folder.getFilesByName(fileName);
+    while (files.hasNext()) { files.next().setTrashed(true); }
+    const file = folder.createFile(fileName, jsonContent, "application/json");
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getId();
+  } catch (e) {
+    Logger.log("Lỗi updateFileInDrive: " + e.message);
+    return null;
+  }
+}
+
+function getFirstImage(folderId) {
+  if (!folderId) return null;
+  try {
+    const q = "'" + folderId + "' in parents and mimeType contains 'image/' and trashed = false";
+    const res = Drive.Files.list({ q: q, fields: "files(id, name)", orderBy: "name", pageSize: 1 });
+    if (!res.files || res.files.length === 0) return null;
+    const f = res.files[0];
+    return { id: f.id, name: f.name, url: "https://drive.google.com/uc?export=view&id=" + f.id, thumb: "https://drive.google.com/thumbnail?id=" + f.id + "&sz=s1000" };
+  } catch (err) {
+    Logger.log("Lỗi getFirstImage: " + err.message);
+    return null;
+  }
+}
+
+function getImagesFromFolder(folderId) {
+  if (!folderId) return [];
+  try {
+    const q = "'" + folderId + "' in parents and mimeType contains 'image/' and trashed = false";
+    const res = Drive.Files.list({ q: q, fields: "files(id, name, mimeType)", orderBy: "name" });
+    return (res.files || []).map(function(f) {
+      return { id: f.id, name: f.name, url: "https://drive.google.com/uc?export=view&id=" + f.id, thumb: "https://drive.google.com/thumbnail?id=" + f.id + "&sz=s1000" };
+    });
+  } catch (err) {
+    Logger.log("Drive error: " + err.message);
+    return [];
+  }
+}
+
+function extractFolderId(url) {
+  if (!url) return "";
+  const patterns = [/\/folders\/([-\w]{20,})/, /id=([-\w]{20,})/, /[-\w]{25,}/];
+  for (var i = 0; i < patterns.length; i++) {
+    const match = url.match(patterns[i]);
+    if (match) return match[1];
+  }
+  return "";
+}
+
+function createSlug(text) {
+  if (!text) return "";
+  return text.toString().toLowerCase()
+    .replace(/\s+/g, '-').replace(/\//g, '-').replace(/@/g, 'at')
+    .replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
+    .replace(/^-+/, '').replace(/-+$/, '');
+}
+
+function sheetToObjects(sheetName) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const values = sheet.getDataRange().getValues();
+  const headers = values.shift();
+  const webLinkCol = headers.indexOf("Web Link");
+  return values.map(function(row, i) {
+    const obj = Object.fromEntries(headers.map(function(h, j) { return [h, row[j]]; }));
+    if (webLinkCol > -1 && obj["Web Link"]) {
+      obj.slug = obj["Web Link"];
+    } else {
+      const slugText = [obj["Model"] || obj["Name"], obj["CPU"], obj["RAM"], obj["GPU"]].filter(Boolean).join(' ');
+      obj.slug = "san-pham/" + createSlug(slugText || "product-" + i);
+    }
+    return obj;
+  });
+}
+
+
+/* =======================================================
+   CÁC HÀM CŨ KHÁC (giữ nguyên)
+   ======================================================= */
+
+function createProductFolders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STORE_SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('Lỗi: Không tìm thấy sheet "' + STORE_SHEET_NAME + '".'); return; }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const nameCol = headers.indexOf("Name");
+  const driveCol = headers.indexOf("Folder Album Image Google Drive");
+  const idCol = headers.indexOf("Folder ID");
+  const statusCol = headers.indexOf("Trạng thái tạo folder");
+  if (nameCol === -1 || driveCol === -1 || idCol === -1) { SpreadsheetApp.getUi().alert('Sheet "' + STORE_SHEET_NAME + '" thiếu cột cần thiết.'); return; }
+  const root = DriveApp.getFolderById(DRIVE_ROOT_ID);
+  const folders = {};
+  const iter = root.getFolders();
+  while (iter.hasNext()) { const f = iter.next(); folders[f.getId()] = f.getName(); }
+  let created = 0, updated = 0;
+  data.forEach(function(row, i) {
+    const name = (row[nameCol] || "").toString().trim();
+    if (!name) return;
+    const folderId = (row[idCol] || "").toString().trim();
+    const link = (row[driveCol] || "").toString().trim();
+    try {
+      let folder = null;
+      if (folderId && folders[folderId]) { folder = DriveApp.getFolderById(folderId); }
+      else { const found = root.getFoldersByName(name); if (found.hasNext()) folder = found.next(); }
+      if (!folder) { folder = root.createFolder(name); created++; } else { updated++; }
+      const newLink = "https://drive.google.com/drive/folders/" + folder.getId();
+      const newId = folder.getId();
+      if (link !== newLink) sheet.getRange(i + 2, driveCol + 1).setValue(newLink);
+      if (folderId !== newId) sheet.getRange(i + 2, idCol + 1).setValue(newId);
+      if (statusCol > -1) sheet.getRange(i + 2, statusCol + 1).setValue("✅ OK").setBackground(null);
+    } catch (err) {
+      if (statusCol > -1) sheet.getRange(i + 2, statusCol + 1).setValue("❌ " + err.message).setBackground("#ffcccc");
+    }
+  });
+  SpreadsheetApp.getActive().toast("Tạo " + created + ", đồng bộ " + updated + ' folder trên sheet "Store".');
+}
+
+function generateAndWriteWebLinks() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STORE_SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('Lỗi: Không tìm thấy sheet "' + STORE_SHEET_NAME + '".'); return; }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const modelCol = headers.indexOf("Model");
+  const webLinkCol = headers.indexOf("Web Link");
+  if (webLinkCol === -1) { SpreadsheetApp.getUi().alert("Không tìm thấy cột 'Web Link'."); return; }
+  if (modelCol === -1) { SpreadsheetApp.getUi().alert("Cần cột 'Model' để tạo link."); return; }
+  let updated = 0;
+  const links = new Set();
+  data.forEach(function(row, i) {
+    const model = (row[modelCol] || "").toString().trim();
+    if (!model) return;
+    const textToSlug = [model, row[headers.indexOf("CPU")], row[headers.indexOf("RAM")], row[headers.indexOf("GPU")]].filter(Boolean).join(' ');
+    let slug = createSlug(textToSlug || "san-pham-" + (i + 2));
+    let originalSlug = slug, count = 2;
+    while (links.has(slug)) { slug = originalSlug + "-" + (count++); }
+    links.add(slug);
+    const webLink = "san-pham/" + slug;
+    if (row[webLinkCol] !== webLink) { sheet.getRange(i + 2, webLinkCol + 1).setValue(webLink); updated++; }
+  });
+  SpreadsheetApp.getActive().toast("Đã cập nhật " + updated + ' link SEO (vào sheet "Store").');
+}
+
+function checkAndCleanExtraFolders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STORE_SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('Lỗi: Không tìm thấy sheet "' + STORE_SHEET_NAME + '".'); return; }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const nameCol = headers.indexOf("Name");
+  const validNames = new Set(data.map(function(r) { return (r[nameCol] || "").toString().trim(); }).filter(Boolean));
+  const root = DriveApp.getFolderById(DRIVE_ROOT_ID);
+  const recycle = root.getFoldersByName("_DATA").hasNext() ? root.getFoldersByName("_DATA").next() : root.createFolder("_DATA");
+  const extras = [];
+  const folders = root.getFolders();
+  while (folders.hasNext()) { const f = folders.next(); if (f.getName() !== "_DATA" && !validNames.has(f.getName().trim())) extras.push(f); }
+  if (!extras.length) { SpreadsheetApp.getUi().alert("Không có folder dư!"); return; }
+  extras.forEach(function(f) { try { f.moveTo(recycle); } catch (e) {} });
+  SpreadsheetApp.getActive().toast("Đã chuyển " + extras.length + ' folder dư vào _DATA.');
+}
+
+function checkDriveLinkMatch() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STORE_SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('Lỗi: Không tìm thấy sheet "' + STORE_SHEET_NAME + '".'); return; }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const linkCol = headers.indexOf("Folder Album Image Google Drive");
+  const nameCol = headers.indexOf("Name");
+  if (nameCol === -1 || linkCol === -1) { SpreadsheetApp.getUi().alert("Thiếu cột cần thiết."); return; }
+  const mismatches = [];
+  data.forEach(function(row, i) {
+    const name = (row[nameCol] || "").toString().trim();
+    const link = (row[linkCol] || "").toString().trim();
+    if (!link || !name) return;
+    const folderId = extractFolderId(link);
+    if (!folderId) return;
+    try {
+      const folder = DriveApp.getFolderById(folderId);
+      if (folder.getName().trim() !== name) mismatches.push({ row: i + 2, expected: name, actual: folder.getName().trim(), link: link });
+    } catch (err) { mismatches.push({ row: i + 2, expected: name, actual: "Không tồn tại", link: link }); }
+  });
+  if (!mismatches.length) { SpreadsheetApp.getUi().alert("Tất cả link Folder Drive đều khớp!"); return; }
+  const html = '<html><head><style>body{font-family:sans-serif;padding:10px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:4px}th{background:#f3f3f3}button{margin-top:10px;padding:6px 10px;border-radius:4px;cursor:pointer;background:#d33;color:#fff;border:none}</style></head><body><h3>Phát hiện ' + mismatches.length + ' link không khớp</h3><table><tr><th>Hàng</th><th>Tên hiện tại</th><th>Tên đúng</th><th>Xem</th></tr>' + mismatches.map(function(m) { return '<tr><td>' + m.row + '</td><td>' + m.actual + '</td><td>' + m.expected + '</td><td><a href="' + m.link + '" target="_blank">Mở</a></td></tr>'; }).join("") + '</table><button onclick="google.script.run.withSuccessHandler(function(){document.body.innerHTML=\'<h3>Đã xóa link sai</h3>\';}).removeWrongFolderLinks()">Xóa các link sai</button></body></html>';
+  CacheService.getUserCache().put("mismatchLinks", JSON.stringify(mismatches), 600);
+  SpreadsheetApp.getUi().showSidebar(HtmlService.createHtmlOutput(html).setTitle("Kiểm tra link Folder"));
+}
+
+function removeWrongFolderLinks() {
+  const cache = CacheService.getUserCache();
+  const mismatchJson = cache.get("mismatchLinks");
+  if (!mismatchJson) return;
+  const mismatches = JSON.parse(mismatchJson);
+  if (!mismatches || mismatches.length === 0) return;
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(STORE_SHEET_NAME);
+  if (!sheet) return;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const linkCol = headers.indexOf("Folder Album Image Google Drive");
+  const idCol = headers.indexOf("Folder ID");
+  if (linkCol === -1) return;
+  mismatches.forEach(function(m) {
+    try { sheet.getRange(m.row, linkCol + 1).setValue(""); if (idCol > -1) sheet.getRange(m.row, idCol + 1).setValue(""); } catch (e) {}
+  });
+  cache.remove("mismatchLinks");
+  SpreadsheetApp.getActive().toast("Đã xóa " + mismatches.length + " link/ID sai.");
+}
+
+function checkEmptyImageFolders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) { SpreadsheetApp.getUi().alert('Không tìm thấy sheet "' + SHEET_NAME + '".'); return; }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const nameCol = headers.indexOf("Name");
+  const driveCol = headers.indexOf("Folder Album Image Google Drive");
+  const statusCol = headers.indexOf("Trạng thái tạo folder") > -1 ? headers.indexOf("Trạng thái tạo folder") : headers.length;
+  if (nameCol === -1 || driveCol === -1) { SpreadsheetApp.getUi().alert("Thiếu cột cần thiết."); return; }
+  const emptyFolders = [];
+  let checked = 0;
+  sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn()).setBackground(null);
+  data.forEach(function(row, i) {
+    const name = (row[nameCol] || "").toString().trim();
+    const driveLink = (row[driveCol] || "").toString().trim();
+    if (!driveLink || !name) return;
+    const folderId = extractFolderId(driveLink);
+    if (!folderId) return;
+    try {
+      const query = "'" + folderId + "' in parents and mimeType contains 'image/' and trashed = false";
+      const files = Drive.Files.list({ q: query, fields: "files(id)" }).files || [];
+      checked++;
+      if (files.length === 0) {
+        const rowIndex = i + 2;
+        emptyFolders.push({ row: rowIndex, name: name, link: driveLink });
+        sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).setBackground("#fff8b3");
+        if (statusCol <= headers.length) sheet.getRange(rowIndex, statusCol + 1).setValue("Folder rỗng");
+      }
+    } catch (err) {
+      const rowIndex = i + 2;
+      emptyFolders.push({ row: rowIndex, name: name, link: driveLink, error: err.message });
+      sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).setBackground("#ffcccc");
+      if (statusCol <= headers.length) sheet.getRange(rowIndex, statusCol + 1).setValue("Lỗi đọc folder");
+    }
+  });
+  if (emptyFolders.length === 0) { SpreadsheetApp.getUi().alert("Đã kiểm tra " + checked + " folder. Tất cả đều có ảnh!"); return; }
+  const html = '<html><head><style>body{font-family:sans-serif;padding:10px;font-size:13px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:5px}th{background:#f3f3f3}</style></head><body><h3>Phát hiện ' + emptyFolders.length + ' folder rỗng</h3><table><tr><th>Hàng</th><th>Tên</th><th>Link</th><th>Lỗi</th></tr>' + emptyFolders.map(function(f) { return '<tr><td>' + f.row + '</td><td>' + f.name + '</td><td><a href="' + f.link + '" target="_blank">Mở</a></td><td>' + (f.error || "Không có ảnh") + '</td></tr>'; }).join("") + '</table></body></html>';
+  SpreadsheetApp.getUi().showSidebar(HtmlService.createHtmlOutput(html).setTitle("Folder rỗng"));
+}
+
+function updateProductJson() {
+  const data = sheetToObjects(SHEET_NAME).filter(function(p) { return p["Brand"]; }).map(function(p) {
+    const driveImages = getImagesFromFolder(extractFolderId(p["Folder Album Image Google Drive"]));
+    const googlePhotosLink = p["Photos"] || p["Photo"] || "";
+    p.images = driveImages;
+    p.photoLink = googlePhotosLink;
+    return p;
+  });
+  const productJson = JSON.stringify(data);
+  if (STATIC_JSON_FOLDER_ID) {
+    try {
+      const fileId = updateFileInDrive(STATIC_JSON_FOLDER_ID, STATIC_JSON_FILE_NAME, productJson);
+      if (fileId) SpreadsheetApp.getActive().toast("Đã tạo file products.json.");
+      else SpreadsheetApp.getUi().alert("Lỗi khi lưu file products.json.");
+    } catch (e) { SpreadsheetApp.getUi().alert("Lỗi: " + e.message); }
+  }
+}
+
+function updateBannerJson() {
+  const banners = getImagesFromFolder(FOLDER_ID_BANNER);
+  const bannerJson = JSON.stringify(banners);
+  CacheService.getScriptCache().put(CACHE_KEY_BANNER, bannerJson, 21600);
+  if (STATIC_JSON_FOLDER_ID) {
+    try {
+      const fileId = updateFileInDrive(STATIC_JSON_FOLDER_ID, STATIC_BANNER_FILE_NAME, bannerJson);
+      if (fileId) SpreadsheetApp.getActive().toast("Đã tạo file banners.json.");
+      else SpreadsheetApp.getUi().alert("Lỗi khi lưu file banners.json.");
+    } catch (e) { SpreadsheetApp.getUi().alert("Lỗi: " + e.message); }
+  }
+}
+
+function clearCachedJson() {
+  const cache = CacheService.getScriptCache();
+  cache.remove(CACHE_KEY_PRODUCTS);
+  cache.remove(CACHE_KEY_BANNER);
+  cache.remove(CACHE_KEY_CUSTOMER);
+  SpreadsheetApp.getActive().toast("Đã xóa cache JSON.");
+}
+
+
+/* =======================================================
+   CUSTOMER JSON
+   ======================================================= */
+function updateCustomerJson() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let customerSheet = ss.getSheetByName("Customer");
+  
+  if (!customerSheet) {
+    SpreadsheetApp.getUi().alert("Sheet 'Customer' chưa tồn tại. Hãy tạo sheet Customer trước.");
+    return;
+  }
+  
+  const data = sheetToObjects("Customer").filter(function(c) { return c["Name"] || c["Phone"]; });
+  const customerJson = JSON.stringify(data);
+  
+  if (STATIC_JSON_FOLDER_ID) {
+    try {
+      const fileId = updateFileInDrive(STATIC_JSON_FOLDER_ID, CONFIG.STATIC_CUSTOMER_FILE_NAME, customerJson);
+      if (fileId) SpreadsheetApp.getActive().toast("Đã tạo file customer.json.");
+      else SpreadsheetApp.getUi().alert("Lỗi khi lưu file customer.json.");
+    } catch (e) { SpreadsheetApp.getUi().alert("Lỗi: " + e.message); }
+  }
+}
+
+
+/* =======================================================
+   TẢI JSON VỀ MÁY (DOWNLOAD)
+   ======================================================= */
+function showDownloadJsonUI() {
+  const html = HtmlService.createHtmlOutput(`
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; }
+      h2 { color: #2c3e50; margin-bottom: 20px; }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        background: #76b500;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        text-align: center;
+        text-decoration: none;
+      }
+      .btn:hover { background: #659600; }
+      .btn-secondary { background: #3498db; }
+      .btn-secondary:hover { background: #2980b9; }
+      .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+      .success { background: #d4edda; color: #155724; }
+      .error { background: #f8d7da; color: #721c24; }
+      .loading { opacity: 0.6; pointer-events: none; }
+      .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+    <h2>💾 Tải JSON về máy</h2>
+    <p>Click các nút bên dưới để tải file JSON:</p>
+    <div id="statusArea"></div>
+    
+    <button class="btn" id="btnProducts" onclick="downloadWithLoading(this, 'products.json', 'downloadProductJson')">
+      📦 Tải products.json
+    </button>
+    
+    <button class="btn btn-secondary" id="btnBanners" onclick="downloadWithLoading(this, 'banners.json', 'downloadBannerJson')">
+      🖼 Tải banners.json
+    </button>
+    
+    <script>
+      function downloadWithLoading(btn, fileName, funcName) {
+        var originalText = btn.innerHTML;
+        var statusArea = document.getElementById('statusArea');
+        btn.classList.add('loading');
+        btn.innerHTML = '<span class="spinner"></span> Đang tải...';
+        statusArea.innerHTML = '<div class="status" style="background:#fff3cd;color:#856404;">⏳ Đang chuẩn bị file ' + fileName + '...</div>';
+        
+        google.script.run.withSuccessHandler(function(url) {
+          btn.classList.remove('loading');
+          btn.innerHTML = originalText;
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          statusArea.innerHTML = '<div class="status success">✅ Đã tải ' + fileName + ' thành công!</div>';
+          setTimeout(function() { statusArea.innerHTML = ''; }, 3000);
+        }).withFailureHandler(function(err) {
+          btn.classList.remove('loading');
+          btn.innerHTML = originalText;
+          statusArea.innerHTML = '<div class="status error">❌ Lỗi: ' + err.message + '</div>';
+        })[funcName]();
+      }
+    </script>
+  `).setTitle("Tải JSON").setWidth(350);
+  
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function generateAllJson() {
+  // Update all JSON files
+  updateProductJson();
+  updateBannerJson();
+  updateCustomerJson();
+  return "Đã tạo tất cả JSON! Bạn có thể tải từng file.";
+}
+
+function downloadProductJson() {
+  const data = sheetToObjects(SHEET_NAME).filter(function(p) { return p["Brand"]; }).map(function(p) {
+    const driveImages = getImagesFromFolder(extractFolderId(p["Folder Album Image Google Drive"]));
+    const googlePhotosLink = p["Photos"] || p["Photo"] || "";
+    p.images = driveImages;
+    p.photoLink = googlePhotosLink;
+    return p;
+  });
+  
+  const json = JSON.stringify(data);
+  return createDownloadBlob(json, "products.json");
+}
+
+function downloadBannerJson() {
+  const banners = getImagesFromFolder(FOLDER_ID_BANNER);
+  const json = JSON.stringify(banners);
+  return createDownloadBlob(json, "banners.json");
+}
+
+function downloadCustomerJson() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const customerSheet = ss.getSheetByName("Customer");
+  
+  if (!customerSheet) {
+    return createDownloadBlob(JSON.stringify({error: "Sheet Customer không tồn tại"}), "customer.json");
+  }
+  
+  const data = sheetToObjects("Customer").filter(function(c) { return c["Name"] || c["Phone"]; });
+  const json = JSON.stringify(data);
+  return createDownloadBlob(json, "customer.json");
+}
+
+function createDownloadBlob(jsonContent, fileName) {
+  try {
+    const blob = Utilities.newBlob(jsonContent, "application/json", fileName);
+    const file = DriveApp.getFileById(blob.getId());
+    return file.getDownloadUrl().replace("?download=true", "?alt=media");
+  } catch(e) {
+    // Fallback method
+    const blob = Utilities.newBlob(jsonContent, "application/json", fileName);
+    const resource = {
+      title: fileName,
+      mimeType: "application/json"
+    };
+    const file = DriveApp.createFile(blob);
+    const url = file.getDownloadUrl().replace("?download=true", "?alt=media");
+    DriveApp.getFileById(file.getId()).setTrashed(true);
+    return url;
+  }
+}
+
+
+/* =======================================================
+   onEdit (giữ nguyên từ code cũ - sheet Store)
+   ======================================================= */
+function onStoreSheetEdit(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = e.source.getActiveSheet();
+  var range = e.range;
+  var editedRow = range.getRow();
+  var editedCol = range.getColumn();
+
+  var storeSheetName = "Store";
+  var logSheetName = "LOG";
+  var startDataRow = 4;
+  var storeIdColumn = 2;
+  var storeModelColumn = 4;
+  var storeNgayColumn = 19;
+  var storeSalePriceColumn = 24;
+  var storeSaleDateColumn = 25;
+  var activationColumns = [storeSalePriceColumn, storeSaleDateColumn];
+  var logPhanLoaiColumn = 3;
+  var logIdColumn = 7;
+  var logSanPhamColumn = 9;
+  var logNgayColumn = 10;
+  var logGiaBanColumn = 13;
+  var logNgayDoneColumn = 17;
+  var highlightColor = "#ffff00";
+  var clearColor = null;
+
+  if (activeSheet.getName() !== storeSheetName || !activationColumns.includes(editedCol) || editedRow < startDataRow) return;
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (err) { return; }
+
+  try {
+    var storeSheet = activeSheet;
+    var idToFind = storeSheet.getRange(editedRow, storeIdColumn).getValue();
+    if (!idToFind) { lock.releaseLock(); return; }
+
+    var logSheet = ss.getSheetByName(logSheetName);
+    if (!logSheet) { lock.releaseLock(); return; }
+
+    var targetRow = -1;
+    var lastRow = logSheet.getLastRow();
+    if (lastRow >= startDataRow) {
+      var idRange = logSheet.getRange(startDataRow, logIdColumn, lastRow - startDataRow + 1, 1);
+      var values = idRange.getValues();
+      for (var i = 0; i < values.length; i++) {
+        if (values[i][0] == idToFind) { targetRow = i + startDataRow; break; }
+      }
+    }
+
+    var salePrice = storeSheet.getRange(editedRow, storeSalePriceColumn).getValue();
+    var saleDate = storeSheet.getRange(editedRow, storeSaleDateColumn).getValue();
+    var productName = storeSheet.getRange(editedRow, storeModelColumn).getValue();
+    var ngayNhap = storeSheet.getRange(editedRow, storeNgayColumn).getValue();
+
+    var isSalePriceEmpty = (!salePrice || String(salePrice).trim() === "" || salePrice === 0);
+    var isSaleDateEmpty = (!saleDate || String(saleDate).trim() === "");
+
+    if (isSalePriceEmpty && isSaleDateEmpty) {
+      if (targetRow > -1) logSheet.deleteRow(targetRow);
+      lock.releaseLock();
+      return;
+    }
+
+    var rowToHighlight = -1;
+    if (targetRow > -1) { rowToHighlight = targetRow; }
+    else { logSheet.appendRow([]); rowToHighlight = logSheet.getLastRow(); }
+
+    logSheet.getRange(rowToHighlight, logPhanLoaiColumn).setValue("Đã mua");
+    logSheet.getRange(rowToHighlight, logIdColumn).setValue(idToFind);
+    logSheet.getRange(rowToHighlight, logSanPhamColumn).setValue(productName);
+    logSheet.getRange(rowToHighlight, logNgayColumn).setValue(saleDate);
+    logSheet.getRange(rowToHighlight, logGiaBanColumn).setValue(salePrice);
+    logSheet.getRange(rowToHighlight, logNgayDoneColumn).setValue(ngayNhap);
+
+    var properties = PropertiesService.getScriptProperties();
+    var lastHighlightedRow = properties.getProperty('LOG_LAST_HIGHLIGHT');
+    if (lastHighlightedRow) {
+      try { logSheet.getRange(parseInt(lastHighlightedRow), 1, 1, logSheet.getMaxColumns()).setBackground(clearColor); } catch (err) {}
+    }
+    logSheet.getRange(rowToHighlight, 1, 1, logSheet.getMaxColumns()).setBackground(highlightColor);
+    properties.setProperty('LOG_LAST_HIGHLIGHT', rowToHighlight);
+
+  } catch (err) {
+    Logger.log("Lỗi onStoreSheetEdit: " + err.message);
+  } finally {
+    lock.releaseLock();
+  }
+
+
+}
+
+
+/* =======================================================
+   HÓA ĐƠN - HÀM XỬ LÝ
+   ======================================================= */
+function handleHoaDon(data, timestamp) {
+  if (!data) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: "Không có dữ liệu gửi lên" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  const HD_SHEET_NAME = "HoaDon";
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(HD_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(HD_SHEET_NAME);
+    const headers = [
+      "Thời gian tạo",       // A
+      "Số hóa đơn",          // B
+      "Ngày tháng năm",        // C
+      "Tên khách hàng",        // D
+      "Địa chỉ khách hàng",  // E
+      "SĐT khách hàng",       // F
+      "Tên sản phẩm",        // G
+      "Model/Serial",          // H
+      "Cấu hình",           // I
+      "Số lượng",            // J
+      "Đơn giá",           // K
+      "Thành tiền",          // L
+      "Giá tiền (chữ)",      // M
+      "Thanh toán",           // N
+      "Ghi chú"              // O
+    ];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+    const hr = sheet.getRange(1, 1, 1, headers.length);
+    hr.setFontWeight("bold");
+    hr.setBackground("#2c3e50");
+    hr.setFontColor("#ffffff");
+    hr.setHorizontalAlignment("center");
+    hr.setVerticalAlignment("middle");
+    sheet.setFrozenRows(1);
+
+    const w = [150,100,100,150,180,100,150,130,150,60,100,100,200,100,200];
+    w.forEach(function(v, i) { sheet.setColumnWidth(i + 1, v); });
+  }
+
+  try {
+    const ts = timestamp || new Date();
+    var products = data.products || [];
+    var giaTienChu = data.giaTienChu || "";
+    var thanhTien = 0;
+    
+    // Nếu có nhiều sản phẩm, tính tổng
+    products.forEach(function(p) {
+      if (p.soLuong && p.donGia) {
+        thanhTien += parseInt(p.soLuong) * parseInt(String(p.donGia).replace(/[^0-9]/g, ''));
+      }
+    });
+
+    // Lưu từng sản phẩm một dòng
+    products.forEach(function(p, index) {
+      var rowData = [
+        ts.toLocaleString("vi-VN"),
+        data.soHD || "",
+        data.ngayThangNam || "",
+        data.tenKhachHang || "",
+        data.diaChiKhachHang || "",
+        data.sdtKhachHang || "",
+        p.tenSanPham || "",
+        p.modelSanPham || "",
+        p.cauHinh || "",
+        p.soLuong || "",
+        p.donGia || "",
+        (p.soLuong && p.donGia) ? (parseInt(p.soLuong) * parseInt(String(p.donGia).replace(/[^0-9]/g, ''))) : "",
+        index === 0 ? giaTienChu : "",
+        index === 0 ? data.thanhToan : "",
+        index === 0 ? data.ghiChu : ""
+      ];
+      sheet.appendRow(rowData);
+    });
+
+    const lastRow = sheet.getLastRow();
+    const rng = sheet.getRange(lastRow, 1, 1, rowData.length);
+    rng.setBorder(true, true, true, true, true, true);
+    if (lastRow % 2 === 0) {
+      rng.setBackground("#f0f8ff");
+    }
+
+    try {
+      const recipient = Session.getActiveUser().getEmail();
+      MailApp.sendEmail(
+        recipient,
+        "🧾 Hóa đơn: " + (data.tenKhachHang || "N/A") + " - " + (data.soHD || "N/A"),
+        "Hóa đơn bán hàng vừa được tạo:\n\n" +
+        "Số HĐ: " + (data.soHD || "N/A") + "\n" +
+        "Ngày: " + (data.ngayThangNam || "N/A") + "\n\n" +
+        "Khách hàng: " + (data.tenKhachHang || "N/A") + "\n" +
+        "Địa chỉ: " + (data.diaChiKhachHang || "N/A") + "\n" +
+        "SĐT: " + (data.sdtKhachHang || "N/A") + "\n\n" +
+        "Sản phẩm: " + (products[0].tenSanPham || "N/A") + "\n" +
+        "Giá: " + (thanhTien || "N/A") + " (" + (giaTienChu || "N/A") + ")\n" +
+        "Thanh toán: " + (data.thanhToan || "N/A") + "\n\n" +
+        "Thời gian: " + ts.toLocaleString("vi-VN")
+      );
+    } catch (e) {
+      Logger.log("Lỗi gửi email hóa đơn: " + e.message);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", message: "Đã lưu hóa đơn!" }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("Lỗi handleHoaDon: " + err.message);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}

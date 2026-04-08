@@ -1,22 +1,26 @@
 /* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v13.0)
-   - Sử dụng config.js cho các biến API & cấu hình
-   - Hỗ trợ Google Photos link
-   - Tối ưu hiển thị ảnh
-   ========================================================= */
+   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.4 - ĐÃ DỌN DẸP)
+   - Đã gộp renderProductGrid và renderProductGridLegacy
+    - Đã xóa code thừa trong getProductData
+    - Giữ nguyên bố cục cũ (phân trang dưới)
+    - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
+    ========================================================= */
 
-/* ========== SỬ DỤNG TỪ CONFIG.JS ========== */
-const SHEET_API = I10_CONFIG.SHEET_API;
-const SITE_LOGO = I10_CONFIG.SITE_LOGO;
-const SITE_LOGO_2 = I10_CONFIG.SITE_LOGO_2;
-const THEME = I10_CONFIG.THEME;
-const SITE_TITLE_HOME = I10_CONFIG.SITE_TITLE_HOME;
-const SITE_TITLE_SUFFIX = I10_CONFIG.SITE_TITLE_SUFFIX;
-const SITE_META_DESC_HOME = I10_CONFIG.SITE_META_DESC_HOME;
+/* === LOAD CONFIG === */
+if (typeof i10Config === 'undefined') {
+    console.warn('i10-config.js not loaded, using defaults');
+}
 
-const CACHE_KEY = "i10_products_cache_v2"; 
-const CACHE_KEY_BANNER = "i10_banner_cache_v2";
-const CACHE_TTL = I10_CONFIG.CACHE_TTL;
+const SHEET_API = (typeof i10Config !== 'undefined') ? i10Config.SHEET_API_CONTACT : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
+const SITE_LOGO = (typeof i10Config !== 'undefined') ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+const SITE_LOGO_2 = (typeof i10Config !== 'undefined') ? i10Config.SITE_LOGO_2 : "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
+const THEME = (typeof i10Config !== 'undefined') ? i10Config.THEME : "#76b500";
+const CACHE_KEY = (typeof i10Config !== 'undefined') ? i10Config.CACHE_KEY : "i10_products_cache_v2"; 
+const CACHE_KEY_BANNER = (typeof i10Config !== 'undefined') ? i10Config.CACHE_KEY_BANNER : "i10_banner_cache_v2";
+const CACHE_TTL = (typeof i10Config !== 'undefined') ? i10Config.CACHE_TTL : 30 * 60 * 1000;
+const SITE_TITLE_HOME = (typeof i10Config !== 'undefined') ? i10Config.SITE_TITLE_HOME : "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
+const SITE_TITLE_SUFFIX = (typeof i10Config !== 'undefined') ? i10Config.SITE_TITLE_SUFFIX : "- i10 STORE";
+const SITE_META_DESC_HOME = (typeof i10Config !== 'undefined') ? i10Config.SITE_META_DESC_HOME : "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
 
 /* === HELPERS === */
 async function fetchJSON(url, opts = {}) {
@@ -177,22 +181,26 @@ async function renderProductGrid() {
     try {
         const rawData = await getProductData();
 
-        // (LOGIC LỌC TRÙNG LẶP)
-        const seenKeys = new Set();
-        const data = [];
-        const fieldsToCompare = ["Brand", "Model", "CPU", "RAM", "SSD", "GPU", "RESOLUTION"];
-        for (const p of rawData) {
-            const key = fieldsToCompare
-                .map(field => (p[field] || "").toLowerCase().trim())
-                .join('|');
-            if (!seenKeys.has(key)) {
-                seenKeys.add(key);
-                data.push(p);
-            }
-        }
+        // KHÔNG lọc trùng lặp nữa - hiển thị TẤT CẢ sản phẩm
+        // Đếm số lượng sản phẩm trùng tên để hiển thị ID khi cần
+        const nameCount = {};
+        rawData.forEach(p => {
+            const model = (p["Model"] || "").toLowerCase().trim();
+            const brand = (p["Brand"] || "").toLowerCase().trim();
+            const key = brand + " " + model;
+            nameCount[key] = (nameCount[key] || 0) + 1;
+        });
+        
+        // Đánh dấu sản phẩm nào cần hiển thị ID (khi trùng tên)
+        rawData.forEach(p => {
+            const model = (p["Model"] || "").toLowerCase().trim();
+            const brand = (p["Brand"] || "").toLowerCase().trim();
+            const key = brand + " " + model;
+            p.needsIdSuffix = nameCount[key] > 1;
+        });
         
         // XỬ LÝ GOOGLE PHOTOS LINK
-        data.forEach(p => {
+        rawData.forEach(p => {
             const googlePhotoLink = p["Photos"] || p["Photo"] || p.photoLink || "";
             if (googlePhotoLink) {
                 p.photoLink = googlePhotoLink;
@@ -240,7 +248,7 @@ async function renderProductGrid() {
             return fullList;
         }
 
-        const filteredData = applyUrlFilter(data, filter);
+        const filteredData = applyUrlFilter(rawData, filter);
         
         let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
 
@@ -360,7 +368,11 @@ async function renderProductGrid() {
 
             // Logic render HTML
             const html = paginatedList.map((p) => {
-                const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+                // Tạo title: thêm ID nếu sản phẩm trùng tên
+                let title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+                if (p.needsIdSuffix && p["ID"]) {
+                    title += ` (${p["ID"]})`;
+                }
                 const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
                 
                 // XỬ LÝ ẢNH: Ưu tiên Drive, nếu không có thì dùng Google Photos, nếu không có thì hiển thị "liên hệ"
@@ -613,7 +625,12 @@ function openProductPopup(encoded, slug) {
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         updateMetaTags(product);
-        const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+        
+        // Tạo title: thêm ID nếu có
+        let titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+        if (product["ID"]) {
+            titleText += ` (${product["ID"]})`;
+        }
 
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
         
@@ -783,8 +800,8 @@ function openProductPopup(encoded, slug) {
         actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
         
         actions.innerHTML = `
-          <a href="tel:${I10_CONFIG.PHONE}" class="btn btn-danger" style="background:#e74c3c;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-phone"></i> ${I10_CONFIG.PHONE.replace(/(\d{4})(\d{3})(\d{3})/, '$1.$2.$3')}</a>
-          <a href="https://zalo.me/${I10_CONFIG.ZALO}" target="_blank" class="btn btn-primary" style="background:#0068ff;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-comment"></i> Chat Zalo</a>
+          <a href="tel:0838288000" class="btn btn-danger" style="background:#e74c3c;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-phone"></i> 0838.288.000</a>
+          <a href="https://zalo.me/0838288000" target="_blank" class="btn btn-primary" style="background:#0068ff;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-comment"></i> Chat Zalo</a>
         `;
         
         const orderBtn = document.createElement("button");

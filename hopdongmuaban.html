@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/i10.css">
+<script src="/assets/js/i10-config.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -735,7 +736,7 @@ async function captureCanvas() {
 function doPrintContract() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
-    if (passInput.value !== 'i10laptop') {
+    if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
         
@@ -809,7 +810,7 @@ async function saveToSheet() {
 
     showStatus('Đang gửi dữ liệu lên Google Sheet...', 'success');
 
-    var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzQk1ERO5SEqX-kYDY4Cz2H38S7eJCll7XYxNmsdNww19zDqyVK5sEg1i2P_AovtPLm/exec';
+    var WEBAPP_URL = i10Config ? i10Config.SHEET_API_HOPDONG : 'https://script.google.com/macros/s/AKfycbzQk1ERO5SEqX-kYDY4Cz2H38S7eJCll7XYxNmsdNww19zDqyVK5sEg1i2P_AovtPLm/exec';
 
     try {
         await fetch(WEBAPP_URL, {
@@ -941,10 +942,9 @@ updateSpeed();
 
 <script>
     // (*** ĐỒNG BỘ: API URL và LOGO từ file JS gốc ***)
-    const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; 
-    const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
-    const CACHE_KEY_BANNER = "i10_banner_cache_v2";
-    const CACHE_TTL = 30 * 60 * 1000;
+    const SITE_LOGO = i10Config ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
+    const SHEET_API = i10Config ? i10Config.SHEET_API_HOPDONG : "https://script.google.com/macros/s/AKfycbzQk1ERO5SEqX-kYDY4Cz2H38S7eJCll7XYxNmsdNww19zDqyVK5sEg1i2P_AovtPLm/exec";
+    const PRINT_PASSWORD = i10Config ? i10Config.PRINT_PASSWORD : "i10store"; 
 
     // (*** TỐI ƯU: Chỉ định nghĩa các hàm CẦN THIẾT ***)
     let globalCurrentIndex = 0;
