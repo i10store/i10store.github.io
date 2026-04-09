@@ -54,7 +54,8 @@
 
         .preview-panel { width: auto; flex: none; padding: 12px; display: flex; flex-direction: column; align-items: center; background: #e8eaed; border-radius: 8px; position: sticky; top: 10px; }
         .a6-wrapper { background: #bbb; padding: 12px; border-radius: 4px; }
-        .a6-page { width: 105mm; min-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; border: 1px solid #999; border-radius: 8px; }
+        .a6-page { width: 105mm; min-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; border: 1px solid #999; border-radius: 8px; position: relative; }
+        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.25; width: 68%; max-width: 179px; z-index: 0; pointer-events: none; }
         
         .a6-page .header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #ccc; }
         .a6-page .header-left { position: relative; display: flex; align-items: center; padding-left: 15px; }
@@ -69,12 +70,12 @@
         .a6-page .recipient-name { font-weight: bold; }
         .a6-page .intro-text { font-size: 10px; margin-bottom: 8px; font-style: italic; }
         
-        .a6-page .product-table { width: 100%; border-collapse: collapse; font-size: 9px; margin: 8px 0; }
+        .a6-page .product-table { width: 100%; border-collapse: collapse; font-size: var(--fs, 9px); margin: 8px 0; }
         .a6-page .product-table th { border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; background: #f0f0f0; }
         .a6-page .product-table td { border: 1px solid #000; padding: 4px; }
         .a6-page .product-table .stt { width: 25px; text-align: center; }
         .a6-page .product-table .ten-sp { text-align: left; }
-        .a6-page .product-table .cau-hinh { text-align: left; font-size: 8px; }
+        .a6-page .product-table .cau-hinh { text-align: left; }
         .a6-page .product-table .sl { width: 35px; text-align: center; }
         .a6-page .product-table .dg { width: 65px; text-align: right; }
         .a6-page .product-table .tt { width: 70px; text-align: right; }
@@ -202,6 +203,7 @@
     <div class="preview-panel">
         <div class="a6-wrapper">
             <div class="a6-page print-target" id="a6Page">
+                <img src="/assets/logo.png" class="watermark" alt="">
                 <!-- Header -->
                 <div class="header-info">
                     <div class="header-left">
@@ -436,7 +438,8 @@ function updatePreview() {
     document.getElementById('valMT').textContent = mt + 'mm';
     document.getElementById('valMB').textContent = mb + 'mm';
     var page = document.getElementById('a6Page');
-    page.style.setProperty('--fs', fs + 'px', 'important');
+    page.style.fontSize = fs + 'px';
+    page.style.setProperty('--fs', fs + 'px');
     page.style.padding = mt + 'mm 8mm ' + mb + 'mm 8mm';
     page.style.transform = 'scale(' + (scale / 100) + ')';
     page.style.transformOrigin = 'top left';
@@ -463,7 +466,7 @@ async function captureCanvas() {
 
 function doPrintQuote() {
     var passInput = document.getElementById('printPass');
-    var PRINT_PASSWORD = i10Config ? i10Config.PRINT_PASSWORD : "i10laptop";
+    var PRINT_PASSWORD = getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         document.getElementById('printPassError').classList.add('show');
         passInput.value = '';

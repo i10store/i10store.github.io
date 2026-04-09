@@ -43,11 +43,12 @@
     SITE_META_DESC_HOME: "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.",
     
     /* === MẬT KHẨU NỘI BỘ === */
-    // Mật khẩu = "i10" + ngày hiện tại (VD: ngày 09 -> i1009)
+    // Mật khẩu = "i10"+date
     PASSWORD_PREFIX: "i10",
     
     /* === MẬT KHẨU IN ẤN (hóa đơn, hợp đồng) === */
-    PRINT_PASSWORD: "i10laptop",
+    // Mật khẩu in = "i10"+hour
+    PRINT_PASSWORD_PREFIX: "i10",
     
     /* === THÔNG TIN THANH TOÁN === */
     BANK_NAME: "TECHCOMBANK",
@@ -57,7 +58,7 @@
 
 /* === HÀM TIỆN ÍCH === */
 
-// Lấy mật khẩu nội bộ theo ngày hiện tại (chỉ lấy ngày, không lấy tháng)
+// Lấy mật khẩu nội bộ 1
 function getInternalPassword() {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
@@ -67,6 +68,18 @@ function getInternalPassword() {
 // Kiểm tra mật khẩu nội bộ
 function validateInternalPassword(inputPassword) {
     return inputPassword === getInternalPassword();
+}
+
+// Lấy mật khẩu in ấn 2
+function getPrintPassword() {
+    const now = new Date();
+    const hour = String(now.getHours()).padStart(2, '0');
+    return i10Config.PRINT_PASSWORD_PREFIX + hour;
+}
+
+// Kiểm tra mật khẩu in ấn
+function validatePrintPassword(inputPassword) {
+    return inputPassword === getPrintPassword();
 }
 
 // Format giá tiền (VNĐ)
@@ -81,8 +94,7 @@ function formatPrice(price) {
    =========================================================
    
    1. MẬT KHẨU NỘI BỘ:
-      - Mật khẩu = "i10" + ngày hiện tại (2 chữ số)
-      - Hàm getInternalPassword() sẽ tự động lấy ngày hiện tại để tạo mật khẩu đúng
+      - Mật khẩu = "i10"+date
       
    2. CÁC BIẾN CẦN THAY ĐỔI KHI CẦN:
       - SHEET_API_CONTACT: API Google Sheet cho form liên hệ
