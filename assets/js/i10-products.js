@@ -1112,3 +1112,4 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBanner();
     handlePageLoadRouting();
 });
+window.renderBanner = renderBanner;
