@@ -1,11 +1,3 @@
-/* =========================================================
-   i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.4 - ĐÃ DỌN DẸP)
-   - Đã gộp renderProductGrid và renderProductGridLegacy
-   - Đã xóa code thừa trong getProductData
-   - Giữ nguyên bố cục cũ (phân trang dưới)
-   - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
-   ========================================================= */
-
 /* ========== CONFIG ========== */
 const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; // <== Chỉ dùng cho Gửi Form
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
@@ -706,6 +698,16 @@ function openProductPopup(encoded, slug) {
           }
         }
 
+        const googlePhotoLink = product["Photos"] || product["google photo"] || product["Google Photos"] || "";
+        const hasNoImage = !product.images || product.images.length === 0;
+        
+        let photoRow = "";
+        if (googlePhotoLink) {
+            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="${googlePhotoLink}" target="_blank" style="color:#0066cc;text-decoration:underline;">Xem ảnh Google Photos</a></td></tr>`;
+        } else if (hasNoImage) {
+            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="/contact.html" style="color:#e74c3c;font-weight:600;">Liên hệ để xem ảnh</a></td></tr>`;
+        }
+
         const table = document.createElement("table");
         table.style.cssText = "width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;";
         const rows = [
@@ -727,6 +729,13 @@ function openProductPopup(encoded, slug) {
           table.appendChild(tr);
         });
         
+        if (photoRow) {
+          const tr = document.createElement("tr");
+          tr.style.background = rows.length % 2 === 0 ? "#fff" : "#f8faf8";
+          tr.innerHTML = photoRow;
+          table.appendChild(tr);
+        }
+
         const actions = document.createElement("div");
         actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
         
