@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Chức năng nội bộ i10 STORE">
+    <meta name="robots" content="noindex, nofollow">
+    <title>i10 STORE - Chức năng nội bộ</title>
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/i10.css">
+<script src="/assets/js/i10-config.min.js"></script>
+<style>
+        body { background: #f5f5f5; }
+        .internal-header { background: linear-gradient(135deg, #76b500, #5a9a00); padding: 20px 0; margin-bottom: 30px; }
+        .internal-header h1 { color: #fff; margin: 0; font-size: 28px; }
+        .internal-header p { color: rgba(255,255,255,0.9); margin: 5px 0 0; }
+        .feature-box { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .feature-box:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .feature-box h3 { color: #333; margin-top: 0; font-size: 18px; }
+        .feature-box p { color: #666; font-size: 14px; margin-bottom: 15px; }
+        .feature-icon { font-size: 40px; color: #76b500; margin-bottom: 15px; }
+        .feature-btn { background: #76b500; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; transition: background 0.3s; }
+        .feature-btn:hover { background: #5a9a00; color: #fff; }
+    </style>
+</head>
+<body class="cnt-home">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="/index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
+              i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
+            </marquee>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="body-content outer-top-xs">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
+                    <li><a href="/index.html">Trang chủ</a></li>
+                    <li class="active">Chức năng nội bộ</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="internal-header">
+            <div class="container">
+                <h1><i class="fa fa-cogs"></i> Chức năng nội bộ i10 STORE</h1>
+                <p>Quản lý in ấn hóa đơn, hợp đồng và báo giá</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-xs-12 col-md-4">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa fa-file-text"></i></div>
+                    <h3>Hóa đơn bán hàng</h3>
+                    <p>Tạo và in hóa đơn bán hàng cho khách mua laptop. Lưu dữ liệu lên Google Sheet.</p>
+                    <a href="/hoadon.html" class="feature-btn"><i class="fa fa-print"></i> Vào trang in</a>
+                </div>
+            </div>
+            
+            <div class="col-xs-12 col-md-4">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa fa-file"></i></div>
+                    <h3>Hợp đồng mua bán</h3>
+                    <p>Tạo và in hợp đồng mua bán laptop. Lưu dữ liệu lên Google Sheet.</p>
+                    <a href="/hopdongmuaban.html" class="feature-btn"><i class="fa fa-print"></i> Vào trang in</a>
+                </div>
+            </div>
+            
+            <div class="col-xs-12 col-md-4">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa fa-file-o"></i></div>
+                    <h3>Báo giá</h3>
+                    <p>Tạo báo giá cho khách hàng. Xuất PDF, PNG hoặc lưu lên Google Sheet.</p>
+                    <a href="/baogia.html" class="feature-btn"><i class="fa fa-print"></i> Vào trang in</a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="hotline-phone-ring-wrap">
+    <div class="hotline-phone-ring">
+    <div class="hotline-phone-ring-circle"></div>
+    <div class="hotline-phone-ring-circle-fill"></div>
+    <div class="hotline-phone-ring-img-circle">
+    <a href="tel:0838288000" class="pps-btn-img">
+    <img src="https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000" alt="Gọi điện thoại" width="50">
+    </a>
+    </div>
+    </div>
+    <div class="hotline-bar">
+    <a target="_blank" href="https://zalo.me/0838288000">
+    <span class="text-hotline">0838.288.000</span>
+    </a>
+    </div>
+</div>
+
+<footer id="footer" class="footer color-bg">
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-4">
+          <div class="module-heading"><h4 class="module-title">i10 STORE - THINKPAD US</h4></div>
+          <div class="module-body">
+            <ul class="toggle-footer">
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-map-marker fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>07 Đô Đốc Tuyết, Phường Hòa Xuân, Đà Nẵng</p></div></li>
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-phone fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>Hotline/Zalo: <a href="tel:0838288000">0838.288.000</a></p></div></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading"><h4 class="module-title">THÔNG TIN & HỖ TRỢ</h4></div>
+          <div class="module-body">
+            <ul class="list-unstyled">
+              <li><a href="/index.html"><i class="fa fa-caret-right"></i> Trang chủ</a></li>
+              <li><a href="/contact.html"><i class="fa fa-caret-right"></i> Liên hệ & Gửi Form</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          <div class="module-heading"><h4 class="module-title">THANH TOÁN</h4></div>
+          <div class="module-body">
+            <ul class="toggle-footer">
+              <li class="media"><div class="pull-left"><span class="icon fa-stack fa-lg"><i class="fa fa-bank fa-stack-1x fa-inverse"></i></span></div><div class="media-body"><p>NGÂN HÀNG TECHCOMBANK<br>Số TK: 9179.000.000<br>Chủ TK: NGUYEN QUANG HIEU</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="copyright-bar">
+    <div class="container">
+      <div class="col-xs-12 col-sm-12 no-padding">
+        <p style="text-align:center; margin:0; padding:10px 0; border-top:1px solid rgba(0,0,0,0.2);">© 2026 i10 Store - Chuyên Laptop Thinkpad US.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="/assets/js/scripts.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const siteLogo = document.getElementById("site-logo");
+    if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+});
+</script>
+</body>
+</html>

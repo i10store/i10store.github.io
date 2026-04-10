@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/i10.css">
+<script src="/assets/js/i10-config.min.js"></script>
 
 <style>
 .contact-section {
@@ -278,17 +279,13 @@
 <script src="/assets/js/scripts.js"></script>
 
 <script>
-    // (*** ĐỒNG BỘ: API URL và LOGO từ file JS gốc ***)
-    const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; // <== API URL của bạn
-    const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+    const SHEET_API = i10Config ? i10Config.SHEET_API_CONTACT : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
     
-    // Logic tự động chèn logo (cho header)
     document.addEventListener("DOMContentLoaded", () => {
         const siteLogo = document.getElementById("site-logo");
-        if (siteLogo) siteLogo.src = SITE_LOGO;
+        if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
     });
     
-    // Logic gửi Form Liên hệ
     document.getElementById('contact-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         

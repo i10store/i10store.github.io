@@ -27,6 +27,8 @@
  
 <link rel="stylesheet" href="/assets/css/i10.css">
 
+<script src="/assets/js/i10-config.min.js"></script>
+
 </head>
 <body class="cnt-home">
 
@@ -88,8 +90,8 @@
         <div id="sidebar2" class="sidebar-widget wow fadeInUp outer-top-vs">
           <div class="widget-title">ƯU ĐÃI HOT</div>
           <ul class="widget-list">
-            <li>🧰 Tặng chuột bluetooth + lót chuột + balo cao cấp</li>
-            <li>🎁 windows bản quyền theo máy</li>
+            <li>🧰 Tặng chuột bluetooth + lót chuột + túi chống sốc/balo cao cấp</li>
+            <li>🎁 Windows bản quyền theo máy</li>
             <li>🚚 Miễn phí giao hàng toàn quốc</li>
             <li>🎁 Hỗ trợ phần mềm trọn đời</li>
           </ul>
@@ -104,8 +106,7 @@
               <li data-desc="Thiết kế nhỏ gọn, mỏng nhẹ, phù hợp di chuyển nhiều,..."><a href="./index.html?filter=vanphong">Văn phòng</a></li>
               <li data-desc="Thinkpad cổ điển, cá tính, ổn định, bền bỉ"><a href="./index.html?filter=x1 carbon">X1 Carbon</a></li>
               <li data-desc="Laptop Dell phổ biến, mạnh mẽ, thương hiệu,..."><a href="./index.html?filter=x1 yoga">X1 Yoga</a></li>
-              <li data-desc="Hợp đồng mua bán laptop"><a href="./hopdongmuaban.html">In Hợp Đồng</a></li>
-              <li data-desc="Hóa đơn bán hàng"><a href="./hoadon.html">In Hóa Đơn</a></li>
+              <li data-desc="Hợp đồng mua bán laptop"><a href="#" onclick="showInternalPasswordPopup(); return false;">🔐 Chức năng nội bộ</a></li>
             </ul>
         </div>
       </div>
@@ -222,7 +223,62 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 <script src="/assets/js/scripts.js"></script>
-<script src="/assets/js/i10-products.js"></script>
+<script src="/assets/js/i10-products.min.js"></script>
+
+<script>
+function showInternalPasswordPopup() {
+    const overlay = document.createElement('div');
+    overlay.id = 'internal-password-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+    
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;padding:25px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);';
+    
+    box.innerHTML = `
+        <h3 style="margin:0 0 15px;color:#333;font-weight:700;">🔐 Chức năng nội bộ</h3>
+        <input type="password" id="internal-pass-input" placeholder="Nhập mật khẩu..." 
+            style="width:100%;padding:12px;border:1px solid #ccc;border-radius:6px;font-size:16px;margin-bottom:10px;text-align:center;">
+        <div id="internal-pass-error" style="color:red;font-size:13px;margin-bottom:10px;display:none;">Mật khẩu không đúng!</div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="closeInternalPopup()" style="padding:10px 20px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;">Hủy</button>
+            <button onclick="checkInternalPassword()" style="padding:10px 20px;border:none;border-radius:6px;background:#76b500;color:#fff;font-weight:bold;cursor:pointer;">Xác nhận</button>
+        </div>
+    `;
+    
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    
+    const input = document.getElementById('internal-pass-input');
+    input.focus();
+    input.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') checkInternalPassword();
+    });
+    
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeInternalPopup();
+    });
+    
+    function closeInternalPopup() {
+        overlay.remove();
+        document.body.style.overflow = 'auto';
+    }
+    
+    function checkInternalPassword() {
+        const input = document.getElementById('internal-pass-input');
+        const errorEl = document.getElementById('internal-pass-error');
+        const expectedPassword = getInternalPassword();
+        
+        if (input.value === expectedPassword) {
+            window.location.href = './internal.html';
+        } else {
+            errorEl.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+    }
+}
+</script>
 
 </body>
 </html>
