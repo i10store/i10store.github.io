@@ -1,26 +1,22 @@
 /* =========================================================
    i10 PRODUCTS - PHIÊN BẢN TỔNG HỢP (v12.4 - ĐÃ DỌN DẸP)
    - Đã gộp renderProductGrid và renderProductGridLegacy
-    - Đã xóa code thừa trong getProductData
-    - Giữ nguyên bố cục cũ (phân trang dưới)
-    - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
-    ========================================================= */
+   - Đã xóa code thừa trong getProductData
+   - Giữ nguyên bố cục cũ (phân trang dưới)
+   - Giữ nguyên logic v12.2 (Lọc trùng, lọc giá, sắp xếp, lightbox...)
+   ========================================================= */
 
-/* === LOAD CONFIG === */
-if (typeof i10Config === 'undefined') {
-    console.warn('i10-config.js not loaded, using defaults');
-}
-
-const SHEET_API = (typeof i10Config !== 'undefined') ? i10Config.SHEET_API_CONTACT : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
-const SITE_LOGO = (typeof i10Config !== 'undefined') ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
-const SITE_LOGO_2 = (typeof i10Config !== 'undefined') ? i10Config.SITE_LOGO_2 : "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
-const THEME = (typeof i10Config !== 'undefined') ? i10Config.THEME : "#76b500";
-const CACHE_KEY = (typeof i10Config !== 'undefined') ? i10Config.CACHE_KEY : "i10_products_cache_v2"; 
-const CACHE_KEY_BANNER = (typeof i10Config !== 'undefined') ? i10Config.CACHE_KEY_BANNER : "i10_banner_cache_v2";
-const CACHE_TTL = (typeof i10Config !== 'undefined') ? i10Config.CACHE_TTL : 30 * 60 * 1000;
-const SITE_TITLE_HOME = (typeof i10Config !== 'undefined') ? i10Config.SITE_TITLE_HOME : "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
-const SITE_TITLE_SUFFIX = (typeof i10Config !== 'undefined') ? i10Config.SITE_TITLE_SUFFIX : "- i10 STORE";
-const SITE_META_DESC_HOME = (typeof i10Config !== 'undefined') ? i10Config.SITE_META_DESC_HOME : "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
+/* ========== CONFIG ========== */
+const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; // <== Chỉ dùng cho Gửi Form
+const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
+const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
+const THEME = "#76b500";
+const CACHE_KEY = "i10_products_cache_v2"; 
+const CACHE_KEY_BANNER = "i10_banner_cache_v2";
+const CACHE_TTL = 30 * 60 * 1000;
+const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
+const SITE_TITLE_SUFFIX = "- i10 STORE";
+const SITE_META_DESC_HOME = "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
 
 /* === HELPERS === */
 async function fetchJSON(url, opts = {}) {
@@ -181,31 +177,19 @@ async function renderProductGrid() {
     try {
         const rawData = await getProductData();
 
-        // KHÔNG lọc trùng lặp nữa - hiển thị TẤT CẢ sản phẩm
-        // Đếm số lượng sản phẩm trùng tên để hiển thị ID khi cần
-        const nameCount = {};
-        rawData.forEach(p => {
-            const model = (p["Model"] || "").toLowerCase().trim();
-            const brand = (p["Brand"] || "").toLowerCase().trim();
-            const key = brand + " " + model;
-            nameCount[key] = (nameCount[key] || 0) + 1;
-        });
-        
-        // Đánh dấu sản phẩm nào cần hiển thị ID (khi trùng tên)
-        rawData.forEach(p => {
-            const model = (p["Model"] || "").toLowerCase().trim();
-            const brand = (p["Brand"] || "").toLowerCase().trim();
-            const key = brand + " " + model;
-            p.needsIdSuffix = nameCount[key] > 1;
-        });
-        
-        // XỬ LÝ GOOGLE PHOTOS LINK
-        rawData.forEach(p => {
-            const googlePhotoLink = p["Photos"] || p["Photo"] || p.photoLink || "";
-            if (googlePhotoLink) {
-                p.photoLink = googlePhotoLink;
+        // (LOGIC LỌC TRÙNG LẶP)
+        const seenKeys = new Set();
+        const data = [];
+        const fieldsToCompare = ["Brand", "Model", "CPU", "RAM", "SSD", "GPU", "RESOLUTION"];
+        for (const p of rawData) {
+            const key = fieldsToCompare
+                .map(field => (p[field] || "").toLowerCase().trim())
+                .join('|');
+            if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                data.push(p);
             }
-        });
+        }
         
         const params = new URLSearchParams(window.location.search);
         const filter = params.get("filter");
@@ -248,7 +232,7 @@ async function renderProductGrid() {
             return fullList;
         }
 
-        const filteredData = applyUrlFilter(rawData, filter);
+        const filteredData = applyUrlFilter(data, filter);
         
         let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
 
@@ -368,30 +352,9 @@ async function renderProductGrid() {
 
             // Logic render HTML
             const html = paginatedList.map((p) => {
-                // Tạo title: thêm ID nếu sản phẩm trùng tên
-                let title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-                if (p.needsIdSuffix && p["ID"]) {
-                    title += ` (${p["ID"]})`;
-                }
+                const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
                 const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-                
-                // XỬ LÝ ẢNH: Ưu tiên Drive, nếu không có thì dùng Google Photos, nếu không có thì hiển thị "liên hệ"
-                const googlePhotoLink = p.photoLink || "";
-                let mainImg = SITE_LOGO_2;
-                let hasImage = false;
-                
-                if (sortedImgs.length > 0) {
-                    mainImg = sortedImgs[0]?.thumb?.replace("=s220", "=s1000") || mainImg;
-                    hasImage = true;
-                } else if (googlePhotoLink) {
-                    // Sử dụng Google Photos link làm ảnh (có thể là link album hoặc ảnh đơn)
-                    mainImg = googlePhotoLink;
-                    hasImage = true;
-                }
-                
-                // Nếu không có ảnh, priceText sẽ là "Liên hệ" và có link đến /contact.html
-                const isNoImage = !hasImage;
-                const priceLink = isNoImage ? 'href="/contact.html"' : ''; 
+                const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2; 
                 
                 let priceText = "Liên hệ";
                 let priceStyle = `color:${THEME};font-weight:800;`;
@@ -427,13 +390,12 @@ async function renderProductGrid() {
                 if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
-                const imageTag = isNoImage 
-                    ? `<div class="thumb" style="background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:180px;"><span style="color:#999;font-size:14px;">📷 Chưa có ảnh</span></div>`
-                    : `<div class="thumb"><img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}'"></div>`;
                 return `
                   <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                    <a class="product-card" href="${isNoImage ? '/contact.html' : '/' + p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
-                      ${imageTag}
+                    <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
+                      <div class="thumb">
+                        <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
+                      </div>
                       <div style="padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;">
                         <div>
                           <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
@@ -625,12 +587,7 @@ function openProductPopup(encoded, slug) {
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         updateMetaTags(product);
-        
-        // Tạo title: thêm ID nếu có
-        let titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
-        if (product["ID"]) {
-            titleText += ` (${product["ID"]})`;
-        }
+        const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
 
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
         
@@ -643,17 +600,8 @@ function openProductPopup(encoded, slug) {
 
         const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         
-        // XỬ LÝ ẢNH: Ưu tiên Drive, nếu không có thì dùng Google Photos link
-        const googlePhotoLink = product.photoLink || product["Photos"] || product["Photo"] || "";
-        let images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
-        
-        // Nếu không có ảnh Drive, dùng Google Photos link
-        if (images.length === 0 && googlePhotoLink) {
-            images.push(googlePhotoLink);
-        }
-        
-        const hasNoImage = images.length === 0;
-        if (hasNoImage) images.push(SITE_LOGO); 
+        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
+        if (!images.length) images.push(SITE_LOGO); 
 
         let currentIndex = 0;
         let autoplayTimer = null;
@@ -760,15 +708,6 @@ function openProductPopup(encoded, slug) {
 
         const table = document.createElement("table");
         table.style.cssText = "width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;";
-        
-        // XỬ LÝ LINK ẢNH: Nếu có Google Photos link thì hiển thị link xem ảnh
-        let photoRow = "";
-        if (googlePhotoLink) {
-            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="${googlePhotoLink}" target="_blank" style="color:#0066cc;text-decoration:underline;">Xem ảnh Google Photos</a></td></tr>`;
-        } else if (hasNoImage) {
-            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="/contact.html" style="color:#e74c3c;font-weight:600;">Liên hệ để xem ảnh</a></td></tr>`;
-        }
-        
         const rows = [
           ["CPU", product["CPU"] || "N/A"],
           ["RAM", product["RAM"] ? `${product["RAM"]} Gb` : "N/A"],
@@ -787,14 +726,6 @@ function openProductPopup(encoded, slug) {
           tr.innerHTML = `<td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">${r[0]}</td><td style="padding:8px;border:1px solid #eee">${r[1]}</td>`;
           table.appendChild(tr);
         });
-        
-        // Thêm row ảnh nếu có
-        if (photoRow) {
-            const photoTr = document.createElement("tr");
-            photoTr.style.background = rows.length % 2 === 0 ? "#fff" : "#f8faf8";
-            photoTr.innerHTML = photoRow;
-            table.appendChild(photoTr);
-        }
         
         const actions = document.createElement("div");
         actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
@@ -1181,3 +1112,4 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBanner();
     handlePageLoadRouting();
 });
+window.renderBanner = renderBanner;
