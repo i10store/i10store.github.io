@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="In tem sản phẩm i10 STORE">
+    <meta name="robots" content="noindex, nofollow">
+    <title>i10 STORE - In Tem Sản Phẩm</title>
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/i10.css">
+    <script src="/assets/js/i10-config.min.js"></script>
+    <style>
+        body { background: #f5f5f5; }
+        .internal-header { background: linear-gradient(135deg, #76b500, #5a9a00); padding: 20px 0; margin-bottom: 30px; }
+        .internal-header h1 { color: #fff; margin: 0; font-size: 28px; }
+        .internal-header p { color: rgba(255,255,255,0.9); margin: 5px 0 0; }
+        .input-section { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .input-section label { font-weight: 600; color: #333; }
+        .input-section input { border-radius: 5px; }
+        .btn-search { background: #76b500; color: #fff; font-weight: 600; }
+        .btn-search:hover { background: #5a9a00; color: #fff; }
+        .btn-print { background: #e74c3c; color: #fff; font-weight: 600; }
+        .btn-print:hover { background: #c0392b; color: #fff; }
+        .preview-section { margin-top: 30px; }
+        .print-column {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+        }
+        #print-area {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+        
+        @media print {
+            @page {
+                size: 148mm 105mm;
+                margin: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: #fff !important;
+            }
+            header, .no-print, .breadcrumb, .internal-header, .input-section {
+                display: none !important;
+            }
+            .body-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .body-content > .container {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: none !important;
+            }
+            .preview-section {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 0;
+                padding: 0;
+            }
+            #print-wrapper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 148mm;
+                height: 105mm;
+                margin: 0;
+                padding: 2mm;
+                box-sizing: border-box;
+                display: flex !important;
+                flex-direction: row;
+                background: #fff !important;
+                border: none !important;
+                box-shadow: none !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            #print-area {
+                visibility: visible !important;
+                opacity: 1 !important;
+                display: flex !important;
+                flex-direction: row;
+                width: 144mm;
+                height: 101mm;
+            }
+            }
+            .print-column {
+                width: 50%;
+                display: flex;
+                flex-direction: column;
+            }
+            img { 
+                max-width: none !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="cnt-home">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="/index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div id="i10-scroll" style="content-visibility: auto ; font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee behavior="scroll" onmouseover="this.stop()" onmouseout="this.start()" scrollamount="9" style="color: #fff;">
+              i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách, Chúc Quý Khách Chọn Được Sản Phẩm Ưng Ý, Phục Vụ Tốt Công Việc...
+            </marquee>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="body-content outer-top-xs">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
+                    <li><a href="/index.html">Trang chủ</a></li>
+                    <li><a href="/internal.html">Chức năng nội bộ</a></li>
+                    <li class="active">In tem sản phẩm</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="internal-header">
+            <div class="container">
+                <h1><i class="fa fa-tags"></i> In Tem Sản Phẩm i10 STORE</h1>
+                <p>Nhập 10 ID sản phẩm để in tem (10 sản phẩm/trang, ngang)</p>
+            </div>
+        </div>
+        
+        <div class="input-section no-print">
+            <div class="row">
+                <div class="col-xs-12 col-md-3">
+                    <div class="form-group">
+                        <label>ID sản phẩm 1:</label>
+                        <input type="text" id="id1" class="form-control" placeholder="Nhập ID sản phẩm (ví dụ: CFF)">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-3">
+                    <div class="form-group">
+                        <label>ID sản phẩm 2:</label>
+                        <input type="text" id="id2" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 3:</label>
+                        <input type="text" id="id3" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 4:</label>
+                        <input type="text" id="id4" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 5:</label>
+                        <input type="text" id="id5" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-3">
+                    <div class="form-group">
+                        <label>ID sản phẩm 6:</label>
+                        <input type="text" id="id6" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-3">
+                    <div class="form-group">
+                        <label>ID sản phẩm 7:</label>
+                        <input type="text" id="id7" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 8:</label>
+                        <input type="text" id="id8" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 9:</label>
+                        <input type="text" id="id9" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-2">
+                    <div class="form-group">
+                        <label>ID sản phẩm 10:</label>
+                        <input type="text" id="id10" class="form-control" placeholder="Nhập ID sản phẩm">
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-xs-12">
+                    <button onclick="searchProducts()" class="btn btn-search"><i class="fa fa-search"></i> Tìm sản phẩm</button>
+                    <button onclick="printLabels()" class="btn btn-print"><i class="fa fa-print"></i> In tem</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="preview-area" class="preview-section">
+            <div id="print-wrapper" style="
+                width: 148mm;
+                height: 105mm;
+                padding: 2mm;
+                background: #fff;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: row;
+                box-sizing: border-box;
+                border: 1px solid #ddd;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            ">
+                <div id="print-area"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="/assets/js/scripts.js"></script>
+<script>
+const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
+const THEME = "#76b500";
+let foundProducts = [];
+
+async function searchProducts() {
+    const id1 = document.getElementById('id1').value.trim();
+    const id2 = document.getElementById('id2').value.trim();
+    const id3 = document.getElementById('id3').value.trim();
+    const id4 = document.getElementById('id4').value.trim();
+    const id5 = document.getElementById('id5').value.trim();
+    const id6 = document.getElementById('id6').value.trim();
+    const id7 = document.getElementById('id7').value.trim();
+    const id8 = document.getElementById('id8').value.trim();
+    const id9 = document.getElementById('id9').value.trim();
+    const id10 = document.getElementById('id10').value.trim();
+    
+    const rawIds = [id1, id2, id3, id4, id5, id6, id7, id8, id9, id10];
+    const ids = rawIds
+        .join(' ')
+        .split(/\s+/)
+        .filter(id => id !== '');
+    
+    if (ids.length === 0) {
+        alert('Vui lòng nhập ít nhất 1 ID sản phẩm');
+        return;
+    }
+    
+    foundProducts = [];
+    
+    try {
+        const response = await fetch('/assets/js/products.json');
+        const data = await response.json();
+        
+        ids.forEach(searchId => {
+            const product = data.find(p => p.ID && p.ID.toUpperCase() === searchId.toUpperCase());
+            if (product) {
+                foundProducts.push(product);
+            }
+        });
+        
+        renderPreview();
+    } catch (err) {
+        console.error('Lỗi tải sản phẩm:', err);
+        alert('Lỗi tải dữ liệu sản phẩm');
+    }
+}
+
+function getPriceText(product) {
+    if (product["T.THÁI"] && product["T.THÁI"].toLowerCase().includes("đã bán")) {
+        return "Tạm hết";
+    }
+    if (product["Price"]) {
+        const num = parseFloat(product["Price"]) * 1000000;
+        return num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 });
+    }
+    if (product["PRICE SEGMENT"]) {
+        return product["PRICE SEGMENT"];
+    }
+    return "Liên hệ";
+}
+
+function renderPreview() {
+    const printArea = document.getElementById('print-area');
+    
+    if (!printArea) return;
+    
+    if (foundProducts.length === 0) {
+        printArea.innerHTML = '<div style="text-align: center; color: #999; font-size: 12pt; padding: 100px 0;">Không tìm thấy sản phẩm nào với các ID đã nhập.</div>';
+        return;
+    }
+    
+    const maxCards = 10;
+    const productsToShow = foundProducts.slice(0, maxCards);
+    
+    if (foundProducts.length > maxCards) {
+        alert(`Tìm thấy ${foundProducts.length} sản phẩm. Chỉ hiển thị ${maxCards} sản phẩm đầu tiên.`);
+    }
+    
+    const mid = Math.ceil(productsToShow.length / 2);
+    const col1Products = productsToShow.slice(0, mid);
+    const col2Products = productsToShow.slice(mid);
+    
+    const renderColumn = (products) => {
+        let colHtml = '';
+        for (let i = 0; i < 5; i++) {
+            const product = products[i];
+            
+            if (product) {
+                const title = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || "Sản phẩm";
+                const productId = product["ID"] || "";
+                const priceText = getPriceText(product);
+                
+                colHtml += `
+                    <div style="
+                        width: 100%;
+                        height: 19mm;
+                        border: 1px solid #333;
+                        border-radius: 2px;
+                        padding: 1mm;
+                        display: flex;
+                        align-items: center;
+                        background: #fff;
+                        page-break-inside: avoid;
+                        box-sizing: border-box;
+                        margin-bottom: 1mm;
+                    ">
+                        <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0;">
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="font-size: 8pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title} - ${productId}</div>
+                                <div style="font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap;">${priceText}</div>
+                            </div>
+                            <div style="font-size: 8pt; color: #444; text-align: left;">
+                                ${product["CPU"] || "N/A"} | ${product["RAM"] || "N/A"}Gb | ${product["SSD"] || "N/A"}Gb | ${product["RESOLUTION"] || "N/A"} | ${product["GPU"] || "Onboard"}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                colHtml += `
+                    <div style="
+                        width: 100%;
+                        height: 19mm;
+                        border: 1px dashed #ccc;
+                        border-radius: 2px;
+                        padding: 1mm;
+                        display: flex;
+                        align-items: center;
+                        background: #f9f9f9;
+                        box-sizing: border-box;
+                        margin-bottom: 1mm;
+                    ">
+                    <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0; opacity: 0.3;">
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #ccc; font-size: 8pt;">---</span>
+                            <span style="color: #ccc; font-size: 7pt;">---</span>
+                        </div>
+                        <div style="font-size: 9pt; color: #ccc;">---</div>
+                    </div>
+                </div>
+                `;
+            }
+        }
+        return colHtml;
+    };
+    
+    const html = `
+        <div class="print-column">${renderColumn(col1Products)}</div>
+        <div class="print-column">${renderColumn(col2Products)}</div>
+    `;
+
+    printArea.innerHTML = html;
+}
+
+function printLabels() {
+    if (foundProducts.length === 0) {
+        alert('Vui lòng tìm sản phẩm trước khi in');
+        return;
+    }
+    window.print();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const siteLogo = document.getElementById("site-logo");
+    if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+});
+</script>
+</body>
+</html>
