@@ -135,7 +135,7 @@ async function getProductData() {
                 p["RESOLUTION"],
                 p["GPU"]
             ].filter(Boolean).join(' ');
-            p.slug = p["Web Link"] /* || `san-pham/${createSlug(slugText || `product-${i}`)}` */;
+            p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
         });
         
         globalProductData = data;

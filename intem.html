@@ -356,32 +356,36 @@ function renderPreview() {
                 
                 colHtml += `
                     <div style="
-                        width: 100%;
+                        width: 98%;
                         height: 19mm;
                         border: 1px solid #333;
                         border-radius: 2px;
                         padding: 1mm;
                         display: flex;
-                        align-items: center;
+                        align-items: stretch;
                         background: #fff;
                         page-break-inside: avoid;
                         box-sizing: border-box;
                         margin-bottom: 1mm;
+                        position: relative;
                     ">
-                        <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0;">
-                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div style="font-size: 7pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title} - ${productId}</div>
-                            <div style="font-size: 6pt; color: #444; text-align: left;">
+                        <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; flex-shrink: 0; align-self: center;">
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; margin-left: 1mm;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5mm;">
+                                <span style="font-size: 8pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</span>
+                                <span style="font-size: 8pt; font-weight: 700; color: #666;">[${productId}]</span>
+                            </div>
+                            <div style="font-size: 7pt; color: #444;">
                                 ${product["CPU"] || "N/A"} | ${product["RAM"] || "N/A"}Gb | ${product["SSD"] || "N/A"}Gb | ${product["RESOLUTION"] || "N/A"} | ${product["GPU"] || "Onboard"}
                             </div>
-                            <div style="text-align: right; font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap;">${priceText}</div>
                         </div>
+                        <div style="position: absolute; bottom: 0.5mm; right: 1mm; font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap; z-index: 10;">${priceText}</div>
                     </div>
                 `;
             } else {
                 colHtml += `
                     <div style="
-                        width: 100%;
+                        width: 98%;
                         height: 19mm;
                         border: 1px dashed #ccc;
                         border-radius: 2px;
@@ -391,13 +395,14 @@ function renderPreview() {
                         background: #f9f9f9;
                         box-sizing: border-box;
                         margin-bottom: 1mm;
+                        position: relative;
                     ">
                     <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0; opacity: 0.3;">
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                         <div style="font-size: 7pt; color: #ccc;">---</div>
-                        <div style="font-size: 8pt; color: #ccc;">---</div>
-                        <div style="text-align: right; font-size: 7pt; color: #ccc;">---</div>
+                        <div style="font-size: 5pt; color: #ccc;">---</div>
                     </div>
+                    <div style="position: absolute; bottom: 1mm; right: 1mm; font-size: 7pt; color: #ccc; z-index: 10;">---</div>
                 </div>
                 `;
             }

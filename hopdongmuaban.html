@@ -388,7 +388,7 @@
     <div class="preview-panel">
         <div class="a6-wrapper">
             <div class="a6-page print-target" id="a6Page">
-                <img src="/assets/logo.png" class="watermark" alt="">
+                <img src="/assets/logo.png" class="watermark" alt="" style="display: none;">
                 <div class="header">
                     <div class="title1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                     <div class="title2">Độc lập - Tự do - Hạnh phúc</div>
@@ -738,11 +738,11 @@ function doPrintContract() {
     if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
-        
-        Input.focus();
+        passInput.focus();
         return;
     }
     errorEl.classList.remove('show');
+    document.querySelector('.watermark').style.display = 'block';
     var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
     showStatus('Đang chuẩn bị in...', 'success');
     var page = document.getElementById('a6Page');
@@ -758,6 +758,7 @@ function doPrintContract() {
             page.style.transform = origT;
             page.parentElement.style.width = origW;
             page.parentElement.style.height = origH;
+            document.querySelector('.watermark').style.display = 'none';
         }, 500);
     }, speed);
 }

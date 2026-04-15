@@ -203,7 +203,7 @@
     <div class="preview-panel">
         <div class="a6-wrapper">
             <div class="a6-page print-target" id="a6Page">
-                <img src="/assets/logo.png" class="watermark" alt="">
+                <img src="/assets/logo.png" class="watermark" alt="" style="display: none;">
                 <!-- Header -->
                 <div class="header-info">
                     <div class="header-left">
@@ -474,7 +474,13 @@ function doPrintQuote() {
         return;
     }
     document.getElementById('printPassError').classList.remove('show');
-    setTimeout(function() { window.print(); }, parseFloat(document.getElementById('printSpeed').value) * 1000);
+    document.querySelector('.watermark').style.display = 'block';
+    setTimeout(function() {
+        window.print();
+        setTimeout(function() {
+            document.querySelector('.watermark').style.display = 'none';
+        }, 500);
+    }, parseFloat(document.getElementById('printSpeed').value) * 1000);
 }
 
 async function savePDF() {
