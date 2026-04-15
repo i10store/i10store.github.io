@@ -224,7 +224,7 @@
                 </div>
                 <div class="col-xs-12 col-md-2">
                     <div class="form-group">
-                        <label>ID sản phẩm 11:</label>
+                        <label>ID sản phẩm 12:</label>
                         <input type="text" id="id12" class="form-control" placeholder="Nhập ID sản phẩm">
                     </div>
                 </div>
@@ -324,7 +324,7 @@ function getPriceText(product) {
 }
 
 function renderPreview() {
-    const printArea = document.getElementById('print-area');
+    const printArea = document.getElementById('print-area'); 
     
     if (!printArea) return;
     
@@ -333,7 +333,7 @@ function renderPreview() {
         return;
     }
     
-    const maxCards = 10;
+    const maxCards = 12;
     const productsToShow = foundProducts.slice(0, maxCards);
     
     if (foundProducts.length > maxCards) {
@@ -370,13 +370,11 @@ function renderPreview() {
                     ">
                         <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0;">
                         <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <div style="font-size: 7pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title} - ${productId}</div>
-                                <div style="font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap;">${priceText}</div>
-                            </div>
-                            <div style="font-size: 8pt; color: #444; text-align: left;">
+                            <div style="font-size: 7pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title} - ${productId}</div>
+                            <div style="font-size: 6pt; color: #444; text-align: left;">
                                 ${product["CPU"] || "N/A"} | ${product["RAM"] || "N/A"}Gb | ${product["SSD"] || "N/A"}Gb | ${product["RESOLUTION"] || "N/A"} | ${product["GPU"] || "Onboard"}
                             </div>
+                            <div style="text-align: right; font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap;">${priceText}</div>
                         </div>
                     </div>
                 `;
@@ -396,11 +394,9 @@ function renderPreview() {
                     ">
                     <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0; opacity: 0.3;">
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: #ccc; font-size: 8pt;">---</span>
-                            <span style="color: #ccc; font-size: 7pt;">---</span>
-                        </div>
-                        <div style="font-size: 9pt; color: #ccc;">---</div>
+                        <div style="font-size: 7pt; color: #ccc;">---</div>
+                        <div style="font-size: 8pt; color: #ccc;">---</div>
+                        <div style="text-align: right; font-size: 7pt; color: #ccc;">---</div>
                     </div>
                 </div>
                 `;
