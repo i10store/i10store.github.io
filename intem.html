@@ -379,7 +379,7 @@ function renderPreview() {
                                 ${product["CPU"] || "N/A"} | ${product["RAM"] || "N/A"}Gb | ${product["SSD"] || "N/A"}Gb | ${product["RESOLUTION"] || "N/A"} | ${product["GPU"] || "Onboard"}
                             </div>
                         </div>
-                        <div style="position: absolute; bottom: 0.5mm; right: 1mm; font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap; z-index: 10;">${priceText}</div>
+                        <div style="position: absolute; left: 1mm; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap; z-index: 10; transform-origin: left center;">${priceText}</div>
                     </div>
                 `;
             } else {
@@ -400,7 +400,7 @@ function renderPreview() {
                     <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0; opacity: 0.3;">
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                         <div style="font-size: 7pt; color: #ccc;">---</div>
-                        <div style="font-size: 5pt; color: #ccc;">---</div>
+                        <div style="font-size: 7pt; color: #ccc;">---</div>
                     </div>
                     <div style="position: absolute; bottom: 1mm; right: 1mm; font-size: 7pt; color: #ccc; z-index: 10;">---</div>
                 </div>

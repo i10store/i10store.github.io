@@ -197,14 +197,14 @@ async function renderProductGrid() {
                     return fullList.filter(p => {
                         const phanLoai = norm(p["Phân loại"]);
                         const gpu = norm(p["GPU"]);
-                        return phanLoai.includes("văn phòng") || phanLoai.includes("mỏng nhẹ") || gpu.includes("onboard") || gpu.includes("intel");
+                        return phanLoai.includes("văn phòng") || phanLoai.includes("mỏng nhẹ") || gpu.includes("onboard") || gpu.includes("intel uhd") || gpu.includes("intel hd") || (gpu.includes("intel") && !gpu.includes("nvidia") && !gpu.includes("amd") && !gpu.includes("radeon"));
                     });
                 case "maytram":
                     return fullList.filter(p => {
                         const phanLoai = norm(p["Phân loại"]);
                         const gpu = norm(p["GPU"]);
                         const isWorkstation = phanLoai.includes("máy trạm") || phanLoai.includes("workstation");
-                        const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel");
+                        const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel uhd") && !gpu.includes("intel hd") && !gpu.includes("iris");
                         return isWorkstation || isDedicatedGpu;
                     });
                 case "available": simpleQueryString = "còn"; break;
@@ -383,7 +383,7 @@ async function renderProductGrid() {
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
                 return `
-                  <div class="col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
+                  <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                     <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
                       <div class="thumb">
                         <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
