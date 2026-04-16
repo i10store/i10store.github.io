@@ -623,7 +623,7 @@ async function captureCanvas() {
 function doPrintInvoice() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
-    var PRINT_PASSWORD = getPrintPassword();
+    var PRINT_PASSWORD = window.getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
@@ -733,12 +733,6 @@ async function saveToSheet() {
         btn.innerHTML = 'Lưu Google Sheet';
         btn.style.opacity = '1';
     }
-}
-
-function getPrintPassword() {
-    var now = new Date();
-    var hour = now.getHours();
-    return 'i10' + String(hour).padStart(2, '0');
 }
 
 initDefaults();

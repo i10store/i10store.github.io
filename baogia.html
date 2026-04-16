@@ -480,7 +480,7 @@ async function captureCanvas() {
 
 function doPrintQuote() {
     var passInput = document.getElementById('printPass');
-    var PRINT_PASSWORD = getPrintPassword();
+    var PRINT_PASSWORD = window.getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         document.getElementById('printPassError').classList.add('show');
         passInput.value = '';
@@ -540,12 +540,6 @@ async function saveToSheet() {
     } catch (e) { showStatus('Lỗi: ' + e.message, 'error'); }
     btn.disabled = false;
     btn.innerHTML = 'Lưu Sheet';
-}
-
-function getPrintPassword() {
-    var now = new Date();
-    var hour = now.getHours();
-    return 'i10' + String(hour).padStart(2, '0');
 }
 
 initDefaults();

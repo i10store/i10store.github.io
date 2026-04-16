@@ -375,16 +375,10 @@ async function captureCanvas() {
     return canvas;
 }
 
-function getPrintPassword() {
-    var now = new Date();
-    var hour = now.getHours();
-    return 'i10' + String(hour).padStart(2, '0');
-}
-
 function doPrint() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
-    var PRINT_PASSWORD = getPrintPassword();
+    var PRINT_PASSWORD = window.getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
@@ -406,7 +400,7 @@ function doPrint() {
 async function savePDF() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
-    var PRINT_PASSWORD = getPrintPassword();
+    var PRINT_PASSWORD = window.getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
@@ -436,7 +430,7 @@ async function savePDF() {
 async function savePNG() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
-    var PRINT_PASSWORD = getPrintPassword();
+    var PRINT_PASSWORD = window.getPrintPassword();
     if (passInput.value !== PRINT_PASSWORD) {
         errorEl.classList.add('show');
         passInput.value = '';
