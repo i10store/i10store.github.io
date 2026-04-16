@@ -18,7 +18,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
-        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 10px 12%; }
+        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 0px 12%; }
         .app-container > * { position: relative; }
 
         .form-panel { width: 380px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; max-height: calc(100vh - 200px); }
@@ -148,6 +148,20 @@
     </div>
   </div>
 </header>
+
+<div class="body-content outer-top-xs" style="padding: 10px 15px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
+                    <li><a href="/index.html">Trang chủ</a></li>
+                    <li><a href="/internal.html">Chức năng nội bộ</a></li>
+                    <li class="active">Báo giá</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="app-container">
 
@@ -526,6 +540,12 @@ async function saveToSheet() {
     } catch (e) { showStatus('Lỗi: ' + e.message, 'error'); }
     btn.disabled = false;
     btn.innerHTML = 'Lưu Sheet';
+}
+
+function getPrintPassword() {
+    var now = new Date();
+    var hour = now.getHours();
+    return 'i10' + String(hour).padStart(2, '0');
 }
 
 initDefaults();

@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Hóa đơn bán hàng i10 STORE">
+    <meta name="description" content="Phiếu giao hàng i10 STORE">
     <meta name="robots" content="index, follow">
-    <title>i10 STORE - Hóa đơn bán hàng</title>
+    <title>i10 STORE - Phiếu giao hàng</title>
 
     <link rel="icon" href="https://lh3.googleusercontent.com/d/1mCM-6pxo-MDlpuDFitS3OQQBUiL1csia=s256" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
@@ -24,7 +24,6 @@
         .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 0px 12%; }
         .app-container > * { position: relative; }
 
-        /* === COL 1: FORM === */
         .form-panel { width: 400px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; }
         .form-panel h2 { text-align: center; margin-bottom: 8px; color: #333; font-size: 14px; }
         .form-group { margin-bottom: 5px; position: relative; }
@@ -32,33 +31,11 @@
         .form-group input[type="number"] { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
         .form-group input:focus { border-color: #04922c; outline: none; box-shadow: 0 0 3px rgba(74,144,217,0.3); }
         .form-group input::placeholder { color: #aaa; font-style: italic; font-size: 11px; }
-        .form-group input[readonly] { background: #f5f5f5; color: #333; cursor: default; }
-        .form-group .inline-group { display: flex; gap: 5px; align-items: center; }
-        .form-group .inline-group input { flex: 1; }
-        .form-group .inline-group .btn-icon { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; white-space: nowrap; }
-        .form-group .inline-group .btn-icon:hover { background: #e8e8e8; }
         .section-title { background: #04922c; color: #fff; padding: 5px 8px; margin: 8px 0 5px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
         .section-title:hover { background: #04531a; }
         .section-title .toggle-icon { font-size: 10px; }
         .section-body { overflow: hidden; transition: max-height 0.3s ease; }
         .section-body.collapsed { max-height: 0 !important; }
-        .product-item { border: 1px solid #ddd; padding: 8px; margin-bottom: 8px; border-radius: 4px; background: #fafafa; }
-        .product-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .product-item-header span { font-size: 11px; font-weight: bold; color: #333; }
-        .product-item-remove { color: #c00; cursor: pointer; font-size: 12px; }
-        .product-item-remove:hover { color: #f00; }
-        .add-product-btn { width: 100%; padding: 8px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; color: #2e7d32; cursor: pointer; font-size: 12px; font-weight: bold; margin-top: 5px; }
-        .add-product-btn:hover { background: #c8e6c9; }
-        .payment-group { margin-bottom: 5px; }
-        .payment-group label.pg-title { font-size: 11px; color: #555; font-weight: bold; display: block; margin-bottom: 3px; }
-        .payment-options { display: flex; gap: 5px; flex-wrap: wrap; }
-        .payment-options label { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #333; cursor: pointer; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; transition: all 0.2s; }
-        .payment-options label:hover { background: #e8f0fe; border-color: #04922c; }
-        .payment-options input[type="radio"] { accent-color: #04922c; }
-        .payment-options label.selected { background: #e8f0fe; border-color: #04922c; font-weight: bold; }
-        .payment-custom { display: none; margin-top: 3px; }
-        .payment-custom.show { display: block; }
-        .payment-custom input { width: 100%; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
         .btn-group { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
         .btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.2s; }
         .btn-print { background: #04922c; color: #fff; } .btn-print:hover { background: #1c7703; }
@@ -68,10 +45,7 @@
         .btn-clear { background: #95a5a6; color: #fff; } .btn-clear:hover { background: #7f8c8d; }
         .btn-sm { padding: 3px 8px; font-size: 10px; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
 
-        /* === COL 2: PREVIEW === */
         .preview-panel { width: auto; flex: none; padding: 12px; display: flex; flex-direction: column; align-items: center; background: #e8eaed; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
         .a6-wrapper { background: #bbb; padding: 12px; border-radius: 4px; overflow: hidden; display: inline-block; }
         .a6-page { width: 105mm; min-height: 60vh; max-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; transform-origin: top left; position: relative; border: 1px solid #999; border-radius: 8px; }
@@ -87,31 +61,16 @@
         
         .a6-page .invoice-title { text-align: center; font-size: calc(var(--fs, 10px) + 4px); font-weight: bold; text-transform: uppercase; margin: 5px 0; position: relative; z-index: 1; }
         .a6-page .invoice-info { text-align: center; font-size: var(--fs, 10px); margin: 3px 0; }
-        .a6-page .invoice-number { text-align: right; font-style: italic; font-size: var(--fs, 10px); margin: 2px 0; }
-        .a6-page .date-line { font-size: var(--fs, 10px); margin: 2px 0; }
         .a6-page .section-label { font-weight: bold; font-size: var(--fs, 10px); margin: 4px 0 1px; }
         .a6-page .info-line { padding-left: 8px; font-size: var(--fs, 10px); margin: 1px 0; position: relative; z-index: 1; }
         .a6-page .info-line .field { font-weight: bold; }
         .a6-page .info-line .value { border-bottom: 1px dotted #999; min-width: 40px; display: inline-block; }
-        .a6-page .product-table { width: 100%; border-collapse: collapse; font-size: var(--fs, 10px); margin: 5px 0; position: relative; z-index: 1; }
-        .a6-page .product-table th { border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; background: #f5f5f5; }
-        .a6-page .product-table td { border: 1px solid #000; padding: 4px; }
-        .a6-page .product-table .stt { text-align: center; width: 30px; }
-        .a6-page .product-table .ten-sp { text-align: left; }
-        .a6-page .product-table .soluong { text-align: center; }
-        .a6-page .product-table .dongia { text-align: right; }
-        .a6-page .product-table .thanhtien { text-align: right; }
-        .a6-page .totals { margin-top: 5px; font-size: var(--fs, 10px); position: relative; z-index: 1; }
-        .a6-page .totals .total-line { display: flex; justify-content: space-between; padding: 2px 0; }
-        .a6-page .totals .total-line.final { font-size: calc(var(--fs, 10px) + 1px); }
-        .a6-page .payment-info { margin-top: 8px; font-size: var(--fs, 10px); position: relative; z-index: 1; }
         .a6-page .signatures { display: flex; justify-content: space-around; margin-top: 15px; font-size: var(--fs, 10px); font-weight: bold; position: relative; z-index: 1; }
         .a6-page .signatures div { text-align: center; width: 40%; }
         .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
         .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
         .a6-page .signatures .sig-label { margin-bottom: 25px; }
 
-        /* === COL 3: CONTROLS === */
         .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
         .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
         .ctrl-group { margin-bottom: 6px; }
@@ -198,7 +157,7 @@
                 <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
                     <li><a href="/index.html">Trang chủ</a></li>
                     <li><a href="/internal.html">Chức năng nội bộ</a></li>
-                    <li class="active">Hóa đơn bán hàng</li>
+                    <li class="active">Phiếu giao hàng</li>
                 </ol>
             </div>
         </div>
@@ -207,69 +166,41 @@
 
 <div class="app-container">
 
-    <!-- ====== COL 1: FORM ====== -->
     <div class="form-panel">
-        <h2 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>HÓA ĐƠN BÁN HÀNG</strong></h2>
+        <h2 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>PHIẾU GIAO HÀNG</strong></h2>
 
-        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN HÓA ĐƠN <span class="toggle-icon">▼</span></div>
+        <div class="section-title" onclick="toggleSection(this)">THÔNG TIN GIAO HÀNG <span class="toggle-icon">▼</span></div>
         <div class="section-body">
-            <div class="form-group"><input type="text" id="soHD" placeholder="Số hóa đơn (VD: HD-001/2026)" value="HD-001/2026"></div>
-            <div class="form-group"><input type="text" id="ngayThangNam" placeholder="Ngày/Tháng/Năm (VD: 22/04/2026)" value="22/04/2026" oninput="syncDate()"></div>
+            <div class="form-group"><input type="text" id="ngayGiao" placeholder="Ngày giao (VD: 05/04/2026)" value="05/04/2026"></div>
+            <div class="form-group"><input type="text" id="maVanDon" placeholder="Mã vận đơn" value=""></div>
         </div>
 
         <div class="section-title" onclick="toggleSection(this)">THÔNG TIN KHÁCH HÀNG <span class="toggle-icon">▼</span></div>
         <div class="section-body">
             <div class="form-group"><input type="text" id="tenKhachHang" placeholder="Tên khách hàng" value=""></div>
-            <div class="form-group"><input type="text" id="diaChiKhachHang" placeholder="Địa chỉ khách hàng" value=""></div>
-            <div class="form-group"><input type="text" id="sdtKhachHang" placeholder="Số điện thoại khách hàng"></div>
+            <div class="form-group"><input type="text" id="diaChiKhachHang" placeholder="Địa chỉ giao hàng" value=""></div>
+            <div class="form-group"><input type="text" id="sdtKhachHang" placeholder="Số điện thoại" value="0xxxxxx"></div>
         </div>
 
         <div class="section-title" onclick="toggleSection(this)">THÔNG TIN SẢN PHẨM <span class="toggle-icon">▼</span></div>
-        <div class="section-body" id="productList">
-            <div class="product-item" id="product-1">
-                <div class="product-item-header">
-                    <span>Sản phẩm 1</span>
-                </div>
-                <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" value="Laptop Thinkpad X1 Carbon Gen 11" oninput="tinhTong()"></div>
-                <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
-                <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
-                <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
-                <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" value="8500000" oninput="tinhTong()"></div>
-            </div>
-        </div>
-        <button class="add-product-btn" onclick="addProduct()">+ Thêm sản phẩm</button>
-
-        <div class="form-group" style="margin-top: 10px;">
-            <div class="inline-group">
-                <input type="text" id="thanhTienChu" placeholder="Tổng tiền (bằng chữ)" readonly>
-                <span class="btn-icon" onclick="toggleEditTien()" title="Sửa số tiền">Sửa</span>
-            </div>
-        </div>
-
-        <div class="section-title" onclick="toggleSection(this)">THANH TOÁN <span class="toggle-icon">▼</span></div>
         <div class="section-body">
-            <div class="payment-group">
-                <label class="pg-title">Hình thức thanh toán</label>
-                <div class="payment-options">
-                    <label id="lblCK" onclick="selectPayment('Chuyển khoản')"><input type="radio" name="payment"> Chuyển khoản</label>
-                    <label id="lblTM" onclick="selectPayment('Tiền mặt')"><input type="radio" name="payment"> Tiền mặt</label>
-                    <label id="lblKHAC" onclick="selectPayment('khac')"><input type="radio" name="payment"> Khác:</label>
-                </div>
-                <div class="payment-custom" id="paymentCustom">
-                    <input type="text" id="thanhToanCustom" placeholder="Nhập hình thức thanh toán khác..." oninput="selectPayment(this.value)">
-                </div>
-            </div>
-            <div class="form-group"><textarea id="ghiChu" placeholder="Ghi chú (nếu có)" rows="2" style="width:100%; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:12px; resize:vertical;">Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth.</textarea></div>
+            <div class="form-group"><input type="text" id="tenSanPham" placeholder="Tên sản phẩm" value="Laptop cũ"></div>
+            <div class="form-group"><input type="text" id="modelSanPham" placeholder="Model/Serial" value=""></div>
+            <div class="form-group"><input type="text" id="cauHinh" placeholder="Cấu hình" value=""></div>
+        </div>
+
+        <div class="section-title" onclick="toggleSection(this)">GHI CHÚ <span class="toggle-icon">▼</span></div>
+        <div class="section-body">
+            <div class="form-group"><input type="text" id="ghiChu1" placeholder="Ghi chú 1" value="Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth"></div>
+            <div class="form-group"><input type="text" id="ghiChu2" placeholder="Ghi chú 2" value="Đã quấn PE, chống sốc, có video + camera gói hàng"></div>
         </div>
 
         <div class="btn-group" style="margin-top: 10px;">
-            <button class="btn btn-save" id="btnSaveSheet" onclick="saveToSheet()">Lưu Google Sheet</button>
             <button class="btn btn-clear" onclick="clearForm()">Xóa trắng</button>
         </div>
         <div id="statusMsg" class="status-msg"></div>
     </div>
 
-    <!-- ====== COL 2: PREVIEW ====== -->
     <div class="preview-panel">
         <div class="a6-wrapper">
             <div class="a6-page print-target" id="a6Page">
@@ -284,61 +215,36 @@
                     </div>
                     <div class="company-info">07 Đô Đốc Tuyết, Hòa Xuân<br>0838.288.000 | i10store.com</div>
                 </div>
-                <div class="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
-                <div class="invoice-number">Số: <span id="p_soHD"></span></div>
-                <div class="invoice-info">Ngày <span id="p_ngayThangNam"></span></div>
+                <div class="invoice-title">PHIẾU GIAO HÀNG</div>
+                <div class="invoice-info">Ngày giao: <span id="p_ngayGiao"></span></div>
 
                 <div class="section-label">THÔNG TIN KHÁCH HÀNG:</div>
-                <div class="info-line"><span class="field">  Tên khách hàng:</span> <span class="value" id="p_tenKhachHang"></span></div>
+                <div class="info-line"><span class="field">Tên khách hàng:</span> <span class="value" id="p_tenKhachHang"></span></div>
                 <div class="info-line"><span class="field">Địa chỉ:</span> <span class="value" id="p_diaChiKhachHang"></span></div>
                 <div class="info-line"><span class="field">Điện thoại:</span> <span class="value" id="p_sdtKhachHang"></span></div>
 
-                <table class="product-table">
-                    <thead>
-                        <tr>
-                            <th class="stt">STT</th>
-                            <th class="ten-sp">Tên sản phẩm</th>
-                            <th class="soluong">SL</th>
-                            <th class="dongia">Đơn giá</th>
-                            <th class="thanhtien">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody id="p_productTable">
-                        <tr>
-                            <td class="sttd">1</td>
-                            <td class="ten-sp">
-                                <span class="p_tenSanPham"></span><br>
-                                <span style="font-size: 9px; color: #666;" class="p_modelSanPham"></span><br>
-                                <span style="font-size: 9px; color: #666;" class="p_cauHinh"></span>
-                            </td>
-                            <td class="soluong p_soLuong">1</td>
-                            <td class="dongia p_donGia"></td>
-                            <td class="thanhtien p_thanhTien"></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="section-label" style="margin-top: 8px;">THÔNG TIN SẢN PHẨM:</div>
+                <div class="info-line"><span class="field">  Tên sản phẩm:</span> <span class="value" id="p_tenSanPham"></span></div>
+                <div class="info-line"><span class="field">Serial:</span> <span class="value" id="p_modelSanPham"></span></div>
+                <div class="info-line"><span class="field">Cấu hình:</span> <span class="value" id="p_cauHinh"></span></div>
 
-                <div class="totals">
-                    <div class="total-line final"><span>TỔNG CỘNG:</span><span id="p_thanhTienChu"></span></div>
+                <div class="section-label" style="margin-top: 8px;">MÃ VẬN ĐƠN:</div>
+                <div class="info-line" style="font-size: calc(var(--fs, 10px) + 2px); font-weight: bold; text-align: center;">
+                    <span id="p_maVanDon" style="border: 2px dashed #333; padding: 4px 12px; display: inline-block; font-size: 22px;"></span>
                 </div>
 
-                <div class="payment-info">
-                    <strong>Phương thức thanh toán:</strong> <span id="p_thanhToan"></span>
-                </div>
-
-                <div class="info-line" style="margin-top: 5px;">
-                    <span class="field">Ghi chú:</span> <span class="value" id="p_ghiChu"></span>
-                </div>
+                <div class="section-label" style="margin-top: 8px;">GHI CHÚ:</div>
+                <div class="info-line"><span class="field">  1.</span> <span class="value" id="p_ghiChu1"></span></div>
+                <div class="info-line"><span class="field">  2.</span> <span class="value" id="p_ghiChu2"></span></div>
 
                 <div class="signatures">
-                    <div class="sig-left"><div class="sig-label">Người mua</div></div>
-                    <div class="sig-right"><div class="sig-label">Người bán</div></div>
+                    <div class="sig-left"><div class="sig-label">Người giao</div></div>
+                    <div class="sig-right"><div class="sig-label">Người nhận</div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ====== COL 3: CONTROLS ====== -->
     <div class="controls-panel">
         <h3 style="text-align: center; border: solid 1px green; border-radius: 4px; padding: 10px; background: #e8f5e9;"><strong>ĐIỀU KHIỂN IN ẤN</strong></h3>
 
@@ -353,11 +259,11 @@
 
         <div class="password-group">
             <label>Mật khẩu để in ấn</label>
-            <input type="password" id="printPass" placeholder="Nhập mật khẩu..." onkeyup="if(event.key==='Enter')doPrintInvoice()">
+            <input type="password" id="printPass" placeholder="Nhập mật khẩu..." onkeyup="if(event.key==='Enter')doPrint()">
             <div class="error" id="printPassError">Mật khẩu không đúng!</div>
         </div>
         <div class="ctrl-btn-group">
-            <button class="btn btn-print" onclick="doPrintInvoice()">In hóa đơn</button>
+            <button class="btn btn-print" onclick="doPrint()">In phiếu giao hàng</button>
             <button class="btn btn-pdf" onclick="savePDF()">Lưu PDF</button>
             <button class="btn btn-png" onclick="savePNG()">Lưu PNG</button>
         </div>
@@ -366,136 +272,6 @@
 </div>
 
 <script>
-var productCount = 1;
-
-function syncDate() {
-    var dateStr = document.getElementById('ngayThangNam').value;
-    document.getElementById('p_ngayThangNam').textContent = dateStr;
-}
-
-function addProduct() {
-    productCount++;
-    var productList = document.getElementById('productList');
-    var newProduct = document.createElement('div');
-    newProduct.className = 'product-item';
-    newProduct.id = 'product-' + productCount;
-    newProduct.innerHTML = `
-        <div class="product-item-header">
-            <span>Sản phẩm ${productCount}</span>
-            <span class="product-item-remove" onclick="removeProduct(${productCount})">Xóa</span>
-        </div>
-        <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" oninput="tinhTong()"></div>
-        <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
-        <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
-        <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
-        <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" oninput="tinhTong()"></div>
-    `;
-    productList.appendChild(newProduct);
-    tinhTong();
-}
-
-function removeProduct(id) {
-    if (productCount > 1) {
-        var product = document.getElementById('product-' + id);
-        if (product) {
-            product.remove();
-            productCount--;
-            tinhTong();
-        }
-    }
-}
-
-function tinhTong() {
-    var products = document.querySelectorAll('.product-item');
-    var tableBody = document.getElementById('p_productTable');
-    tableBody.innerHTML = '';
-    
-    var tongTien = 0;
-    var stt = 1;
-    
-    products.forEach(function(product) {
-        var tenSP = product.querySelector('.tenSanPham').value;
-        var modelSP = product.querySelector('.modelSanPham').value;
-        var cauHinh = product.querySelector('.cauHinh').value;
-        var soLuong = parseInt(product.querySelector('.soLuong').value) || 0;
-        var donGia = parseInt(String(product.querySelector('.donGia').value).replace(/[^0-9]/g, '')) || 0;
-        var thanhTien = soLuong * donGia;
-        tongTien += thanhTien;
-        
-        var row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="sttd">${stt}</td>
-            <td class="ten-sp">
-                ${tenSP || ''}<br>
-                <span style="font-size: 9px; color: #666;">${modelSP || ''}</span><br>
-                <span style="font-size: 9px; color: #666;">${cauHinh || ''}</span>
-            </td>
-            <td class="soluong">${soLuong}</td>
-            <td class="dongia">${donGia.toLocaleString('vi-VN')}</td>
-            <td class="thanhtien">${thanhTien.toLocaleString('vi-VN')}</td>
-        `;
-        tableBody.appendChild(row);
-        stt++;
-    });
-    
-    if (tongTien > 0) {
-        var words = numberToWords(tongTien);
-        document.getElementById('thanhTienChu').value = words;
-        document.getElementById('p_thanhTienChu').textContent = tongTien.toLocaleString('vi-VN') + ' VNĐ (' + words + ')';
-    } else {
-        document.getElementById('thanhTienChu').value = '';
-        document.getElementById('p_thanhTienChu').textContent = '';
-    }
-}
-
-var DV = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
-var HANG = ['','nghìn','triệu','tỷ'];
-
-function readGroup3(n) {
-    var t = Math.floor(n / 100);
-    var c = Math.floor((n % 100) / 10);
-    var d = n % 10;
-    var p = [];
-    if (t > 0) { p.push(DV[t], 'trăm'); if (c === 0 && d > 0) p.push('linh'); }
-    if (c > 1) { p.push(DV[c], 'mươi'); if (d === 1) p.push('mốt'); else if (d === 5) p.push('lăm'); else if (d > 0) p.push(DV[d]); }
-    else if (c === 1) { p.push('mười'); if (d === 1) p.push('một'); else if (d === 5) p.push('lăm'); else if (d > 0) p.push(DV[d]); }
-    else { if (d > 0) { if (t > 0) p.push('linh'); p.push(DV[d]); } }
-    return p.join(' ');
-}
-
-function numberToWords(num) {
-    if (num === null || num === undefined || num === '') return '';
-    num = parseInt(String(num).replace(/[^0-9]/g, ''));
-    if (isNaN(num) || num === 0) return 'Không đồng';
-    var groups = [];
-    while (num > 0) { groups.push(num % 1000); num = Math.floor(num / 1000); }
-    var result = '';
-    for (var i = groups.length - 1; i >= 0; i--) {
-        var g = groups[i];
-        if (g === 0) continue;
-        var txt = readGroup3(g);
-        if (i > 0 && HANG[i]) txt += ' ' + HANG[i];
-        result = result ? result + ' ' + txt : txt;
-    }
-    if (!result) return 'Không đồng';
-    return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
-}
-
-var tienEditable = false;
-function toggleEditTien() {
-    tienEditable = !tienEditable;
-    var el = document.getElementById('thanhTienChu');
-    if (tienEditable) {
-        el.removeAttribute('readonly');
-        el.style.background = '#fff';
-        el.style.borderColor = '#f39c12';
-    } else {
-        el.setAttribute('readonly', true);
-        el.style.background = '#f5f5f5';
-        el.style.borderColor = '#ccc';
-    }
-}
-
 function toggleSection(el) {
     var body = el.nextElementSibling;
     var icon = el.querySelector('.toggle-icon');
@@ -503,34 +279,28 @@ function toggleSection(el) {
     icon.textContent = body.classList.contains('collapsed') ? '▶' : '▼';
 }
 
-var paymentValue = '';
-function selectPayment(val) {
-    document.getElementById('lblCK').className = '';
-    document.getElementById('lblTM').className = '';
-    document.getElementById('lblKHAC').className = '';
-    var customDiv = document.getElementById('paymentCustom');
-
-    if (val === 'Chuyển khoản') { document.getElementById('lblCK').className = 'selected'; customDiv.classList.remove('show'); }
-    else if (val === 'Tiền mặt') { document.getElementById('lblTM').className = 'selected'; customDiv.classList.remove('show'); }
-    else if (val === 'khac') { document.getElementById('lblKHAC').className = 'selected'; customDiv.classList.add('show'); val = document.getElementById('thanhToanCustom').value || ''; document.getElementById('thanhToanCustom').focus(); }
-    
-    if (val !== 'khac') { paymentValue = val; document.getElementById('p_thanhToan').textContent = val; }
-}
-
 function initDefaults() {
-    document.getElementById('p_soHD').textContent = document.getElementById('soHD').value;
-    document.getElementById('p_ngayThangNam').textContent = document.getElementById('ngayThangNam').value;
+    document.getElementById('p_ngayGiao').textContent = document.getElementById('ngayGiao').value;
     document.getElementById('p_tenKhachHang').textContent = document.getElementById('tenKhachHang').value;
     document.getElementById('p_diaChiKhachHang').textContent = document.getElementById('diaChiKhachHang').value;
     document.getElementById('p_sdtKhachHang').textContent = document.getElementById('sdtKhachHang').value;
-    document.getElementById('p_ghiChu').textContent = document.getElementById('ghiChu').value;
-    tinhTong();
+    document.getElementById('p_tenSanPham').textContent = document.getElementById('tenSanPham').value;
+    document.getElementById('p_modelSanPham').textContent = document.getElementById('modelSanPham').value;
+    document.getElementById('p_cauHinh').textContent = document.getElementById('cauHinh').value;
+    document.getElementById('p_maVanDon').textContent = document.getElementById('maVanDon').value;
+    document.getElementById('p_ghiChu1').textContent = document.getElementById('ghiChu1').value;
+    document.getElementById('p_ghiChu2').textContent = document.getElementById('ghiChu2').value;
     
-    document.getElementById('soHD').addEventListener('input', function() { document.getElementById('p_soHD').textContent = this.value; });
+    document.getElementById('ngayGiao').addEventListener('input', function() { document.getElementById('p_ngayGiao').textContent = this.value; });
     document.getElementById('tenKhachHang').addEventListener('input', function() { document.getElementById('p_tenKhachHang').textContent = this.value; });
     document.getElementById('diaChiKhachHang').addEventListener('input', function() { document.getElementById('p_diaChiKhachHang').textContent = this.value; });
     document.getElementById('sdtKhachHang').addEventListener('input', function() { document.getElementById('p_sdtKhachHang').textContent = this.value; });
-    document.getElementById('ghiChu').addEventListener('input', function() { document.getElementById('p_ghiChu').textContent = this.value; });
+    document.getElementById('tenSanPham').addEventListener('input', function() { document.getElementById('p_tenSanPham').textContent = this.value; });
+    document.getElementById('modelSanPham').addEventListener('input', function() { document.getElementById('p_modelSanPham').textContent = this.value; });
+    document.getElementById('cauHinh').addEventListener('input', function() { document.getElementById('p_cauHinh').textContent = this.value; });
+    document.getElementById('maVanDon').addEventListener('input', function() { document.getElementById('p_maVanDon').textContent = this.value; });
+    document.getElementById('ghiChu1').addEventListener('input', function() { document.getElementById('p_ghiChu1').textContent = this.value; });
+    document.getElementById('ghiChu2').addEventListener('input', function() { document.getElementById('p_ghiChu2').textContent = this.value; });
 }
 
 function updatePreview() {
@@ -572,42 +342,27 @@ function showStatus(msg, type) {
 }
 
 function clearForm() {
-    document.getElementById('soHD').value = '';
-    document.getElementById('ngayThangNam').value = '';
+    document.getElementById('ngayGiao').value = '';
+    document.getElementById('maVanDon').value = '';
     document.getElementById('tenKhachHang').value = '';
     document.getElementById('diaChiKhachHang').value = '';
     document.getElementById('sdtKhachHang').value = '';
-    document.getElementById('ghiChu').value = 'Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth.';
-    document.getElementById('thanhTienChu').value = '';
+    document.getElementById('tenSanPham').value = '';
+    document.getElementById('modelSanPham').value = '';
+    document.getElementById('cauHinh').value = '';
+    document.getElementById('ghiChu1').value = '';
+    document.getElementById('ghiChu2').value = '';
     
-    document.getElementById('p_soHD').textContent = '';
-    document.getElementById('p_ngayThangNam').textContent = '';
+    document.getElementById('p_ngayGiao').textContent = '';
+    document.getElementById('p_maVanDon').textContent = '';
     document.getElementById('p_tenKhachHang').textContent = '';
     document.getElementById('p_diaChiKhachHang').textContent = '';
     document.getElementById('p_sdtKhachHang').textContent = '';
-    document.getElementById('p_ghiChu').textContent = '';
-    document.getElementById('p_thanhTienChu').textContent = '';
-    
-    paymentValue = '';
-    document.getElementById('lblCK').className = '';
-    document.getElementById('lblTM').className = '';
-    document.getElementById('lblKHAC').className = '';
-    document.getElementById('paymentCustom').classList.remove('show');
-    document.getElementById('p_thanhToan').textContent = '';
-    
-    var products = document.querySelectorAll('.product-item');
-    products.forEach(function(p, index) {
-        if (index > 0) p.remove();
-    });
-    var firstProduct = document.querySelector('.product-item');
-    firstProduct.querySelector('.tenSanPham').value = '';
-    firstProduct.querySelector('.modelSanPham').value = '';
-    firstProduct.querySelector('.cauHinh').value = '';
-    firstProduct.querySelector('.soLuong').value = '1';
-    firstProduct.querySelector('.donGia').value = '';
-    
-    productCount = 1;
-    tinhTong();
+    document.getElementById('p_tenSanPham').textContent = '';
+    document.getElementById('p_modelSanPham').textContent = '';
+    document.getElementById('p_cauHinh').textContent = '';
+    document.getElementById('p_ghiChu1').textContent = '';
+    document.getElementById('p_ghiChu2').textContent = '';
     showStatus('Đã xóa trắng form', 'success');
 }
 
@@ -620,7 +375,13 @@ async function captureCanvas() {
     return canvas;
 }
 
-function doPrintInvoice() {
+function getPrintPassword() {
+    var now = new Date();
+    var hour = now.getHours();
+    return 'i10' + String(hour).padStart(2, '0');
+}
+
+function doPrint() {
     var passInput = document.getElementById('printPass');
     var errorEl = document.getElementById('printPassError');
     var PRINT_PASSWORD = getPrintPassword();
@@ -642,103 +403,63 @@ function doPrintInvoice() {
     }, speed);
 }
 
-function printInvoice() {
-    doPrintInvoice();
-}
-
 async function savePDF() {
+    var passInput = document.getElementById('printPass');
+    var errorEl = document.getElementById('printPassError');
+    var PRINT_PASSWORD = getPrintPassword();
+    if (passInput.value !== PRINT_PASSWORD) {
+        errorEl.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+        return;
+    }
+    errorEl.classList.remove('show');
+    document.querySelector('.watermark').style.display = 'block';
     showStatus('Đang tạo PDF...', 'success');
     try {
         var canvas = await captureCanvas();
         var jsPDF = window.jspdf.jsPDF;
         var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [105, 148] });
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 105, 148);
-        var name = 'HoaDon_' + (document.getElementById('soHD').value || 'draft') + '.pdf';
+        var name = 'PhieuGiaoHang_' + (document.getElementById('maVanDon').value || 'draft') + '.pdf';
         pdf.save(name);
         showStatus('Đã lưu PDF: ' + name, 'success');
-    } catch (e) { showStatus('Lỗi PDF: ' + e.message, 'error'); }
+        setTimeout(function() {
+            document.querySelector('.watermark').style.display = 'none';
+        }, 500);
+    } catch (e) { 
+        showStatus('Lỗi PDF: ' + e.message, 'error');
+        document.querySelector('.watermark').style.display = 'none';
+    }
 }
 
 async function savePNG() {
+    var passInput = document.getElementById('printPass');
+    var errorEl = document.getElementById('printPassError');
+    var PRINT_PASSWORD = getPrintPassword();
+    if (passInput.value !== PRINT_PASSWORD) {
+        errorEl.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+        return;
+    }
+    errorEl.classList.remove('show');
+    document.querySelector('.watermark').style.display = 'block';
     showStatus('Đang tạo PNG...', 'success');
     try {
         var canvas = await captureCanvas();
         var link = document.createElement('a');
-        link.download = 'HoaDon_' + (document.getElementById('soHD').value || 'draft') + '.png';
+        link.download = 'PhieuGiaoHang_' + (document.getElementById('maVanDon').value || 'draft') + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         showStatus('Đã lưu PNG', 'success');
-    } catch (e) { showStatus('Lỗi PNG: ' + e.message, 'error'); }
-}
-
-// === GET FORM DATA ===
-function getFormDataHoaDon() {
-    var data = {
-        soHD: document.getElementById('soHD').value,
-        ngayThangNam: document.getElementById('ngayThangNam').value,
-        tenKhachHang: document.getElementById('tenKhachHang').value,
-        diaChiKhachHang: document.getElementById('diaChiKhachHang').value,
-        sdtKhachHang: document.getElementById('sdtKhachHang').value,
-        ghiChu: document.getElementById('ghiChu').value,
-        thanhToan: paymentValue,
-        giaTienChu: document.getElementById('thanhTienChu').value,
-        timestamp: new Date().toLocaleString('vi-VN')
-    };
-    var products = document.querySelectorAll('.product-item');
-    var productData = [];
-    products.forEach(function(p) {
-        productData.push({
-            tenSanPham: p.querySelector('.tenSanPham').value,
-            modelSanPham: p.querySelector('.modelSanPham').value,
-            cauHinh: p.querySelector('.cauHinh').value,
-            soLuong: p.querySelector('.soLuong').value,
-            donGia: p.querySelector('.donGia').value
-        });
-    });
-    data.products = productData;
-    return data;
-}
-
-// === SAVE TO GOOGLE SHEET ===
-async function saveToSheet() {
-    var data = getFormDataHoaDon();
-    if (!data.tenKhachHang || !data.products[0].tenSanPham) {
-        alert('⚠️ Vui lòng nhập ít nhất:\n- Tên khách hàng\n- Tên sản phẩm');
-        return;
+        setTimeout(function() {
+            document.querySelector('.watermark').style.display = 'none';
+        }, 500);
+    } catch (e) { 
+        showStatus('Lỗi PNG: ' + e.message, 'error');
+        document.querySelector('.watermark').style.display = 'none';
     }
-
-    var btn = document.getElementById('btnSaveSheet');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
-    btn.style.opacity = '0.8';
-
-    showStatus('Đang gửi dữ liệu lên Google Sheet...', 'success');
-
-    var WEBAPP_URL = SHEET_API;
-
-    try {
-        await fetch(WEBAPP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        showStatus('Đã gửi dữ liệu lên Google Sheet!', 'success');
-        alert('✅ Đã gửi hóa đơn lên Google Sheet!\n\nSheet "HoaDon" sẽ được cập nhật trong giây lát.');
-    } catch (e) {
-        showStatus('Lỗi kết nối: ' + e.message, 'error');
-        alert('❌ Lỗi khi gửi dữ liệu:\n' + e.message + '\n\nKiểm tra:\n1. Web App URL trong code đã đúng\n2. Apps Script đã deploy lại\n3. Quyền truy cập: "Anyone"');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Lưu Google Sheet';
-        btn.style.opacity = '1';
-    }
-}
-
-function getPrintPassword() {
-    var now = new Date();
-    var hour = now.getHours();
-    return 'i10' + String(hour).padStart(2, '0');
 }
 
 initDefaults();
@@ -758,7 +479,7 @@ updateSpeed();
     </div>
     <div class="hotline-bar">
     <a target="_blank" href="https://zalo.me/0838288000">
-    <span class="text-hotline">0838.288.000</span>
+        <span class="text-hotline">0838.288.000</span>
     </a>
     </div>
 </div>
@@ -813,7 +534,6 @@ updateSpeed();
 
 <script>
 const SITE_LOGO = i10Config ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
-const SHEET_API = i10Config ? i10Config.SHEET_API_HOADON : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");

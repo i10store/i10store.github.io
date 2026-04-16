@@ -22,7 +22,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
-        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 10px 12%; }
+        .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 0px 12%; }
         .app-container > * { position: relative; }
 
         /* === COL 1: FORM === */
@@ -298,6 +298,19 @@
   </div>
 </header>
 
+<div class="body-content outer-top-xs" style="padding: 10px 15px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
+                    <li><a href="/index.html">Trang chủ</a></li>
+                    <li><a href="/internal.html">Chức năng nội bộ</a></li>
+                    <li class="active">Hợp đồng mua bán</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="app-container">
 
@@ -308,7 +321,7 @@
         <div class="section-title" onclick="toggleSection(this)">THÔNG TIN CHUNG <span class="toggle-icon">▼</span></div>
         <div class="section-body">
             <div class="form-group"><input type="text" id="soHD" placeholder="Số hợp đồng (VD: 001/2026)" value="001/2026"></div>
-            <div class="form-group"><input type="text" id="ngayThangNam" placeholder="Ngày/Tháng/Năm (VD: 05/04/2026)" value="05/04/2026"></div>
+            <div class="form-group"><input type="text" id="ngayThangNam" placeholder="Ngày/Tháng/Năm (VD: 22/04/2026)" value="22/04/2026"></div>
             <div class="form-group"><input type="text" id="noiLap" placeholder="Nơi lập hợp đồng" value="07 Đô Đốc Tuyết, Hòa Xuân"></div>
         </div>
 
@@ -833,6 +846,12 @@ async function saveToSheet() {
 }
 
 // === INIT ===
+function getPrintPassword() {
+    var now = new Date();
+    var hour = now.getHours();
+    return 'i10' + String(hour).padStart(2, '0');
+}
+
 initDefaults();
 updatePreview();
 updateSpeed();

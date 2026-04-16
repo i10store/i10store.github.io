@@ -150,82 +150,16 @@
         <div class="internal-header">
             <div class="container">
                 <h1><i class="fa fa-tags"></i> In Tem Sản Phẩm i10 STORE</h1>
-                <p>Nhập 10 ID sản phẩm để in tem (10 sản phẩm/trang, ngang)</p>
+                <p>Nhập các ID sản phẩm để in tem (cách nhau bởi khoảng trắng, \, | hoặc ,, tối đa 12 sản phẩm/trang)</p>
             </div>
         </div>
         
         <div class="input-section no-print">
             <div class="row">
-                <div class="col-xs-12 col-md-2">
+                <div class="col-xs-12">
                     <div class="form-group">
-                        <label>ID sản phẩm 1:</label>
-                        <input type="text" id="id1" class="form-control" placeholder="Nhập ID sản phẩm (ví dụ: CFF)">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 2:</label>
-                        <input type="text" id="id2" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 3:</label>
-                        <input type="text" id="id3" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 4:</label>
-                        <input type="text" id="id4" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 5:</label>
-                        <input type="text" id="id5" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 6:</label>
-                        <input type="text" id="id6" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 7:</label>
-                        <input type="text" id="id7" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 8:</label>
-                        <input type="text" id="id8" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 9:</label>
-                        <input type="text" id="id9" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 10:</label>
-                        <input type="text" id="id10" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 11:</label>
-                        <input type="text" id="id11" class="form-control" placeholder="Nhập ID sản phẩm">
-                    </div>
-                </div>
-                <div class="col-xs-12 col-md-2">
-                    <div class="form-group">
-                        <label>ID sản phẩm 12:</label>
-                        <input type="text" id="id12" class="form-control" placeholder="Nhập ID sản phẩm">
+                        <label>Nhập ID sản phẩm (cách nhau bởi khoảng trắng hoặc \ hoặc | hoặc ,):</label>
+                        <textarea id="productIds" class="form-control" rows="4" placeholder="Nhập các ID sản phẩm, cách nhau bởi khoảng trắng hoặc dấu \ hoặc | hoặc , (ví dụ: CFF L490 T14)" oninput="saveProductIds()"></textarea>
                     </div>
                 </div>
             </div>
@@ -264,30 +198,32 @@ const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf
 const THEME = "#76b500";
 let foundProducts = [];
 
+document.addEventListener("DOMContentLoaded", () => {
+    const savedIds = localStorage.getItem('i10_intem_ids');
+    if (savedIds) {
+        document.getElementById('productIds').value = savedIds;
+    }
+});
+
+function saveProductIds() {
+    const input = document.getElementById('productIds').value;
+    localStorage.setItem('i10_intem_ids', input);
+}
+
 async function searchProducts() {
-    const id1 = document.getElementById('id1').value.trim();
-    const id2 = document.getElementById('id2').value.trim();
-    const id3 = document.getElementById('id3').value.trim();
-    const id4 = document.getElementById('id4').value.trim();
-    const id5 = document.getElementById('id5').value.trim();
-    const id6 = document.getElementById('id6').value.trim();
-    const id7 = document.getElementById('id7').value.trim();
-    const id8 = document.getElementById('id8').value.trim();
-    const id9 = document.getElementById('id9').value.trim();
-    const id10 = document.getElementById('id10').value.trim();
-    const id11 = document.getElementById('id11').value.trim();
-    const id12 = document.getElementById('id12').value.trim();
+    const input = document.getElementById('productIds').value;
     
-    const rawIds = [id1, id2, id3, id4, id5, id6, id7, id8, id9, id10, id11, id12];
-    const ids = rawIds
-        .join(' ')
-        .split(/\s+/)
+    const ids = input
+        .split(/[\s\\|,]+/)
+        .map(id => id.trim())
         .filter(id => id !== '');
     
     if (ids.length === 0) {
         alert('Vui lòng nhập ít nhất 1 ID sản phẩm');
         return;
     }
+    
+    saveProductIds();
     
     foundProducts = [];
     
@@ -314,8 +250,7 @@ function getPriceText(product) {
         return "Tạm hết";
     }
     if (product["Price"]) {
-        const num = parseFloat(product["Price"]) * 1000000;
-        return num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 });
+        return product["Price"];
     }
     if (product["PRICE SEGMENT"]) {
         return product["PRICE SEGMENT"];
@@ -370,16 +305,16 @@ function renderPreview() {
                         position: relative;
                     ">
                         <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; flex-shrink: 0; align-self: center;">
-                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; margin-left: 1mm;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5mm;">
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; margin-left: 0.5mm; margin-right: 0.5mm;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0mm;">
                                 <span style="font-size: 8pt; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</span>
-                                <span style="font-size: 8pt; font-weight: 700; color: #666;">[${productId}]</span>
+                                <span style="font-size: 9pt; font-weight: 700; color: #666;">[${productId}]</span>
                             </div>
                             <div style="font-size: 7pt; color: #444;">
                                 ${product["CPU"] || "N/A"} | ${product["RAM"] || "N/A"}Gb | ${product["SSD"] || "N/A"}Gb | ${product["RESOLUTION"] || "N/A"} | ${product["GPU"] || "Onboard"}
                             </div>
                         </div>
-                        <div style="position: absolute; left: 1mm; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap; z-index: 10; transform-origin: left center;">${priceText}</div>
+                        <div style="position: absolute; right: 1mm; bottom: 0mm; font-size: 7pt; font-weight: 700; color: ${THEME}; white-space: nowrap; z-index: 222;">${priceText}</div>
                     </div>
                 `;
             } else {
@@ -398,11 +333,11 @@ function renderPreview() {
                         position: relative;
                     ">
                     <img src="${SITE_LOGO}" alt="i10 Store" style="width: 10mm; height: 10mm; object-fit: contain; margin-right: 1mm; flex-shrink: 0; opacity: 0.3;">
-                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; margin-right: 20mm;">
                         <div style="font-size: 7pt; color: #ccc;">---</div>
                         <div style="font-size: 7pt; color: #ccc;">---</div>
                     </div>
-                    <div style="position: absolute; bottom: 1mm; right: 1mm; font-size: 7pt; color: #ccc; z-index: 10;">---</div>
+                    <div style="position: absolute; right: 1mm; bottom: 1mm; font-size: 7pt; color: #ccc; z-index: 20;">---</div>
                 </div>
                 `;
             }
