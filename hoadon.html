@@ -109,8 +109,8 @@
         .a6-page .signatures div { text-align: center; width: 40%; }
         .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
         .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
-        .a6-page .signatures .sig-label { margin-bottom: 25px; }
-        .a6-page .shop-signature { max-width: 80px; max-height: 40px; margin-top: 5px; }
+        .a6-page .signatures .sig-label { margin-bottom: 10px; }
+        .a6-page .shop-signature { max-width: 150px; max-height: 40px; margin-top: 5px; }
 
         /* === COL 3: CONTROLS === */
         .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
@@ -335,7 +335,7 @@
                     <div class="sig-left"><div class="sig-label">Người mua</div></div>
                     <div class="sig-right">
                         <div class="sig-label">Người bán</div>
-                        <span class="signature-store">Cửa hàng laptop i10Store</span>
+                        <span class="signature-store" style="width: 100px; display: flex; align-items: left; justify-content: left;">Cửa hàng i10Store</span>
                         <img src="/assets/chuky.png" class="shop-signature" alt="Chữ ký" style="display:none;">
                     </div>
                 </div>
@@ -636,34 +636,21 @@ function doPrint() {
         return;
     }
     errorEl.classList.remove('show');
-<<<<<<< HEAD
     if (document.getElementById('showWatermark').checked) {
         document.querySelector('.watermark').style.display = 'block';
     }
     if (document.getElementById('showSignature').checked) {
         document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
     }
-=======
-    document.querySelector('.watermark').style.display = 'block';
->>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
     showStatus('Đang chuẩn bị in...', 'success');
     setTimeout(function() {
         window.print();
         setTimeout(function() {
             document.querySelector('.watermark').style.display = 'none';
-<<<<<<< HEAD
             document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
         }, 500);
     }, speed);
-=======
-        }, 500);
-    }, speed);
-}
-
-function printInvoice() {
-    doPrintInvoice();
->>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
 }
 
 async function savePDF() {

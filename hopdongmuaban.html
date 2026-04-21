@@ -759,16 +759,12 @@ function doPrintContract() {
         return;
     }
     errorEl.classList.remove('show');
-<<<<<<< HEAD
     if (document.getElementById('showWatermark').checked) {
         document.querySelector('.watermark').style.display = 'block';
     }
     if (document.getElementById('showSignature').checked) {
         document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
     }
-=======
-    document.querySelector('.watermark').style.display = 'block';
->>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
     showStatus('Đang chuẩn bị in...', 'success');
     var page = document.getElementById('a6Page');
@@ -785,10 +781,7 @@ function doPrintContract() {
             page.parentElement.style.width = origW;
             page.parentElement.style.height = origH;
             document.querySelector('.watermark').style.display = 'none';
-<<<<<<< HEAD
             document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
-=======
->>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
         }, 500);
     }, speed);
 }
