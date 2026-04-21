@@ -37,7 +37,12 @@ const CONFIG = {
   // Cache keys
   CACHE_KEY_PRODUCTS: "i10_cached_products",
   CACHE_KEY_BANNER: "i10_cached_banner",
-  CACHE_KEY_CUSTOMER: "i10_cached_customer"
+  CACHE_KEY_CUSTOMER: "i10_cached_customer",
+
+  // Telegram bt
+  TELEGRAM_TOKEN: '8746983195:AAGh1XzTrFkF95VnAAjBaWjjanDkMuCgX3c',
+  SPREADSHEET_ID: '1363086151',
+  DRIVE_FOLDER_ID: '1pRjbeVs16VO34Lg-ATNM7EEqitC-re_O'
 };
 
 const STORE_SHEET_NAME = CONFIG.STORE_SHEET_NAME;
@@ -1007,4 +1012,411 @@ function handleHoaDon(data, timestamp) {
       .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function createInTemSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  let sheet = ss.getSheetByName("In_tem");
+  if (sheet) ss.deleteSheet(sheet);
+  sheet = ss.insertSheet("In_tem");
+
+  // ===== INPUT =====
+  sheet.getRange("A1").setValue("NHẬP ID");
+  sheet.getRange("A2").setValue("ID 1");
+  sheet.getRange("A3").setValue("ID 2");
+  sheet.getRange("A4").setValue("ID 3");
+  sheet.getRange("B2:B4").setBackground("#fff2cc").setFontWeight("bold");
+
+  // ===== TEMPLATE =====
+  for (let i = 0; i < 3; i++) {
+    let rIn = 2 + i;
+    let r = 6 + i * 6;
+
+    // MODEL
+    sheet.getRange(`A${r}`).setFormula(
+      `=IFERROR(VLOOKUP(B${rIn},Store!B:Z,3,FALSE),"")`
+    );
+
+    // CẤU HÌNH
+    sheet.getRange(`A${r+1}`).setFormula(
+      `=IFERROR(
+        VLOOKUP(B${rIn},Store!B:Z,5,FALSE)&" | "&
+        VLOOKUP(B${rIn},Store!B:Z,6,FALSE)&" | "&
+        VLOOKUP(B${rIn},Store!B:Z,7,FALSE)&" | "&
+        VLOOKUP(B${rIn},Store!B:Z,9,FALSE)&" | "&
+        VLOOKUP(B${rIn},Store!B:Z,10,FALSE)
+      ,"")`
+    );
+
+    // ID
+    sheet.getRange(`A${r+2}`).setFormula(
+      `=IF(B${rIn}<>"","ID: "&B${rIn},"")`
+    );
+
+    // PRICE
+    sheet.getRange(`A${r+3}`).setFormula(
+      `=IFERROR("GIÁ: "&TEXT(VLOOKUP(B${rIn},Store!B:Z,21,FALSE),"#,##0")&"đ","")`
+    );
+
+    // QR CODE (dùng API Google Chart)
+    sheet.getRange(`B${r}:B${r+3}`).merge().setFormula(
+      `=IF(B${rIn}<>"",IMAGE("https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl="&B${rIn}),"")`
+    );
+
+    // ===== STYLE =====
+    sheet.getRange(`A${r}`).setFontSize(14).setFontWeight("bold");
+    sheet.getRange(`A${r+1}`).setFontSize(9);
+    sheet.getRange(`A${r+2}`).setFontSize(9);
+    sheet.getRange(`A${r+3}`)
+      .setFontSize(13)
+      .setFontWeight("bold")
+      .setFontColor("#d32f2f");
+
+    // KHUNG
+    sheet.getRange(`A${r}:B${r+4}`)
+      .setBorder(true, true, true, true, false, false);
+  }
+
+  // ===== FORMAT =====
+  sheet.setColumnWidths(1, 1, 300); // text
+  sheet.setColumnWidths(2, 1, 120); // QR
+
+  sheet.setRowHeights(6, 18, 28);
+
+  sheet.getRange("A6:B25")
+    .setVerticalAlignment("middle")
+    .setWrap(true);
+
+  // ===== CHỈ IN VÙNG TEM =====
+  sheet.setHiddenGridlines(true);
+
+  // Ẩn vùng nhập khi in
+  sheet.hideRows(1, 4);
+
+  SpreadsheetApp.flush();
+}
+
+
+//======================================================================================================
+// ============================================
+// I10 STORE TELEGRAM BOT - GOOGLE APPS SCRIPT
+// ============================================
+// TELEGRAM BOT HANDLERS
+// ============================================
+
+// Lưu state vào PropertiesService để không bị reset giữa các request
+function saveUserState(chatId, state) {
+  const key = 'telegram_state_' + chatId;
+  PropertiesService.getUserProperties().setProperty(key, JSON.stringify(state));
+}
+
+function getUserState(chatId) {
+  const key = 'telegram_state_' + chatId;
+  const data = PropertiesService.getUserProperties().getProperty(key);
+  return data ? JSON.parse(data) : null;
+}
+
+function clearUserState(chatId) {
+  const key = 'telegram_state_' + chatId;
+  PropertiesService.getUserProperties().deleteProperty(key);
+}
+
+function setWebhook() {
+  const url = 'https://api.telegram.org/bot' + CONFIG.TELEGRAM_TOKEN + '/setWebhook';
+  const scriptUrl = ScriptApp.getService().getUrl();
+  const options = {
+    method: 'post',
+    payload: { url: scriptUrl }
+  };
+  UrlFetchApp.fetch(url, options);
+  return 'Webhook set: ' + scriptUrl;
+}
+
+function doGet(e) {
+  return HtmlService.createHtmlOutput('Bot đang hoạt động!');
+}
+
+function doPost(e) {
+  const contents = JSON.parse(e.postData.contents);
+  const msg = contents.message;
+  
+  if (!msg) return;
+  
+  const chatId = msg.chat.id;
+  const text = msg.text;
+  const photo = msg.photo;
+  
+  // Xử lý text (Serial)
+  if (text) {
+    const serial = text.trim().toUpperCase();
+    
+    // Lệnh /start - không xử lý như serial
+    if (serial === '/START') {
+      sendMessage(chatId, '👋 Chào bạn!\n\n📸 Gửi *Serial* sản phẩm để bắt đầu upload ảnh.\n\nVí dụ: CFF\n\n📋 Các lệnh:\n/begin - Bắt đầu mới\n/delete [SERIAL] - Xóa ảnh theo serial\n/xoarong - Xóa các folder rỗng\n/list - Xem danh sách ảnh', 'Markdown');
+      clearUserState(chatId);
+      return;
+    }
+    
+    if (serial === '/BEGIN' || serial === '/NEW') {
+      saveUserState(chatId, { step: 'waiting_serial', serial: '' });
+      sendMessage(chatId, '📝 Nhập *Serial* sản phẩm (ví dụ: CFF):', 'Markdown');
+      return;
+    }
+    
+    if (serial.startsWith('/DELETE') || serial.startsWith('/XÓA')) {
+      const delSerial = serial.replace(/[\/DELETE\/XÓA]/gi, '').trim();
+      if (delSerial) {
+        deleteImagesBySerial(delSerial, chatId);
+      } else {
+        sendMessage(chatId, '📝 Gửi serial cần xóa ảnh. Ví dụ: /delete CFF');
+      }
+      return;
+    }
+    
+    if (serial === '/XOA RONG' || serial === '/XOARONG') {
+      cleanEmptyFolders(chatId);
+      return;
+    }
+    
+    if (serial === '/LIST' || serial === '/DANHSACH') {
+      listImages(chatId);
+      return;
+    }
+    
+    // Kiểm tra nếu đang chờ nhập serial
+    const currentState = getUserState(chatId);
+    if (currentState && currentState.step === 'waiting_serial') {
+      saveUserState(chatId, { step: 'waiting_photo', serial: serial });
+      sendMessage(chatId, '✅ Đã nhận Serial: *' + serial + '*\n\n📸 Gửi *ảnh* sản phẩm (gửi nhiều ảnh cùng lúc cũng được!)', 'Markdown');
+      return;
+    }
+    
+    // Lưu serial và chờ ảnh (mặc định)
+    saveUserState(chatId, { step: 'waiting_photo', serial: serial });
+    sendMessage(chatId, '✅ Đã nhận Serial: *' + serial + '*\n\n📸 Gửi *ảnh* sản phẩm (gửi nhiều ảnh cùng lúc cũng được!)', 'Markdown');
+    return;
+  }
+  
+  // Xử lý ảnh
+  if (photo) {
+    // Kiểm tra có đang chờ ảnh không
+    const currentState = getUserState(chatId);
+    if (!currentState || currentState.step !== 'waiting_photo') {
+      sendMessage(chatId, '❌ Vui lòng gửi *Serial* sản phẩm trước khi gửi ảnh!\n\nVí dụ: Gửi CFF\nRồi gửi ảnh sau.', 'Markdown');
+      return;
+    }
+    
+    const serial = currentState.serial;
+    if (!serial) {
+      sendMessage(chatId, '❌ Chưa nhập Serial! Gửi Serial trước.');
+      return;
+    }
+    
+    // Lấy tất cả ảnh (telegram gửi nhiều size)
+    const photos = msg.photo;
+    const fileIds = photos.map(p => p.file_id);
+    
+    sendMessage(chatId, '⏳ Đang upload ' + fileIds.length + ' ảnh...');
+    handleUploadPhotos(fileIds, serial, chatId);
+  }
+}
+
+function handleUploadPhotos(fileIds, serial, chatId) {
+  const folderName = 'SP_' + serial;
+  let folder;
+  
+  // Tìm hoặc tạo folder theo Serial
+  const folders = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFoldersByName(folderName);
+  if (folders.hasNext()) {
+    folder = folders.next();
+  } else {
+    folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).createFolder(folderName);
+  }
+  
+  let successCount = 0;
+  let failCount = 0;
+  let imageUrls = [];
+  
+  // Lặp qua từng ảnh
+  for (let i = 0; i < fileIds.length; i++) {
+    try {
+      // Lấy file từ Telegram
+      const fileInfo = UrlFetchApp.fetch('https://api.telegram.org/bot' + CONFIG.TELEGRAM_TOKEN + '/getFile?file_id=' + fileIds[i]);
+      const fileData = JSON.parse(fileInfo.getContentText());
+      const filePath = fileData.result.file_path;
+      
+      // Tải ảnh về
+      const imageUrl = 'https://api.telegram.org/file/bot' + CONFIG.TELEGRAM_TOKEN + '/' + filePath;
+      const blob = UrlFetchApp.fetch(imageUrl).getBlob();
+      
+      // Đặt tên file theo số thứ tự
+      const extension = blob.getContentType() === 'image/png' ? '.png' : '.jpg';
+      const fileName = serial + '_' + (i + 1) + extension;
+      
+      // Lưu lên Drive
+      const file = folder.createFile(blob.setName(fileName));
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      
+      imageUrls.push(file.getUrl());
+      successCount++;
+      
+    } catch (e) {
+      failCount++;
+      Logger.log('Error uploading: ' + e.toString());
+    }
+  }
+  
+  // Cập nhật Google Sheet
+  try {
+    updateSheet(serial, imageUrls, chatId, successCount);
+  } catch (e) {
+    sendMessage(chatId, '❌ Lỗi cập nhật Sheet: ' + e.toString() + '\n\nẢnh đã lưu vào Drive nhưng chưa cập nhật vào sheet!');
+    Logger.log('updateSheet error: ' + e.toString());
+  }
+}
+
+function updateSheet(serial, urls, chatId, count) {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName('Store') || ss.getSheets()[0];
+    const data = sheet.getDataRange().getValues();
+    
+    // Tìm dòng theo Serial (cột A)
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      const rowSerial = String(data[i][0] || '').toUpperCase().trim();
+      if (rowSerial === serial.toUpperCase().trim()) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (rowIndex > 0) {
+      // Cập nhật cột Photos2 (AH = cột 34)
+      const PHOTOS2_COL = 34; // Column AH
+      
+      // Ghép URL cũ và mới
+      const oldUrls = sheet.getRange(rowIndex, PHOTOS2_COL).getValue() || '';
+      const newUrls = urls.join('\n');
+      const allUrls = oldUrls ? oldUrls + '\n' + newUrls : newUrls;
+      
+      sheet.getRange(rowIndex, PHOTOS2_COL).setValue(allUrls);
+      
+      sendMessage(chatId, '✅ Đã cập nhật ' + count + ' ảnh vào cột Photos2!\n\n📋 Serial: ' + serial + '\n📸 Số ảnh: ' + count);
+    } else {
+      sendMessage(chatId, '⚠️ Không tìm thấy Serial "' + serial + '" trong sheet!\n\nVui lòng kiểm tra lại Serial trong Google Sheet.');
+    }
+    
+  } catch (e) {
+    sendMessage(chatId, '❌ Lỗi cập nhật sheet: ' + e.toString());
+  }
+}
+
+function deleteImagesBySerial(serial, chatId) {
+  try {
+    const folders = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID).getFoldersByName('SP_' + serial);
+    
+    if (folders.hasNext()) {
+      const folder = folders.next();
+      const files = folder.getFiles();
+      let count = 0;
+      while (files.hasNext()) {
+        files.next().setTrashed(true);
+        count++;
+      }
+      sendMessage(chatId, '🗑️ Đã xóa ' + count + ' ảnh của Serial: ' + serial);
+    } else {
+      sendMessage(chatId, '❌ Không tìm thấy folder cho Serial: ' + serial);
+    }
+  } catch (e) {
+    sendMessage(chatId, '❌ Lỗi xóa: ' + e.toString());
+  }
+}
+
+function listImages(chatId) {
+  try {
+    const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+    const subFolders = folder.getFolders();
+    let list = '📋 Danh sách Serial có ảnh:\n\n';
+    
+    while (subFolders.hasNext()) {
+      const sf = subFolders.next();
+      const files = sf.getFiles();
+      let count = 0;
+      while (files.hasNext()) {
+        files.next();
+        count++;
+      }
+      if (count > 0) {
+        const serial = sf.getName().replace('SP_', '');
+        list += '• ' + serial + ': ' + count + ' ảnh\n';
+      }
+    }
+    
+    sendMessage(chatId, list || 'Chưa có ảnh nào!');
+  } catch (e) {
+    sendMessage(chatId, '❌ Lỗi: ' + e.toString());
+  }
+}
+
+function cleanEmptyFolders(chatId) {
+  try {
+    const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+    const subFolders = folder.getFolders();
+    let deletedCount = 0;
+    let keepCount = 0;
+    
+    while (subFolders.hasNext()) {
+      const sf = subFolders.next();
+      const files = sf.getFiles();
+      let count = 0;
+      while (files.hasNext()) {
+        files.next();
+        count++;
+      }
+      
+      if (count === 0) {
+        // Folder rỗng - xóa
+        try {
+          Drive.Files.remove(sf.getId());
+          deletedCount++;
+        } catch(e) {
+          Logger.log('Không xóa được folder: ' + sf.getName());
+        }
+      } else {
+        keepCount++;
+      }
+    }
+    
+    sendMessage(chatId, '🧹 Dọn dẹp hoàn tất!\n\n✅ Đã xóa ' + deletedCount + ' folder rỗng\n📁 Giữ lại ' + keepCount + ' folder có ảnh');
+  } catch (e) {
+    sendMessage(chatId, '❌ Lỗi dọn dẹp: ' + e.toString());
+  }
+}
+
+function sendMessage(chatId, text, parseMode) {
+  const url = 'https://api.telegram.org/bot' + CONFIG.TELEGRAM_TOKEN + '/sendMessage';
+  const payload = {
+    chat_id: chatId,
+    text: text
+  };
+  if (parseMode) payload.parse_mode = parseMode;
+  
+  UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload)
+  });
 }

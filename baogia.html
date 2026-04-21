@@ -21,7 +21,7 @@
         .app-container { display: flex; flex: 1; justify-content: center; align-items: flex-start; gap: 8px; padding: 0px 12%; }
         .app-container > * { position: relative; }
 
-        .form-panel { width: 380px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; max-height: calc(100vh - 200px); }
+        .form-panel { width: 380px; min-width: 300px; background: #fff; padding: 12px; overflow-y: auto; border-right: 2px solid #ddd; border-radius: 8px; max-height: calc(200vh - 200px); }
         .form-panel h2 { text-align: center; margin-bottom: 8px; color: #333; font-size: 14px; }
         .form-group { margin-bottom: 5px; }
         .form-group input, .form-group textarea { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
@@ -55,7 +55,7 @@
         .preview-panel { width: auto; flex: none; padding: 12px; display: flex; flex-direction: column; align-items: center; background: #e8eaed; border-radius: 8px; position: sticky; top: 10px; }
         .a6-wrapper { background: #bbb; padding: 12px; border-radius: 4px; }
         .a6-page { width: 105mm; min-height: 60vh; background: #fff; padding: 6mm 8mm; box-shadow: 0 4px 16px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: var(--fs, 10px); line-height: 1.4; color: #000; border: 1px solid #999; border-radius: 8px; position: relative; }
-        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.25; width: 68%; max-width: 179px; z-index: 0; pointer-events: none; }
+        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.25; width: 56%; max-width: 179px; z-index: 0; pointer-events: none; }
         
         .a6-page .header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #ccc; }
         .a6-page .header-left { position: relative; display: flex; align-items: center; padding-left: 15px; }
@@ -91,12 +91,13 @@
         
         .a6-page .contact-info { margin-top: 10px; font-size: 9px; }
         
-        .a6-page .signature-date { margin-left: 15%; text-align: right; margin-top: 25px; }
+        .a6-page .signature-date { margin-right: 15px; text-align: right; margin-top: 25px; }
         .a6-page .signature-date-text { font-size: 10px; margin-bottom: 8px; }
         .a6-page .signature-store { font-weight: bold; font-size: 9px; display: block; margin-bottom: 3px; }
         .a6-page .signature-img { max-width: 90px; max-height: 45px; margin-right: 18px;}
+        .a6-page .shop-signature { max-width: 90px; max-height: 45px; margin-left: 228px; display: none; }
 
-        .controls-panel { width: 250px; background: #fff; padding: 12px; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; max-height: calc(100vh - 200px); overflow-y: auto; }
+        .controls-panel { width: 250px; background: #fff; padding: 12px; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; max-height: calc(200vh - 200px); overflow-y: auto; }
         .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
         .ctrl-group { margin-bottom: 6px; }
         .ctrl-group label { font-size: 11px; color: #555; display: block; }
@@ -281,7 +282,7 @@
                     <div class="signature-date">
                         <div class="signature-date-text"><span id="p_diaDiem"></span>, ngày <span id="p_ngayThangNam"></span></div>
                         <span class="signature-store">Cửa hàng laptop i10Store</span>
-                        <img src="/assets/chuky.png" class="signature-img" alt="Chữ ký">
+                        <img src="/assets/chuky.png" class="signature-img shop-signature" alt="Chữ ký">
                     </div>
                 </div>
             </div>
@@ -298,10 +299,10 @@
         <div class="ctrl-group"><label>Lề dưới</label><input type="range" id="marginB" min="0" max="15" value="6" oninput="updatePreview()"><span class="ctrl-val" id="valMB">6mm</span></div>
         <div class="ctrl-group"><label>Tốc độ in</label><input type="range" id="printSpeed" min="0" max="5" value="0.5" step="0.5" oninput="updateSpeed()"><span class="ctrl-val" id="valSpd">0.5s</span></div>
 
-        <div class="password-group">
-            <label>Mật khẩu in</label>
+<div class="password-group">
+            <label>Mật khẩu để in ấn<input type="checkbox" id="showWatermark" checked style="margin-left:5px; margin-top:5px; width:15px; height:12px;"> <input type="checkbox" id="showSignature" checked style="margin-top:5px; width:15px; height:12px;"></label>
             <input type="password" id="printPass" placeholder="Nhập mật khẩu..." onkeyup="if(event.key==='Enter')doPrintQuote()">
-            <div class="error" id="printPassError">Sai mật khẩu!</div>
+            <div class="error" id="printPassError">Mật khẩu không đúng!</div>
         </div>
         <div class="ctrl-btn-group">
             <button class="btn btn-print" onclick="doPrintQuote()">In báo giá</button>
@@ -488,16 +489,45 @@ function doPrintQuote() {
         return;
     }
     document.getElementById('printPassError').classList.remove('show');
+<<<<<<< HEAD
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
+=======
     document.querySelector('.watermark').style.display = 'block';
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     setTimeout(function() {
         window.print();
         setTimeout(function() {
             document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
         }, 500);
     }, parseFloat(document.getElementById('printSpeed').value) * 1000);
 }
 
 async function savePDF() {
+    var passInput = document.getElementById('printPass');
+    var errorEl = document.getElementById('printPassError');
+    var PRINT_PASSWORD = window.getPrintPassword();
+    if (passInput.value !== PRINT_PASSWORD) {
+        errorEl.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+        return;
+    }
+    errorEl.classList.remove('show');
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
     showStatus('Đang tạo PDF...', 'success');
     try {
         var canvas = await captureCanvas();
@@ -506,10 +536,34 @@ async function savePDF() {
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 105, 148);
         pdf.save('BaoGia_' + (document.getElementById('soBG').value || 'draft') + '.pdf');
         showStatus('Đã lưu PDF', 'success');
-    } catch (e) { showStatus('Lỗi: ' + e.message, 'error'); }
+        setTimeout(function() {
+            document.querySelector('.watermark').style.display = 'none';
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+        }, 500);
+    } catch (e) { 
+        showStatus('Lỗi: ' + e.message, 'error');
+        document.querySelector('.watermark').style.display = 'none';
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+    }
 }
 
 async function savePNG() {
+    var passInput = document.getElementById('printPass');
+    var errorEl = document.getElementById('printPassError');
+    var PRINT_PASSWORD = window.getPrintPassword();
+    if (passInput.value !== PRINT_PASSWORD) {
+        errorEl.classList.add('show');
+        passInput.value = '';
+        passInput.focus();
+        return;
+    }
+    errorEl.classList.remove('show');
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
     showStatus('Đang tạo PNG...', 'success');
     try {
         var canvas = await captureCanvas();
@@ -518,7 +572,15 @@ async function savePNG() {
         link.href = canvas.toDataURL('image/png');
         link.click();
         showStatus('Đã lưu PNG', 'success');
-    } catch (e) { showStatus('Lỗi: ' + e.message, 'error'); }
+        setTimeout(function() {
+            document.querySelector('.watermark').style.display = 'none';
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+        }, 500);
+    } catch (e) { 
+        showStatus('Lỗi: ' + e.message, 'error');
+        document.querySelector('.watermark').style.display = 'none';
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+    }
 }
 
 async function saveToSheet() {

@@ -1,5 +1,5 @@
 /* ========== CONFIG ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbwvfsy3pOXZlVEArA3H_OH-ibjc3u84EJXMippGLU72p4kk3_W0B48yHeWXr1CeBeJH/exec"; // <== Chỉ dùng cho Gửi Form
+const SHEET_API = "https://script.google.com/macros/s/AKfycbyGynXMj4pH40brQ76HDl5EUEGgpfCgmZE6mbwTm6Eu2-LRDMWZJ52DdQ_c2WXZ7Hay/exec"; // <== Chỉ dùng cho Gửi Form
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
@@ -345,8 +345,28 @@ async function renderProductGrid() {
             // Logic render HTML
             const html = paginatedList.map((p) => {
                 const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
+                const photos2Str = p["Photos2"] || p["Photos2"] || "";
+            const photos2Urls = photos2Str ? photos2Str.split('\n').filter(url => url.trim()) : [];
+            
+            let displayImages = [];
+            if (photos2Urls.length > 0) {
+                displayImages = photos2Urls.map(url => {
+                    // Nếu là link Drive thì chuyển sang link thumbnail
+                    if (url.includes('drive.google.com')) {
+                        const fileId = url.match(/[-\w]{25,}/);
+                        if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
+                    }
+                    return url;
+                });
+            }
+            
+            // Nếu không có ảnh từ Photos2 thì dùng ảnh từ Drive
+            if (displayImages.length === 0) {
                 const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-                const mainImg = (sortedImgs[0]?.thumb?.replace("=s220", "=s1000")) || SITE_LOGO_2; 
+                displayImages = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1000")).filter(Boolean);
+            }
+            
+            const mainImg = displayImages[0] || SITE_LOGO_2; 
                 
                 let priceText = "Liên hệ";
                 let priceStyle = `color:${THEME};font-weight:800;`;
@@ -590,10 +610,27 @@ function openProductPopup(encoded, slug) {
             metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-        const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        
-        const images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
-        if (!images.length) images.push(SITE_LOGO); 
+        const photos2Str = product["Photos2"] || "";
+            const photos2Urls = photos2Str ? photos2Str.split('\n').filter(url => url.trim()) : [];
+            
+            let images = [];
+            if (photos2Urls.length > 0) {
+                images = photos2Urls.map(url => {
+                    if (url.includes('drive.google.com')) {
+                        const fileId = url.match(/[-\w]{25,}/);
+                        if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1600';
+                    }
+                    return url;
+                });
+            }
+            
+            // Nếu không có ảnh từ Photos2 thì dùng ảnh từ Drive
+            if (images.length === 0) {
+                const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
+            }
+            
+            if (!images.length) images.push(SITE_LOGO); 
 
         let currentIndex = 0;
         let autoplayTimer = null;

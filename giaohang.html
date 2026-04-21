@@ -70,6 +70,10 @@
         .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
         .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
         .a6-page .signatures .sig-label { margin-bottom: 25px; }
+<<<<<<< HEAD
+        .a6-page .shop-signature { max-width: 80px; max-height: 40px; margin-top: 5px; }
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
 
         .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
         .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
@@ -239,7 +243,15 @@
 
                 <div class="signatures">
                     <div class="sig-left"><div class="sig-label">Người giao</div></div>
+<<<<<<< HEAD
+                    <div class="sig-right">
+                        <div class="sig-label">Người nhận</div>
+                        <span class="signature-store">Cửa hàng laptop i10Store</span>
+                        <img src="/assets/chuky.png" class="shop-signature" alt="Chữ ký" style="display:none;">
+                    </div>
+=======
                     <div class="sig-right"><div class="sig-label">Người nhận</div></div>
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
                 </div>
             </div>
         </div>
@@ -257,8 +269,13 @@
         <div class="ctrl-group"><label>Độ đậm chữ (%)</label><input type="range" id="density" min="50" max="150" value="100" oninput="updatePreview()"><span class="ctrl-val" id="valDen">100%</span></div>
         <div class="ctrl-group"><label>Tốc độ in (giây)</label><input type="range" id="printSpeed" min="0" max="5" value="0.5" step="0.5" oninput="updateSpeed()"><span class="ctrl-val" id="valSpd">0.5s</span></div>
 
+<<<<<<< HEAD
+<div class="password-group">
+            <label>Mật khẩu để in ấn<input type="checkbox" id="showWatermark" checked style="margin-left:5px; margin-top:5px; width:15px; height:12px;"> <input type="checkbox" id="showSignature" checked style="margin-top:5px; width:15px; height:12px;"></label>
+=======
         <div class="password-group">
             <label>Mật khẩu để in ấn</label>
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
             <input type="password" id="printPass" placeholder="Nhập mật khẩu..." onkeyup="if(event.key==='Enter')doPrint()">
             <div class="error" id="printPassError">Mật khẩu không đúng!</div>
         </div>
@@ -386,13 +403,26 @@ function doPrint() {
         return;
     }
     errorEl.classList.remove('show');
+<<<<<<< HEAD
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
+=======
     document.querySelector('.watermark').style.display = 'block';
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     var speed = parseFloat(document.getElementById('printSpeed').value) * 1000;
     showStatus('Đang chuẩn bị in...', 'success');
     setTimeout(function() {
         window.print();
         setTimeout(function() {
             document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
         }, 500);
     }, speed);
 }
@@ -408,7 +438,16 @@ async function savePDF() {
         return;
     }
     errorEl.classList.remove('show');
+<<<<<<< HEAD
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
+=======
     document.querySelector('.watermark').style.display = 'block';
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     showStatus('Đang tạo PDF...', 'success');
     try {
         var canvas = await captureCanvas();
@@ -420,10 +459,18 @@ async function savePDF() {
         showStatus('Đã lưu PDF: ' + name, 'success');
         setTimeout(function() {
             document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
         }, 500);
     } catch (e) { 
         showStatus('Lỗi PDF: ' + e.message, 'error');
         document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     }
 }
 
@@ -438,7 +485,16 @@ async function savePNG() {
         return;
     }
     errorEl.classList.remove('show');
+<<<<<<< HEAD
+    if (document.getElementById('showWatermark').checked) {
+        document.querySelector('.watermark').style.display = 'block';
+    }
+    if (document.getElementById('showSignature').checked) {
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'block');
+    }
+=======
     document.querySelector('.watermark').style.display = 'block';
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     showStatus('Đang tạo PNG...', 'success');
     try {
         var canvas = await captureCanvas();
@@ -449,10 +505,18 @@ async function savePNG() {
         showStatus('Đã lưu PNG', 'success');
         setTimeout(function() {
             document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+            document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
         }, 500);
     } catch (e) { 
         showStatus('Lỗi PNG: ' + e.message, 'error');
         document.querySelector('.watermark').style.display = 'none';
+<<<<<<< HEAD
+        document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
+=======
+>>>>>>> 39ddc72fcb2026eaa25e69968e9e68a5d7d07020
     }
 }
 
