@@ -251,6 +251,11 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const timestamp = new Date();
 
+    // === TELEGRAM BOT ===
+    if (data.message || data.callback_query) {
+      return handleTelegramUpdate(data);
+    }
+
     // === HỢP ĐỒNG MUA BÁN ===
     if (data.tenA !== undefined || data.tenB !== undefined || data.model !== undefined) {
       return handleHopDongMuaBan(data, timestamp);
@@ -1464,5 +1469,141 @@ function sendMessage(chatId, text, parseMode) {
     });
   } catch (e) {
     Logger.log('sendMessage error: ' + e.toString());
+  }
+}
+
+/* =======================================================
+   TELEGRAM HANDLER - Chuyển logic từ doPost chính
+   ======================================================= */
+function handleTelegramUpdate(data) {
+  try {
+    // Xử lý callback_query (nếu có)
+    if (data.callback_query) {
+      // Callback query handling
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "ok", message: "Callback received" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Xử lý message
+    const msg = data.message;
+    if (!msg) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "ok", message: "No message" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    const photo = msg.photo;
+    
+    // Xử lý text (Serial)
+    if (text) {
+      const serial = text.trim().toUpperCase();
+      
+      if (serial === '/START') {
+        sendMessage(chatId, '👋 Chào bạn!\n\n📸 i10 STORE - Telegram Bot\n\n*Cách sử dụng:*\n1️⃣ Gửi *Serial* sản phẩm (VD: CFF)\n2️⃣ Gửi *ảnh* sản phẩm\n\n📋 *Các lệnh:*\n/new - Bắt đầu upload mới\n/delete [SERIAL] - Xóa ảnh theo serial\n/xoarong - Xóa folder rỗng\n/list - Xem danh sách ảnh\n/folder - Mở folder Drive\n\n📁 Drive: https://drive.google.com/drive/folders/' + CONFIG.DRIVE_FOLDER_ID, 'Markdown');
+        clearUserState(chatId);
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      if (serial === '/FOLDER') {
+        sendMessage(chatId, '📁 Folder Drive của bạn:\nhttps://drive.google.com/drive/folders/' + CONFIG.DRIVE_FOLDER_ID);
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      if (serial === '/BEGIN' || serial === '/NEW') {
+        saveUserState(chatId, { step: 'waiting_serial', serial: '' });
+        sendMessage(chatId, '📝 Nhập *Serial* sản phẩm (ví dụ: CFF):', 'Markdown');
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      if (serial.startsWith('/DELETE') || serial.startsWith('/XÓA')) {
+        const delSerial = serial.replace(/[\/DELETE\/XÓA]/gi, '').trim();
+        if (delSerial) {
+          deleteImagesBySerial(delSerial, chatId);
+        } else {
+          sendMessage(chatId, '📝 Gửi serial cần xóa ảnh. Ví dụ: /delete CFF');
+        }
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      if (serial === '/XOA RONG' || serial === '/XOARONG') {
+        cleanEmptyFolders(chatId);
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      if (serial === '/LIST' || serial === '/DANHSACH') {
+        listImages(chatId);
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      // Kiểm tra nếu đang chờ nhập serial
+      const currentState = getUserState(chatId);
+      if (currentState && currentState.step === 'waiting_serial') {
+        saveUserState(chatId, { step: 'waiting_photo', serial: serial });
+        sendMessage(chatId, '✅ Đã nhận Serial: *' + serial + '*\n\n📸 Gửi *ảnh* sản phẩm (gửi nhiều ảnh cùng lúc cũng được!)', 'Markdown');
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      // Lưu serial và chờ ảnh (mặc định)
+      saveUserState(chatId, { step: 'waiting_photo', serial: serial });
+      sendMessage(chatId, '✅ Đã nhận Serial: *' + serial + '*\n\n📸 Gửi *ảnh* sản phẩm (gửi nhiều ảnh cùng lúc cũng được!)', 'Markdown');
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "ok" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Xử lý ảnh
+    if (photo) {
+      const currentState = getUserState(chatId);
+      if (!currentState || currentState.step !== 'waiting_photo') {
+        sendMessage(chatId, '❌ Vui lòng gửi *Serial* sản phẩm trước khi gửi ảnh!\n\nVí dụ: Gửi CFF\nRồi gửi ảnh sau.', 'Markdown');
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      const serial = currentState.serial;
+      if (!serial) {
+        sendMessage(chatId, '❌ Chưa nhập Serial! Gửi Serial trước.');
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: "ok" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      const photos = msg.photo;
+      const fileIds = photos.map(p => p.file_id);
+      
+      sendMessage(chatId, '⏳ Đang upload ' + fileIds.length + ' ảnh...');
+      handleUploadPhotos(fileIds, serial, chatId);
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "ok" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (err) {
+    Logger.log('Lỗi handleTelegramUpdate: ' + err.message);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }

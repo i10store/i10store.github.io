@@ -1,5 +1,7 @@
 /* ========== CONFIG ========== */
-const SHEET_API = "https://script.google.com/macros/s/AKfycbyGynXMj4pH40brQ76HDl5EUEGgpfCgmZE6mbwTm6Eu2-LRDMWZJ52DdQ_c2WXZ7Hay/exec"; // <== Chỉ dùng cho Gửi Form
+const SITE_CONFIG = (typeof i10Config !== 'undefined') ? i10Config : {};
+const SHEET_API = SITE_CONFIG.SHEET_API || "https://script.google.com/macros/s/AKfycbzkJye9m1gdG5gGLQaGMIvH677f2GxVWkYeB_4fHmcrYk6qyoZf63GHbfFqardvZ4rO/exec";
+const PRODUCTS_JSON_URL = SITE_CONFIG.STATIC_JSON_FILE ? SITE_CONFIG.STATIC_JSON_FILE : "/assets/js/products.json";
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
@@ -115,9 +117,8 @@ async function getProductData() {
         } catch (e) { /* ignore */ }
 
         if (!data) {
-            // (*** TỐI ƯU: Đã xóa code chèn HTML thừa ***)
             const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
-            data = await fetchJSON("/assets/js/products.json" + cacheBuster);
+            data = await fetchJSON(PRODUCTS_JSON_URL + cacheBuster);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 timestamp: Date.now(),
                 items: data
@@ -169,19 +170,8 @@ async function renderProductGrid() {
     try {
         const rawData = await getProductData();
 
-        // (LOGIC LỌC TRÙNG LẶP)
-        const seenKeys = new Set();
-        const data = [];
-        const fieldsToCompare = ["Brand", "Model", "CPU", "RAM", "SSD", "GPU", "RESOLUTION"];
-        for (const p of rawData) {
-            const key = fieldsToCompare
-                .map(field => (p[field] || "").toLowerCase().trim())
-                .join('|');
-            if (!seenKeys.has(key)) {
-                seenKeys.add(key);
-                data.push(p);
-            }
-        }
+        // Lấy toàn bộ danh sách sản phẩm (không lọc trùng)
+        const data = rawData;
         
         const params = new URLSearchParams(window.location.search);
         const filter = params.get("filter");
@@ -599,7 +589,7 @@ function openProductPopup(encoded, slug) {
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         updateMetaTags(product);
-        const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+        const titleText = `${product["Brand"] || ""} ${product["Model"] || ""} \u00A0  [${product["ID"] || ""}]`.trim() || (product["Name"] || "Sản phẩm");
 
         document.title = `${titleText} ${SITE_TITLE_SUFFIX}`; 
         
@@ -756,7 +746,7 @@ function openProductPopup(encoded, slug) {
           ["GPU", product["GPU"] || "Onboard"],
           ["Phân loại", product["Phân loại"] || "Laptop"],
           ["Trạng thái", product["T.THÁI"] || "Đang bán"],
-          ["Giá", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
+          ["Giá bán", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
           ["Ghi chú", product["NOTE"] || "Không có"]
         ];
         rows.forEach((r, i) => {

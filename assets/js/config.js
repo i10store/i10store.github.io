@@ -15,7 +15,10 @@ const I10_CONFIG = {
   // ==================== API ====================
   
   // Google Apps Script Web App URL (dùng cho form đặt hàng, liên hệ)
-  SHEET_API: "https://script.google.com/macros/s/AKfycby0FA_lpnWN8gG6-jFTokt4DBFQGzw6RZ4ONurLvGsFc1Pb3s-eotFS459_bRFDmJFm/exec",
+  SHEET_API: "https://script.google.com/macros/s/AKfycbzkJye9m1gdG5gGLQaGMIvH677f2GxVWkYeB_4fHmcrYk6qyoZf63GHbfFqardvZ4rO/exec",
+  
+  // URL file products.json (có thể là link Local hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
+  STATIC_JSON_FILE: "/assets/js/products.json",
   
   // ==================== DRIVE ====================
   
