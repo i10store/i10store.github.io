@@ -15,9 +15,9 @@ const I10_CONFIG = {
   // ==================== API ====================
   
   // Google Apps Script Web App URL (dùng cho form đặt hàng, liên hệ)
-  SHEET_API: "https://script.google.com/macros/s/AKfycbzkJye9m1gdG5gGLQaGMIvH677f2GxVWkYeB_4fHmcrYk6qyoZf63GHbfFqardvZ4rO/exec",
+  SHEET_API: "https://script.google.com/macros/s/AKfycbxJqWw9nuTdrlNIV4z1MfmOo7AsqgzeWiJxuXuaBAo22CIwttHSOo4tXS5fFj5IJfRe/exec",
   
-  // URL file products.json (có thể là link Local hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
+  // URL file products.json (có thể là link Local /assets/js/products.json hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
   STATIC_JSON_FILE: "/assets/js/products.json",
   
   // ==================== DRIVE ====================
@@ -39,8 +39,9 @@ const I10_CONFIG = {
   
   // ==================== CACHE ====================
   
-  // Thời gian cache (ms) - mặc định 30 phút
-  CACHE_TTL: 30 * 60 * 1000,
+  // Thời gian cache (ms) - 6 giờ cho sản phẩm/banner, 30 phút cho API khác
+  CACHE_TTL: 6 * 60 * 60 * 1000,        // 6 hours
+  CACHE_TTL_SHORT: 30 * 60 * 1000,      // 30 minutes
   
   // ==================== SITE ====================
   

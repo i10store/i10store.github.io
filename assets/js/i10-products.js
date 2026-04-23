@@ -1,12 +1,12 @@
 /* ========== CONFIG ========== */
 const SITE_CONFIG = (typeof i10Config !== 'undefined') ? i10Config : {};
-const SHEET_API = SITE_CONFIG.SHEET_API || "https://script.google.com/macros/s/AKfycbzkJye9m1gdG5gGLQaGMIvH677f2GxVWkYeB_4fHmcrYk6qyoZf63GHbfFqardvZ4rO/exec";
+const SHEET_API = SITE_CONFIG.SHEET_API || "https://script.google.com/macros/s/AKfycbxJqWw9nuTdrlNIV4z1MfmOo7AsqgzeWiJxuXuaBAo22CIwttHSOo4tXS5fFj5IJfRe/exec";
 const PRODUCTS_JSON_URL = SITE_CONFIG.STATIC_JSON_FILE ? SITE_CONFIG.STATIC_JSON_FILE : "/assets/js/products.json";
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
-const CACHE_KEY = "i10_products_cache_v2"; 
-const CACHE_KEY_BANNER = "i10_banner_cache_v2";
+const CACHE_KEY = "i10_products_cache_v4"; 
+const CACHE_KEY_BANNER = "i10_banner_cache_v3";
 const CACHE_TTL = 30 * 60 * 1000;
 const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
 const SITE_TITLE_SUFFIX = "- i10 STORE";
@@ -335,7 +335,7 @@ async function renderProductGrid() {
             // Logic render HTML
             const html = paginatedList.map((p) => {
                 const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-                const photos2Str = p["Photos2"] || p["Photos2"] || "";
+                const photos2Str = p["Photos2"] || "";
             const photos2Urls = photos2Str ? photos2Str.split('\n').filter(url => url.trim()) : [];
             
             let displayImages = [];
