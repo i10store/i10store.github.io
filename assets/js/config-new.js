@@ -15,12 +15,12 @@ const i10Config = {
   SHEET_ID_WEB: '18sGLaK2MblP23WHeGblDhFhg8BcDvoIGSRT-7Upjsog',
 
   // Sheet Telegram Images (1ERkMtS7YqNztLaAWfMP2tJ6MCHP-Y0v8U20xbUW45pQ)
-  SHEET_ID_TELEGRAM: '1ERkMtS7YqNztLaAWfMP2tJ6MCHP-Y0v8U20xbUW45pQ',
+  SHEET_ID_TELEGRAM: '1DKY1xAsLW_2lBjwg_Z7ykq30cX7yYUC5TFVFwd_7qlE',
 
   // ==================== WEB APP URLs (ĐẶT SAU KHI DEPLOY) ====================
   // Deploy Apps Script từ sheet WEB → Web App URL
   // Ví dụ: https://script.google.com/macros/s/AKfycbx.../exec
-  SHEET_API: '', // <-- ĐIỀN URL WEB APP CHÍNH VÀO ĐÂY
+  SHEET_API: 'https://script.google.com/macros/s/AKfycbxJqWw9nuTdrlNIV4z1MfmOo7AsqgzeWiJxuXuaBAo22CIwttHSOo4tXS5fFj5IJfRe/exec', // <-- ĐIỀN URL WEB APP CHÍNH VÀO ĐÂY
 
   // Endpoint con (dựa trên SHEET_API + ?mode=...)
   SHEET_API_PRODUCTS: '', // Tự động: SHEET_API + ?mode=products

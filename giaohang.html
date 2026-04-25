@@ -57,7 +57,7 @@
         .a6-page .header .company-name { font-size: calc(var(--fs, 10px) + 2px); font-weight: bold; display: block; }
         .a6-page .header .company-tagline { font-size: var(--fs, 10px); font-weight: normal; color: #555; }
         .a6-page .header .company-info { font-size: var(--fs, 10px); text-align: left; }
-        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.29; width: 80%; max-width: 200px; z-index: 0; pointer-events: none; }
+        .a6-page .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.29; width: 50%; max-width: 200px; z-index: 0; pointer-events: none; }
         
         .a6-page .invoice-title { text-align: center; font-size: calc(var(--fs, 10px) + 4px); font-weight: bold; text-transform: uppercase; margin: 5px 0; position: relative; z-index: 1; }
         .a6-page .invoice-info { text-align: center; font-size: var(--fs, 10px); margin: 3px 0; }
@@ -66,11 +66,12 @@
         .a6-page .info-line .field { font-weight: bold; }
         .a6-page .info-line .value { border-bottom: 1px dotted #999; min-width: 40px; display: inline-block; }
         .a6-page .signatures { display: flex; justify-content: space-around; margin-top: 15px; font-size: var(--fs, 10px); font-weight: bold; position: relative; z-index: 1; }
-        .a6-page .signatures div { text-align: center; width: 40%; }
+        .a6-page .signatures div { text-align: center; width: 50%; }
         .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
-        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
-        .a6-page .signatures .sig-label { margin-bottom: 25px; }
-        .a6-page .shop-signature { max-width: 80px; max-height: 40px; margin-top: 5px; }
+        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px; }
+        .a6-page .signatures .sig-right .signature-store { display: block; font-size: calc(var(--fs, 10px) - 1px); color: #555; text-align: left;}
+        .a6-page .signatures .sig-label { margin-bottom: 7px; }
+        .a6-page .shop-signature { max-width: 80px; max-height: 40px; }
 
         .controls-panel { width: 260px; min-width: 240px; background: #fff; padding: 12px; overflow-y: auto; border-left: 2px solid #ddd; border-radius: 8px; position: sticky; top: 10px; z-index: 100; }
         .controls-panel h3 { font-size: 13px; margin-bottom: 8px; color: #333; border-bottom: 2px solid #04922c; padding-bottom: 4px; }
@@ -239,10 +240,10 @@
                 <div class="info-line"><span class="field">  2.</span> <span class="value" id="p_ghiChu2"></span></div>
 
                 <div class="signatures">
-                    <div class="sig-left"><div class="sig-label">Người giao</div></div>
+                    <div class="sig-left"><div class="sig-label">Người nhận</div></div>
                     <div class="sig-right">
-                        <div class="sig-label">Người nhận</div>
-                        <span class="signature-store">Cửa hàng laptop i10Store</span>
+                        <div class="sig-label">Người giao</div>
+                        <span class="signature-store">Laptop i10Store</span>
                         <img src="/assets/chuky.png" class="shop-signature" alt="Chữ ký" style="display:none;">
                     </div>
                 </div>

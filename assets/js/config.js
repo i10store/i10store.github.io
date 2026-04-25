@@ -40,7 +40,7 @@ const I10_CONFIG = {
   // ==================== CACHE ====================
   
   // Thời gian cache (ms) - 6 giờ cho sản phẩm/banner, 30 phút cho API khác
-  CACHE_TTL: 6 * 60 * 60 * 1000,        // 6 hours
+  CACHE_TTL: 5 * 60 * 60 * 1000,        // 6 hours
   CACHE_TTL_SHORT: 30 * 60 * 1000,      // 30 minutes
   
   // ==================== SITE ====================

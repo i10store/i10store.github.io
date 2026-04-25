@@ -335,25 +335,63 @@ async function renderProductGrid() {
             // Logic render HTML
             const html = paginatedList.map((p) => {
                 const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-                const photos2Str = p["Photos2"] || "";
-            const photos2Urls = photos2Str ? photos2Str.split('\n').filter(url => url.trim()) : [];
+                // CHỈ HIỂN THỊ ẢNH TỪ TELEGRAM BOT (p.images)
+                // Đã được sync từ sheet Telegram_Images → chính xác nhất
+                let displayImages = [];
+                
+                if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+                    // Sắp xếp theo tên file để hiển thị nhất quán
+                    const sortedImgs = p.images.slice().sort((a,b) => {
+                        const nameA = (a.name || "").toLowerCase();
+                        const nameB = (b.name || "").toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
+                    
+                    displayImages = sortedImgs.map(img => {
+                        let src = img.thumb || img.url || "";
+                        // Chuẩn hóa URL Drive để lấy thumbnail lớn
+                        if (src.includes('drive.google.com')) {
+                            const fileId = src.match(/[\w-]{25,}/);
+                            if (fileId) {
+                                src = 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
+                            }
+                        }
+                        return src;
+                    }).filter(Boolean);
+                }
+                
+                // Nếu không có ảnh từ bot, fallback to placeholder
+                if (displayImages.length === 0) {
+                    displayImages = [SITE_LOGO_2];
+                }
             
-            let displayImages = [];
-            if (photos2Urls.length > 0) {
-                displayImages = photos2Urls.map(url => {
-                    // Nếu là link Drive thì chuyển sang link thumbnail
-                    if (url.includes('drive.google.com')) {
-                        const fileId = url.match(/[-\w]{25,}/);
-                        if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
-                    }
-                    return url;
-                });
-            }
-            
-            // Nếu không có ảnh từ Photos2 thì dùng ảnh từ Drive
+            // Ưu tiên 2: Ảnh từ Photos2 (IMPORTRANGE) - fallback
             if (displayImages.length === 0) {
-                const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-                displayImages = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1000")).filter(Boolean);
+                let photos2Str = p["Photos2"] || "";
+                let urls = [];
+                
+                // Nếu Photos2 là JSON string (từ IMPORTRANGE sheet Telegram_Images)
+                if (photos2Str.trim().startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(photos2Str);
+                        if (Array.isArray(parsed)) {
+                            urls = parsed.map(item => item.url || item.thumb || '').filter(Boolean);
+                        }
+                    } catch (e) {}
+                } else {
+                    // newline-separated URLs
+                    urls = photos2Str.split('\n').filter(url => url.trim());
+                }
+                
+                if (urls.length > 0) {
+                    displayImages = urls.map(url => {
+                        if (url.includes('drive.google.com')) {
+                            const fileId = url.match(/[-\w]{25,}/);
+                            if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
+                        }
+                        return url;
+                    });
+                }
             }
             
             const mainImg = displayImages[0] || SITE_LOGO_2; 
@@ -600,27 +638,32 @@ function openProductPopup(encoded, slug) {
             metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-        const photos2Str = product["Photos2"] || "";
-            const photos2Urls = photos2Str ? photos2Str.split('\n').filter(url => url.trim()) : [];
+        // HIỂN THỊ ẢNH TRONG POPUP - CHỈ DÙNG TELEGRAM BOT (product.images)
+        // Đã được sync từ sheet Telegram_Images, chính xác nhất
+        let images = [];
+        
+        if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+            const sortedImgs = product.images.slice().sort((a, b) => {
+                const na = (a.name || "").toLowerCase();
+                const nb = (b.name || "").toLowerCase();
+                return na.localeCompare(nb);
+            });
             
-            let images = [];
-            if (photos2Urls.length > 0) {
-                images = photos2Urls.map(url => {
-                    if (url.includes('drive.google.com')) {
-                        const fileId = url.match(/[-\w]{25,}/);
-                        if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1600';
+            images = sortedImgs.map(img => {
+                let src = img.thumb || img.url || "";
+                if (src.includes("drive.google.com")) {
+                    const fileId = src.match(/[\w-]{25,}/);
+                    if (fileId) {
+                        src = "https://drive.google.com/thumbnail?id=" + fileId[0] + "&sz=w1600";
                     }
-                    return url;
-                });
-            }
-            
-            // Nếu không có ảnh từ Photos2 thì dùng ảnh từ Drive
-            if (images.length === 0) {
-                const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-                images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
-            }
-            
-            if (!images.length) images.push(SITE_LOGO); 
+                }
+                return src;
+            }).filter(Boolean);
+        }
+        
+        if (images.length === 0) {
+            images = [SITE_LOGO];
+        }
 
         let currentIndex = 0;
         let autoplayTimer = null;
