@@ -1,13 +1,22 @@
 /* ========== CONFIG ========== */
-const SITE_CONFIG = (typeof i10Config !== 'undefined') ? i10Config : {};
-const SHEET_API = SITE_CONFIG.SHEET_API || "https://script.google.com/macros/s/AKfycbxJqWw9nuTdrlNIV4z1MfmOo7AsqgzeWiJxuXuaBAo22CIwttHSOo4tXS5fFj5IJfRe/exec";
+// Ưu tiên đọc từ I10_CONFIG (config.js), nếu không có dùng i10Config (i10-config.min.js)
+const SITE_CONFIG = (typeof I10_CONFIG !== 'undefined') ? I10_CONFIG : (typeof i10Config !== 'undefined') ? i10Config : {};
+const SHEET_API = SITE_CONFIG.SHEET_API || "";
 const PRODUCTS_JSON_URL = SITE_CONFIG.STATIC_JSON_FILE ? SITE_CONFIG.STATIC_JSON_FILE : "/assets/js/products.json";
+
+// URL nguồn dữ liệu chính: Luôn lấy trực tiếp từ Google Sheet Web
+const DATA_SOURCE_URL = (() => {
+  if (SITE_CONFIG.SHEET_WEB_ID) {
+    return `https://docs.google.com/spreadsheets/d/${SITE_CONFIG.SHEET_WEB_ID}/gviz/tq?sheet=${SITE_CONFIG.SHEET_WEB_SHEET_NAME || 'Web'}&tqx=out:json`;
+  }
+  return PRODUCTS_JSON_URL;
+})();
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
-const CACHE_KEY = "i10_products_cache_v4"; 
+const CACHE_KEY = "i10_products_cache_v5";
 const CACHE_KEY_BANNER = "i10_banner_cache_v3";
-const CACHE_TTL = 30 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
 const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
 const SITE_TITLE_SUFFIX = "- i10 STORE";
 const SITE_META_DESC_HOME = "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
@@ -19,7 +28,22 @@ async function fetchJSON(url, opts = {}) {
     const txt = await res.text().catch(()=>"");
     throw new Error("Lỗi mạng: " + res.status + " " + txt);
   }
-  return res.json();
+  const text = await res.text();
+  
+  // Xử lý Google Visualization API wrapper: /*O_o*/google.visualization.Query.setResponse({...})
+  let jsonStr = text.trim();
+  if (jsonStr.startsWith('/*O_o*/')) {
+    // Loại bỏ phần comment /*O_o*/ và tìm object JSON
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      jsonStr = text.substring(jsonStart, jsonEnd + 1);
+    } else {
+      throw new Error("Không thể parse Google Sheet response wrapper");
+    }
+  }
+  
+  return JSON.parse(jsonStr);
 }
 function debounce(fn, wait=250){
   let t;
@@ -30,6 +54,47 @@ function createSlug(text) {
     return text.toString().toLowerCase()
         .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+}
+
+/* === GOOGLE SHEET PARSER === */
+function parseSheetData(response) {
+  // Nếu đã là array, trả về luôn
+  if (Array.isArray(response)) return response;
+  
+  // Nếu là object có table (từ Google Visualization API)
+  if (response.table && response.table.rows) {
+    const cols = response.table.cols || [];
+    const rows = response.table.rows || [];
+    
+    // Lấy headers từ ROW ĐẦU TIÊN (row 0) vì cols.label thường null
+    const headerRow = rows[0];
+    if (!headerRow || !headerRow.c) return [];
+    
+    const headers = headerRow.c.map((cell, idx) => {
+      // Thử lấy từ col label trước, nếu không có thì từ cell value
+      const colLabel = cols[idx] && cols[idx].label ? cols[idx].label : "";
+      if (colLabel && colLabel.trim()) return colLabel.trim();
+      return (cell && cell.v !== undefined) ? String(cell.v).trim() : `col${idx}`;
+    });
+    
+    // Lấy data từ row 2 trở đi (bỏ header row + 1 dòng phụ/chú thích)
+    return rows.slice(2)
+      .filter(row => row.c) // Bỏ hàng trống
+      .map(row => {
+        const obj = {};
+        row.c.forEach((cell, i) => {
+          if (cell) {
+            // Lấy giá trị: ưu tiên v (formatted value), fallback f (formula)
+            obj[headers[i]] = cell.v !== undefined ? cell.v : (cell.f || "");
+          } else {
+            obj[headers[i] || `col${i}`] = "";
+          }
+        });
+        return obj;
+      });
+  }
+  
+  return [];
 }
 
 /* === CONTROLS RENDERER === */
@@ -83,6 +148,8 @@ function renderControls(container, onChange) {
   };
   ctrl.appendChild(clearBtn);
 
+
+
   container.prepend(ctrl);
 
   const trigger = debounce(()=> onChange({ 
@@ -102,49 +169,62 @@ function renderControls(container, onChange) {
 let globalProductData = null;
 let globalProductPromise = null;
 
-async function getProductData() {
-    if (globalProductData) return globalProductData;
-    if (globalProductPromise) return globalProductPromise;
+async function getProductData(forceRefresh = false) {
+  if (globalProductData && !forceRefresh) return globalProductData;
+  if (globalProductPromise && !forceRefresh) return globalProductPromise;
 
-    const fetchData = async () => {
-        let data = null;
-        try {
-            const cached = localStorage.getItem(CACHE_KEY);
-            if (cached) {
-                const { timestamp, items } = JSON.parse(cached);
-                if (Date.now() - timestamp < CACHE_TTL) data = items;
-            }
-        } catch (e) { /* ignore */ }
-
-        if (!data) {
-            const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
-            data = await fetchJSON(PRODUCTS_JSON_URL + cacheBuster);
-            localStorage.setItem(CACHE_KEY, JSON.stringify({
-                timestamp: Date.now(),
-                items: data
-            }));
+  const fetchData = async () => {
+    let data = null;
+    
+    // Đọc cache nếu không force refresh
+    if (!forceRefresh) {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { timestamp, items } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_TTL) data = items;
         }
+      } catch (e) { /* ignore */ }
+    }
 
-        if (!Array.isArray(data)) throw new Error("Dữ liệu trả về không phải mảng");
+    if (!data) {
+      const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
+      let raw = await fetchJSON(DATA_SOURCE_URL + cacheBuster);
+      
+      // Parse nếu là Google Sheet format
+      data = parseSheetData(raw);
+      
+      // Nếu không phải array, throw error
+      if (!Array.isArray(data)) {
+        throw new Error("Dữ liệu sheet không đúng định dạng");
+      }
 
-        data.forEach((p, i) => {
-            const slugText = [
-                p["Model"] || p["Name"],
-                p["CPU"],
-                p["RAM"],
-                p["SSD"],
-                p["RESOLUTION"],
-                p["GPU"]
-            ].filter(Boolean).join(' ');
-            p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
-        });
-        
-        globalProductData = data;
-        return data;
-    };
+      // Lưu cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        items: data
+      }));
+    }
 
-    globalProductPromise = fetchData();
-    return globalProductPromise;
+    // Xử lý slug
+    data.forEach((p, i) => {
+      const slugText = [
+        p["Model"] || p["Name"],
+        p["CPU"],
+        p["RAM"],
+        p["SSD"],
+        p["RESOLUTION"],
+        p["GPU"]
+      ].filter(Boolean).join(' ');
+      p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
+    });
+    
+    globalProductData = data;
+    return data;
+  };
+
+  globalProductPromise = fetchData();
+  return globalProductPromise;
 }
 
 
@@ -335,66 +415,42 @@ async function renderProductGrid() {
             // Logic render HTML
             const html = paginatedList.map((p) => {
                 const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
-                // CHỈ HIỂN THỊ ẢNH TỪ TELEGRAM BOT (p.images)
-                // Đã được sync từ sheet Telegram_Images → chính xác nhất
-                let displayImages = [];
                 
-                if (p.images && Array.isArray(p.images) && p.images.length > 0) {
-                    // Sắp xếp theo tên file để hiển thị nhất quán
-                    const sortedImgs = p.images.slice().sort((a,b) => {
-                        const nameA = (a.name || "").toLowerCase();
-                        const nameB = (b.name || "").toLowerCase();
-                        return nameA.localeCompare(nameB);
-                    });
-                    
-                    displayImages = sortedImgs.map(img => {
-                        let src = img.thumb || img.url || "";
-                        // Chuẩn hóa URL Drive để lấy thumbnail lớn
-                        if (src.includes('drive.google.com')) {
-                            const fileId = src.match(/[\w-]{25,}/);
-                            if (fileId) {
-                                src = 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
-                            }
-                        }
-                        return src;
-                    }).filter(Boolean);
-                }
+                 // Xử lý ảnh từ Photos2 (cột AH - JSON) - Luôn parse như JSON
+                 let displayImages = [];
+                 const photos2Str = p["Photos2"] || "";
+                 
+                 if (photos2Str && photos2Str.trim()) {
+                   try {
+                     // Parse JSON array
+                     const photos2Array = JSON.parse(photos2Str);
+                     if (Array.isArray(photos2Array)) {
+                       displayImages = photos2Array
+                         .map(item => {
+                           // Ưu tiên thumb nếu có, nếu không dùng url
+                           const imgUrl = item.thumb || item.url || "";
+                           // Chuẩn hóa Drive URL thành thumbnail 1000px
+                           if (imgUrl.includes('drive.google.com')) {
+                             const fileId = imgUrl.match(/[-\w]{25,}/);
+                             if (fileId) return `https://drive.google.com/thumbnail?id=${fileId[0]}&sz=w1000`;
+                           }
+                           return imgUrl;
+                         })
+                         .filter(Boolean);
+                     }
+                   } catch (e) {
+                     // Nếu có lỗi trong parsing JSON, để trống và fallback
+                     displayImages = [];
+                   }
+                 }
+                 
+                 // Fallback: dùng ảnh từ field images
+                 if (displayImages.length === 0) {
+                   const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
+                   displayImages = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1000")).filter(Boolean);
+                 }
                 
-                // Nếu không có ảnh từ bot, fallback to placeholder
-                if (displayImages.length === 0) {
-                    displayImages = [SITE_LOGO_2];
-                }
-            
-            // Ưu tiên 2: Ảnh từ Photos2 (IMPORTRANGE) - fallback
-            if (displayImages.length === 0) {
-                let photos2Str = p["Photos2"] || "";
-                let urls = [];
-                
-                // Nếu Photos2 là JSON string (từ IMPORTRANGE sheet Telegram_Images)
-                if (photos2Str.trim().startsWith('[')) {
-                    try {
-                        const parsed = JSON.parse(photos2Str);
-                        if (Array.isArray(parsed)) {
-                            urls = parsed.map(item => item.url || item.thumb || '').filter(Boolean);
-                        }
-                    } catch (e) {}
-                } else {
-                    // newline-separated URLs
-                    urls = photos2Str.split('\n').filter(url => url.trim());
-                }
-                
-                if (urls.length > 0) {
-                    displayImages = urls.map(url => {
-                        if (url.includes('drive.google.com')) {
-                            const fileId = url.match(/[-\w]{25,}/);
-                            if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1000';
-                        }
-                        return url;
-                    });
-                }
-            }
-            
-            const mainImg = displayImages[0] || SITE_LOGO_2; 
+                const mainImg = displayImages[0] || SITE_LOGO_2; 
                 
                 let priceText = "Liên hệ";
                 let priceStyle = `color:${THEME};font-weight:800;`;
@@ -507,7 +563,31 @@ async function renderProductGrid() {
         });
             
         doRender();
-            
+        
+        // === AUTO-REFRESH: Tải lại dữ liệu mỗi 5 phút ===
+        setTimeout(() => {
+          getProductData(true).then(() => {
+            console.log("🔄 Tự động cập nhật dữ liệu sau 5 phút");
+            doRender();
+          }).catch(err => {
+            console.warn("Lỗi auto-refresh:", err.message);
+          });
+        }, 5 * 60 * 1000); // 5 phút
+        
+        // Lắng nghe sự kiện storage để sync giữa các tab
+        window.addEventListener('storage', (e) => {
+          if (e.key === CACHE_KEY && e.newValue) {
+            try {
+              const { timestamp, items } = JSON.parse(e.newValue);
+              // Nếu cache mới hơn 30s, tải lại
+              if (Date.now() - timestamp < 30000) {
+                console.log("📡 Phát hiện thay đổi từ tab khác, đang tải lại...");
+                getProductData(true).then(() => doRender());
+              }
+            } catch (e) { /* ignore */ }
+          }
+        });
+        
         // (*** SỬA: Đã thêm lại filter X1 của bạn ***)
         if (filter && ["available", "sold", "thinkpad", "dell", "blackberry", "x1 carbon", "x1 yoga"].includes(filter)) {
              const searchInput = document.querySelector('#' + controlsEl.id + ' input[type="search"]');
@@ -614,9 +694,48 @@ function updateMetaTags(product) {
     if (ogUrl) ogUrl.setAttribute("content", window.location.href);
 }
 /* -----------------------------------------------------
-   POPUP SẢN PHẨM (TỐI ƯU UI/UX VÀ SEO)
-   (*** ĐÃ CẬP NHẬT (v12.3) ***)
+   TOOL: CONVERT DRIVE LINKS TO PHOTOS2 JSON
    ----------------------------------------------------- */
+/* (*** BẢN ĐÃ CHUYỂN SANG HÀM folder-aware Ở DƯỚI ***) ĐÃ BỎ ĐỂ TRÁNH TRÙNG LẶP - SỬ DỤNG HÀM folder-aware Ở DƯỚI 
+function convertDriveLinksToPhotos2JSON(linksInput) {
+  // Input: string (newline/ comma separated) hoặc array
+  let links = Array.isArray(linksInput) 
+    ? linksInput 
+    : String(linksInput).split(/[\n,]+/).map(l => l.trim()).filter(Boolean);
+  
+  return JSON.stringify(links.map(link => {
+    // Extract file ID từ link Drive
+    const idMatch = link.match(/[-\w]{25,}/);
+    const id = idMatch ? idMatch[0] : '';
+    // Extract name từ link
+    const nameMatch = link.match(/[^/]+$/);
+    const name = nameMatch ? decodeURIComponent(nameMatch[0]) : `image_${id.substring(0,8)}.jpg`;
+    
+    return {
+      id: id,
+      name: name,
+      url: `https://drive.google.com/uc?export=view&id=${id}`,
+      thumb: `https://drive.google.com/thumbnail?id=${id}&sz=s1000`
+    };
+  }), null, 2);
+} */
+
+// Hàm này dùng để import từ change.xlsx (chạy trong Console sau khi copy link)
+function importPhotos2FromExcel() {
+  alert(`Copy toàn bộ link Drive từ Excel (cột chứa link ảnh), sau đó nhấn OK.`);
+  navigator.clipboard.readText().then(text => {
+    const json = convertDriveLinksToPhotos2JSON(text);
+    console.log('📋 PHOTOS2 JSON (copy và dán vào cột AH của sheet Web):\n\n', json);
+    alert('✅ JSON đã log ra Console! Mở Console (F12) và copy chuỗi JSON để dán vào sheet.');
+  }).catch(err => {
+    alert('Lỗi đọc clipboard: ' + err.message);
+  });
+}
+
+/* =====================================================
+   END OF TOOLS
+   ===================================================== */
+
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
 
@@ -638,32 +757,42 @@ function openProductPopup(encoded, slug) {
             metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-        // HIỂN THỊ ẢNH TRONG POPUP - CHỈ DÙNG TELEGRAM BOT (product.images)
-        // Đã được sync từ sheet Telegram_Images, chính xác nhất
-        let images = [];
-        
-        if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-            const sortedImgs = product.images.slice().sort((a, b) => {
-                const na = (a.name || "").toLowerCase();
-                const nb = (b.name || "").toLowerCase();
-                return na.localeCompare(nb);
-            });
+            const photos2Str = product["Photos2"] || "";
+            let images = [];
             
-            images = sortedImgs.map(img => {
-                let src = img.thumb || img.url || "";
-                if (src.includes("drive.google.com")) {
-                    const fileId = src.match(/[\w-]{25,}/);
-                    if (fileId) {
-                        src = "https://drive.google.com/thumbnail?id=" + fileId[0] + "&sz=w1600";
+            if (photos2Str && photos2Str.trim()) {
+              try {
+                const photos2Array = JSON.parse(photos2Str);
+                if (Array.isArray(photos2Array)) {
+                  images = photos2Array.map(item => {
+                    const imgUrl = item.thumb || item.url || "";
+                    if (imgUrl.includes('drive.google.com')) {
+                      const fileId = imgUrl.match(/[-\w]{25,}/);
+                      if (fileId) return `https://drive.google.com/thumbnail?id=${fileId[0]}&sz=w1600`;
                     }
+                    return imgUrl;
+                  }).filter(Boolean);
                 }
-                return src;
-            }).filter(Boolean);
-        }
-        
-        if (images.length === 0) {
-            images = [SITE_LOGO];
-        }
+              } catch (e) {
+                // Fallback to newline-separated URLs
+                const photos2Urls = photos2Str.split('\n').filter(url => url.trim());
+                images = photos2Urls.map(url => {
+                  if (url.includes('drive.google.com')) {
+                    const fileId = url.match(/[-\w]{25,}/);
+                    if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1600';
+                  }
+                  return url;
+                });
+              }
+            }
+            
+            // Fallback: dùng ảnh từ images field
+            if (images.length === 0) {
+              const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+              images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
+            }
+            
+            if (!images.length) images.push(SITE_LOGO);
 
         let currentIndex = 0;
         let autoplayTimer = null;
@@ -902,11 +1031,126 @@ function openProductPopup(encoded, slug) {
         `;
         document.head.appendChild(style);
     } catch (err) {
-        console.error("Lỗi mở popup:", err);
-        document.body.style.overflow = 'auto';
-        alert("Lỗi hiển thị sản phẩm: " + err.message);
+      console.error("Lỗi mở popup:", err);
+      document.body.style.overflow = 'auto';
+      alert("Lỗi hiển thị sản phẩm: " + err.message);
     }
 }
+
+/* =====================================================
+   TOOL: CONVERT DRIVE LINKS TO PHOTOS2 JSON (with Folder support)
+   ===================================================== */
+function extractDriveId(link) {
+  const match = link.match(/[-\w]{25,}/);
+  return match ? match[0] : null;
+}
+
+function isFolderLink(link) {
+  return link.includes('/folders/') || link.includes('/d/f/') || link.includes('folders=') || link.includes('/drive/folders/');
+}
+
+async function fetchFolderFiles(folderId) {
+  const gasUrl = SITE_CONFIG.GAS_FOLDER_TO_JSON_URL;
+  if (!gasUrl) {
+    throw new Error("Chưa cấu hình GAS_FOLDER_TO_JSON_URL. Cần deploy Google Apps Script (xem apps-script.txt)");
+  }
+  const url = `${gasUrl}?folderId=${encodeURIComponent(folderId)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Lỗi fetch folder: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Dữ liệu folder không phải array");
+  }
+  return data;
+}
+
+async function convertDriveLinksToPhotos2JSON(linksInput) {
+  let links = Array.isArray(linksInput)
+    ? linksInput
+    : String(linksInput).split(/[\n,]+/).map(l => l.trim()).filter(Boolean);
+
+  const results = [];
+
+  for (const link of links) {
+    const id = extractDriveId(link);
+    if (!id) {
+      console.warn('Không lấy được ID từ link:', link);
+      continue;
+    }
+
+    if (isFolderLink(link)) {
+      try {
+        const files = await fetchFolderFiles(id);
+        results.push(...files);
+      } catch (err) {
+        console.error('Lỗi lấy folder', link, err.message);
+      }
+    } else {
+      const nameMatch = link.match(/[^/]+$/);
+      const name = nameMatch ? decodeURIComponent(nameMatch[0]) : `image_${id.substring(0,8)}.jpg`;
+      results.push({
+        id: id,
+        name: name,
+        url: `https://drive.google.com/uc?export=view&id=${id}`,
+        thumb: `https://drive.google.com/thumbnail?id=${id}&sz=s1000`
+      });
+    }
+  }
+
+  return JSON.stringify(results);
+}
+
+async function importPhotos2FromExcel() {
+  alert(`📋 Bước 1: Copy toàn bộ link Drive từ Excel (link ảnh hoặc link folder)\nBước 2: Nhấn OK ở đây`);
+  try {
+    const text = await navigator.clipboard.readText();
+    const json = await convertDriveLinksToPhotos2JSON(text);
+    console.log('\n========== PHOTOS2 JSON (copy & dán vào cột AH) ==========\n\n', json);
+    alert('✅ Xong! Mở Console (F12) để copy JSON và dán vào sheet Web cột AH (Photos2)');
+  } catch (err) {
+    alert('❌ Lỗi: ' + err.message);
+  }
+}
+
+/* =====================================================
+   END OF TOOLS - GỌI TRONG CONSOLE:
+     importPhotos2FromExcel()
+   ===================================================== */
+// Dùng để chuyển danh sách link Google Drive thành JSON Photos2
+// Ví dụ: paste list link từ Excel vào Console, chạy convertLinksToJSON()
+/* (*** ĐÃ BỎ ĐỂ TRÁNH TRÙNG LẶP - SỬ DỤNG HÀM folder-aware Ở DƯỚI) 
+function convertDriveLinksToPhotos2JSON(linksInput) {
+  let links = Array.isArray(linksInput) 
+    ? linksInput 
+    : String(linksInput).split(/[\n,]+/).map(l => l.trim()).filter(Boolean);
+  
+  return JSON.stringify(links.map(link => {
+    const idMatch = link.match(/[-\w]{25,}/);
+    const id = idMatch ? idMatch[0] : '';
+    const nameMatch = link.match(/[^/]+$/);
+    const name = nameMatch ? decodeURIComponent(nameMatch[0]) : `image_${id.substring(0,8)}.jpg`;
+    return { id, name, url: `https://drive.google.com/uc?export=view&id=${id}`, thumb: `https://drive.google.com/thumbnail?id=${id}&sz=s1000` };
+  }), null, 2);
+} */
+
+// Hàm import từ clipboard (dùng cho change.xlsx)
+function importPhotos2FromExcel() {
+  alert(`📋 Bước 1: Copy toàn bộ link Drive từ Excel (cột chứa link ảnh)\nBước 2: Nhấn OK ở đây`);
+  navigator.clipboard.readText().then(text => {
+    const json = convertDriveLinksToPhotos2JSON(text);
+    console.log('\n========== PHOTOS2 JSON (copy và dán vào cột AH) ==========\n\n', json);
+    alert('✅ Xong! Mở Console (F12) để copy JSON và dán vào sheet Web cột AH (Photos2)');
+  }).catch(err => {
+    alert('❌ Lỗi đọc clipboard: ' + err.message);
+  });
+}
+
+/* =====================================================
+   END OF TOOLS - GỌI HÀM TRONG CONSOLE:
+     importPhotos2FromExcel()
+   ===================================================== */
 
 
 /* -----------------------------------------------------

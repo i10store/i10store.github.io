@@ -114,7 +114,7 @@
                     <p>Tạo phiếu giao hàng cho đơn hàng đã được xác nhận.</p>
                     <a href="#" onclick="checkAndGo('giaohang.html')" class="feature-btn"><i class="fa fa-print"></i> Vào trang in</a>
                 </div>
-            </div>    
+            </div>
         </div>
         
     </div>
@@ -183,6 +183,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="/assets/js/scripts.js"></script>
 <script>
+function getTodayPassword() {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  return 'i10' + d;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");
     if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
@@ -236,7 +242,7 @@ function showInternalPasswordPopup() {
     window.checkInternalPassword = function() {
         const input = document.getElementById('internal-pass-input');
         const errorEl = document.getElementById('internal-pass-error');
-        const expectedPassword = window.getInternalPassword();
+        const expectedPassword = getTodayPassword();
         
         if (input.value === expectedPassword) {
             window.location.href = pendingUrl;

@@ -69,7 +69,7 @@ Hệ thống website bán laptop Thinkpad/US với admin qua Google Sheets, xử
 
 | Sheet Name | ID | Mục đích |
 |------------|-----|----------|
-| **Web** | `18sGLaK2MblP23WHeGblDhFhg8BcDvoIGSRT-7Upjsog` | Danh sách sản phẩm (có cột: Brand, Model, CPU, RAM, SSD, GPU, Price, Photos, Folder Album Image Google Drive, ...) |
+| **Web** | `` | Danh sách sản phẩm (có cột: Brand, Model, CPU, RAM, SSD, GPU, Price, Photos, Folder Album Image Google Drive, ...) |
 | **Order** | Cùng sheet trên | Lưu đơn hàng từ form website (Tên, SDT, Sản phẩm, Ghi chú) |
 | **HoaDon** | Tự tạo | Lưu hóa đơn bán hàng (có nhiều dòng sản phẩm) |
 | **HopDongMuaBan** | Tự tạo | Lưu hợp đồng mua bán laptop |
@@ -81,14 +81,14 @@ Hệ thống website bán laptop Thinkpad/US với admin qua Google Sheets, xử
 
 | Folder | ID | Mục đích |
 |--------|-----|----------|
-| **Root ảnh SP** | `1ZO7AcpmyShKm2j0EVNorme7mYKRN2VcQ` | Chứa folder `SP_<SERIAL>` của mỗi sản phẩm |
+| **Root ảnh SP** | `` | Chứa folder `SP_<SERIAL>` của mỗi sản phẩm |
 | **Banner** | `1h1qRJQVMTtzTfXxyPPUgrIilyARr37o7` | Ảnh banner carousel trang chủ |
-| **JSON files** | `1vlL3LKoixYloAweJie1YbS1Vgro-oR_m` | Lưu `products.json`, `banners.json`, `customer.json` |
+| **JSON files** | `` | Lưu `products.json`, `banners.json`, `customer.json` |
 | **SP_\<serial\>** | Tự tạo | Mỗi folder chứa ảnh của 1 sản phẩm |
 
 ### 3. Telegram Bot
 
-- **Bot Token**: `8614022226:AAH2j4bdGHHsjCw8-WdZCcyB5rrTWSdwRec`
+- **Bot Token**: ``
 - **Lệnh**: `/start`, `/new`, `/delete <SERIAL>`, `/list`, `/xoarong`, `/folder`, `/id`
 
 ---

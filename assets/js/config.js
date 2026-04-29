@@ -15,7 +15,7 @@ const I10_CONFIG = {
   // ==================== API ====================
   
   // Google Apps Script Web App URL (dùng cho form đặt hàng, liên hệ)
-  SHEET_API: "https://script.google.com/macros/s/AKfycbxJqWw9nuTdrlNIV4z1MfmOo7AsqgzeWiJxuXuaBAo22CIwttHSOo4tXS5fFj5IJfRe/exec",
+  SHEET_API: "https://script.google.com/macros/s/AKfycbzVNKDHc2VUmPdiqKTz-ZCCV6I2cPw9hkseq56pyB5b1RwPUP6t0XvwTh-YR17y8Bhw/exec",
   
   // URL file products.json (có thể là link Local /assets/js/products.json hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
   STATIC_JSON_FILE: "/assets/js/products.json",
@@ -37,11 +37,26 @@ const I10_CONFIG = {
   STORE_SHEET_NAME: "Store",
   SHEET_NAME: "Web",
   
+  // Google Sheet ID cho sheet "Web" (lấy từ URL: /d/{SHEET_ID}/edit)
+  // Để trống nếu không dùng Google Sheet, sẽ fallback về products.json
+  SHEET_WEB_ID: "18sGLaK2MblP23WHeGblDhFhg8BcDvoIGSRT-7Upjsog",
+  
+  // Tên sheet trong Google Sheet (mặc định: "Web")
+  SHEET_WEB_SHEET_NAME: "Web",
+  
+   // Hoặc dùng URL Google Apps Script (nếu có) - ưu tiên này nếu có giá trị
+   SHEET_WEB_JSON_URL: "",
+  
+  // Google Apps Script URL để convert folder Drive → JSON Photos2
+  // Deploy GAS với code lấy danh sách file từ folder (xem apps-script.txt)
+  // Để trống nếu không dùng tính năng import từ folder
+  GAS_FOLDER_TO_JSON_URL: "https://script.google.com/macros/s/AKfycbzVNKDHc2VUmPdiqKTz-ZCCV6I2cPw9hkseq56pyB5b1RwPUP6t0XvwTh-YR17y8Bhw/exec",
+  
   // ==================== CACHE ====================
   
-  // Thời gian cache (ms) - 6 giờ cho sản phẩm/banner, 30 phút cho API khác
-  CACHE_TTL: 5 * 60 * 60 * 1000,        // 6 hours
-  CACHE_TTL_SHORT: 30 * 60 * 1000,      // 30 minutes
+  // Thời gian cache (ms) - 5 phút cho sản phẩm/banner
+  CACHE_TTL: 5 * 60 * 1000,        // 5 minutes
+  CACHE_TTL_SHORT: 5 * 60 * 1000,  // 5 minutes
   
   // ==================== SITE ====================
   
