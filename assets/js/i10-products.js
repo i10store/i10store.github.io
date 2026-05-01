@@ -214,7 +214,8 @@ async function getProductData(forceRefresh = false) {
         p["RAM"],
         p["SSD"],
         p["RESOLUTION"],
-        p["GPU"]
+        p["GPU"],
+        p["ID"]
       ].filter(Boolean).join(' ');
       p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
     });
