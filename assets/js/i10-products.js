@@ -15,7 +15,7 @@ const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf
 const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
 const THEME = "#76b500";
 const CACHE_KEY = "i10_products_cache_v5";
-const CACHE_KEY_BANNER = "i10_banner_cache_v3";
+const CACHE_KEY_BANNER = "i10_banner_cache_v5";
 const CACHE_TTL = 5 * 60 * 1000; // 5 phút
 const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
 const SITE_TITLE_SUFFIX = "- i10 STORE";
@@ -54,6 +54,20 @@ function createSlug(text) {
     return text.toString().toLowerCase()
         .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+}
+
+function shuffleArray(items) {
+  const arr = Array.isArray(items) ? items.slice() : [];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function getCacheBustedUrl(url) {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}cb=${Math.round(Date.now() / CACHE_TTL)}`;
 }
 
 /* === GOOGLE SHEET PARSER === */
@@ -95,6 +109,30 @@ function parseSheetData(response) {
   }
   
   return [];
+}
+
+function getSheetHeaderCellValue(response, columnName, rowIndex = 1, fallbackColumnIndex = null) {
+  if (!response || Array.isArray(response) || !response.table || !response.table.rows) return "";
+
+  const cols = response.table.cols || [];
+  const rows = response.table.rows || [];
+  const headerRow = rows[0];
+  const targetRow = rows[rowIndex];
+  if (!headerRow || !headerRow.c || !targetRow || !targetRow.c) return "";
+
+  const headers = headerRow.c.map((cell, idx) => {
+    const colLabel = cols[idx] && cols[idx].label ? cols[idx].label : "";
+    if (colLabel && colLabel.trim()) return colLabel.trim();
+    return (cell && cell.v !== undefined) ? String(cell.v).trim() : `col${idx}`;
+  });
+
+  let columnIndex = headers.findIndex(header => header === columnName);
+  if (columnIndex < 0 && fallbackColumnIndex !== null) columnIndex = fallbackColumnIndex;
+  if (columnIndex < 0) return "";
+
+  const cell = targetRow.c[columnIndex];
+  if (!cell) return "";
+  return cell.v !== undefined ? String(cell.v) : (cell.f || "");
 }
 
 /* === CONTROLS RENDERER === */
@@ -188,8 +226,7 @@ async function getProductData(forceRefresh = false) {
     }
 
     if (!data) {
-      const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
-      let raw = await fetchJSON(DATA_SOURCE_URL + cacheBuster);
+      let raw = await fetchJSON(getCacheBustedUrl(DATA_SOURCE_URL));
       
       // Parse nếu là Google Sheet format
       data = parseSheetData(raw);
@@ -295,7 +332,7 @@ async function renderProductGrid() {
             return fullList;
         }
 
-        const filteredData = applyUrlFilter(data, filter);
+        const filteredData = shuffleArray(applyUrlFilter(data, filter));
         
         let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
 
@@ -330,6 +367,16 @@ async function renderProductGrid() {
             const segmentVal = product["PRICE SEGMENT"];
             if ((priceVal == null || priceVal === "") && (segmentVal == null || segmentVal === "")) return true;
             return false;
+        };
+
+        const orderByStockStatus = (items) => {
+            const availableItems = [];
+            const unavailableItems = [];
+            items.forEach(product => {
+                if (isSold(product)) unavailableItems.push(product);
+                else availableItems.push(product);
+            });
+            return availableItems.concat(unavailableItems);
         };
         
         // (Hàm getComparablePrice)
@@ -369,7 +416,7 @@ async function renderProductGrid() {
             const qstr = (state.q || "").toLowerCase();
             const priceNum = parseFloat(state.priceQuery); 
             
-            let list = state.items;
+            let list = state.items.slice();
 
             if (qstr) {
                 list = list.filter(p => {
@@ -404,6 +451,8 @@ async function renderProductGrid() {
                     if (state.sort === "price_asc") return priceA - priceB;
                     else return priceB - priceA;
                 });
+            } else {
+                list = orderByStockStatus(list);
             }
 
             const totalItems = list.length;
@@ -1155,7 +1204,7 @@ function importPhotos2FromExcel() {
 
 
 /* -----------------------------------------------------
-   POPUP ĐẶT HÀNG (v12.3)
+   POPUP ĐẶT HÀNG (v12.3) - GỬI TELEGRAM
    ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
@@ -1192,35 +1241,43 @@ function openOrderForm(product, titleText, parentOverlay) {
       return; 
     }
 
-    msgEl.style.color = 'red'; 
-    msgEl.textContent = "Đang gửi, chờ xác nhận... 3";
+    msgEl.style.color = '#FF6B6B'; 
+    msgEl.textContent = "Đang gửi đơn hàng...";
     submitBtn.disabled = true;
     cancelBtn.disabled = true;
 
     try {
-      await fetch(SHEET_API, {
-        method: 'POST',
-        mode: 'no-cors', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: titleText, name, phone, note })
+      // Kiểm tra Telegram config tồn tại
+      if (typeof sendTelegramMessage === 'undefined' || typeof createOrderMessage === 'undefined') {
+        throw new Error("Telegram config chưa được tải. Vui lòng F5 và thử lại.");
+      }
+
+      // Tạo tin nhắn Telegram
+      const telegramMessage = createOrderMessage({
+        product: titleText,
+        name: name,
+        phone: phone,
+        note: note,
+        time: new Date().toLocaleString('vi-VN')
       });
+
+      // Gửi đến Telegram (Image Beacon - không CORS)
+      const result = await sendTelegramMessage(telegramMessage);
       
-      msgEl.style.color = 'blue';
-      msgEl.textContent = "Đang gửi, chờ xác nhận... 2";
-      
-      setTimeout(() => {
-        msgEl.textContent = "Đang gửi, chờ xác nhận... 1";
-      }, 1000);
-      
-      setTimeout(() => {
-        msgEl.style.color = 'green';
+      if (result.success) {
+        msgEl.style.color = '#27ae60';
         msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
-        setTimeout(()=> modal.remove(), 1000);
-      }, 2000);
+        setTimeout(()=> modal.remove(), 1500);
+      } else {
+        msgEl.style.color = '#e74c3c';
+        msgEl.textContent = "❌ Lỗi gửi: " + result.error;
+        submitBtn.disabled = false;
+        cancelBtn.disabled = false;
+      }
 
     } catch (err) {
-      msgEl.style.color = 'red';
-      msgEl.textContent = "Lỗi mạng: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
+      msgEl.style.color = '#e74c3c';
+      msgEl.textContent = "❌ Lỗi: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
       submitBtn.disabled = false;
       cancelBtn.disabled = false;
     }
@@ -1255,8 +1312,35 @@ async function renderBanner() {
     if (!banners) {
       if (placeholder) placeholder.textContent = "Đang tải banner mới...";
       
-      const cacheBuster = `?cb=${Math.round(Date.now() / CACHE_TTL)}`;
-      banners = await fetchJSON("/assets/js/banners.json" + cacheBuster);
+      // Lấy dữ liệu từ Google Sheet Web - cột Photos2 (AH)
+      let raw = await fetchJSON(getCacheBustedUrl(DATA_SOURCE_URL));
+
+      // Lấy JSON banner từ ô AH2, dưới cột Photos2 của hàng tiêu đề.
+      const photos2Str = getSheetHeaderCellValue(raw, "Photos2", 1, 33);
+      if (!photos2Str) {
+        throw new Error("Không tìm thấy dữ liệu banner trong sheet Web (cột Photos2)");
+      }
+
+      let bannerArray = [];
+
+      if (photos2Str && photos2Str.trim()) {
+        try {
+          // Parse JSON array từ Photos2
+          bannerArray = JSON.parse(photos2Str);
+          if (!Array.isArray(bannerArray)) bannerArray = [];
+        } catch (e) {
+          console.warn("Không parse được Photos2 JSON, thử kiểm tra lại:", e);
+          throw new Error("Dữ liệu Photos2 không đúng định dạng JSON");
+        }
+      }
+
+      // Chuyển đổi sang định dạng banner tương thích
+      banners = bannerArray.map(item => ({
+        id: item.id || '',
+        name: item.name || 'Banner',
+        url: item.url || '',
+        thumb: item.thumb || item.url || ''
+      }));
       
       localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({
         timestamp: Date.now(),
@@ -1266,6 +1350,9 @@ async function renderBanner() {
 
     if (!Array.isArray(banners) || banners.length === 0)
       throw new Error("Không có dữ liệu banner");
+
+    // *** Xáo trộn banner ngẫu nhiên mỗi khi tải trang ***
+    banners = shuffleArray(banners);
 
     bannerContainer.innerHTML = `
       <div class="banner-row">

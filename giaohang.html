@@ -67,8 +67,9 @@
         .a6-page .info-line .value { border-bottom: 1px dotted #999; min-width: 40px; display: inline-block; }
         .a6-page .signatures { display: flex; justify-content: space-around; margin-top: 15px; font-size: var(--fs, 10px); font-weight: bold; position: relative; z-index: 1; }
         .a6-page .signatures div { text-align: center; width: 40%; }
-        .a6-page .signatures .sig-left { margin-right: auto; margin-left: 15%; width: 200px;}
-        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px}
+        .a6-page .signatures .sig-left { margin-right: auto; margin-left:0%; width: 200px;margin-left:10%; text-align: center;}
+        .a6-page .signatures .sig-right { margin-left: auto; margin-right: 0%; width: 200px; }
+        .a6-page .signatures .sig-right .signature-store {margin-right: 25px;}
         .a6-page .signatures .sig-label { margin-bottom: 25px; }
         .a6-page .shop-signature { max-width: 80px; max-height: 40px; margin-top: 5px; }
 
@@ -239,9 +240,9 @@
                 <div class="info-line"><span class="field">  2.</span> <span class="value" id="p_ghiChu2"></span></div>
 
                 <div class="signatures">
-                    <div class="sig-left"><div class="sig-label">Người giao</div></div>
+                    <div class="sig-left"><div class="sig-label">Người nhận</div></div>
                     <div class="sig-right">
-                        <div class="sig-label">Người nhận</div>
+                        <div class="sig-label">Người giao</div>
                         <span class="signature-store">Cửa hàng laptop i10Store</span>
                         <img src="/assets/chuky.png" class="shop-signature" alt="Chữ ký" style="display:none;">
                     </div>

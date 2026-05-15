@@ -277,10 +277,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 <script src="/assets/js/scripts.js"></script>
+<script src="/assets/js/telegram-config.js"></script>
 
 <script>
-    const SHEET_API = i10Config ? i10Config.SHEET_API_CONTACT : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
-    
     document.addEventListener("DOMContentLoaded", () => {
         const siteLogo = document.getElementById("site-logo");
         if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
@@ -302,33 +301,44 @@
             return; 
         }
 
-        msgEl.style.color = 'red'; msgEl.textContent = "Đang gửi yêu cầu...";
+        msgEl.style.color = '#FF6B6B'; msgEl.textContent = "Đang gửi yêu cầu...";
         submitBtn.disabled = true;
         submitBtn.style.opacity = 0.7;
 
         try {
-            // (*** SỬA: ĐÃ THÊM LẠI 'mode: no-cors' ***)
-            await fetch(SHEET_API, {
-                method: 'POST',
-                mode: 'no-cors', // Bắn và quên (Fire-and-forget)
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: message, 
-                    name, 
-                    phone, 
-                    email
-                })
+            // Tạo tin nhắn Telegram
+            const telegramMessage = createContactMessage({
+                name: name,
+                phone: phone,
+                email: email,
+                message: message,
+                time: new Date().toLocaleString('vi-VN')
             });
+
+            // Gửi đến Telegram (Image Beacon - không CORS)
+            const result = await sendTelegramMessage(telegramMessage);
             
-            // Giả định thành công vì đã dùng no-cors
-            msgEl.style.color = 'green';
-            msgEl.textContent = "✅ Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ lại sớm nhất.";
-            document.getElementById('contact-form').reset(); 
+            if (result.success) {
+                msgEl.style.color = '#27ae60';
+                msgEl.textContent = "✅ Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ lại sớm nhất.";
+                document.getElementById('contact-form').reset(); 
+                
+                // Reset form sau 3s
+                setTimeout(() => {
+                    msgEl.textContent = "";
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = 1;
+                }, 3000);
+            } else {
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = "❌ Lỗi gửi: " + result.error;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = 1;
+            }
 
         } catch (err) {
-            msgEl.style.color = 'red';
-            msgEl.textContent = "Lỗi mạng: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
-        } finally {
+            msgEl.style.color = '#e74c3c';
+            msgEl.textContent = "❌ Lỗi: " + (err.message || "Vui lòng kiểm tra lại kết nối.");
             submitBtn.disabled = false;
             submitBtn.style.opacity = 1;
         }
