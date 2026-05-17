@@ -6,20 +6,25 @@ const PRODUCTS_JSON_URL = SITE_CONFIG.STATIC_JSON_FILE ? SITE_CONFIG.STATIC_JSON
 
 // URL nguồn dữ liệu chính: Luôn lấy trực tiếp từ Google Sheet Web
 const DATA_SOURCE_URL = (() => {
+  if (SITE_CONFIG.SHEET_WEB_JSON_URL) {
+    return SITE_CONFIG.SHEET_WEB_JSON_URL;
+  }
   if (SITE_CONFIG.SHEET_WEB_ID) {
     return `https://docs.google.com/spreadsheets/d/${SITE_CONFIG.SHEET_WEB_ID}/gviz/tq?sheet=${SITE_CONFIG.SHEET_WEB_SHEET_NAME || 'Web'}&tqx=out:json`;
   }
   return PRODUCTS_JSON_URL;
 })();
-const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000"; 
-const SITE_LOGO_2 = "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
-const THEME = "#76b500";
-const CACHE_KEY = "i10_products_cache_v5";
-const CACHE_KEY_BANNER = "i10_banner_cache_v5";
-const CACHE_TTL = 5 * 60 * 1000; // 5 phút
-const SITE_TITLE_HOME = "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
-const SITE_TITLE_SUFFIX = "- i10 STORE";
-const SITE_META_DESC_HOME = "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
+const SITE_LOGO = SITE_CONFIG.SITE_LOGO || "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
+const SITE_LOGO_2 = SITE_CONFIG.SITE_LOGO_2 || "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
+const THEME = SITE_CONFIG.THEME || "#76b500";
+const CACHE_KEY = "i10_products_cache_v6";
+const CACHE_KEY_BANNER = "i10_banner_cache_v6";
+const CACHE_TTL = SITE_CONFIG.CACHE_TTL || 5 * 60 * 1000; // 5 phút
+const SITE_TITLE_HOME = SITE_CONFIG.SITE_TITLE_HOME || "i10 STORE - LAPTOP THINKPAD US - ĐẲNG CẤP CÙNG THỜI GIAN";
+const SITE_TITLE_SUFFIX = SITE_CONFIG.SITE_TITLE_SUFFIX || "- i10 STORE";
+const SITE_META_DESC_HOME = SITE_CONFIG.SITE_META_DESC_HOME || "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.";
+const CLOUDINARY_CLOUD_NAME = SITE_CONFIG.CLOUDINARY_CLOUD_NAME || "";
+const CLOUDINARY_LOGO_PUBLIC_ID = SITE_CONFIG.CLOUDINARY_LOGO_PUBLIC_ID || "i10_logo";
 
 /* === HELPERS === */
 async function fetchJSON(url, opts = {}) {
@@ -68,6 +73,190 @@ function shuffleArray(items) {
 function getCacheBustedUrl(url) {
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}cb=${Math.round(Date.now() / CACHE_TTL)}`;
+}
+
+function escapeAttr(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+function normalizeDriveImageUrl(url, size = 1000) {
+  if (!url) return "";
+  const str = String(url);
+  if (str.includes("drive.google.com")) {
+    const fileId = str.match(/[-\w]{25,}/);
+    if (fileId) return `https://drive.google.com/thumbnail?id=${fileId[0]}&sz=w${size}`;
+  }
+  return str.replace(/=s\d+/, `=s${size}`).replace(/([?&]sz=)[sw]?\d+/, `$1w${size}`);
+}
+
+function encodeCloudinaryPublicId(publicId) {
+  return String(publicId || "").split("/").map(encodeURIComponent).join("/");
+}
+
+function getCloudinaryPublicId(item) {
+  if (!item || typeof item !== "object") return "";
+  if (item.public_id) return String(item.public_id);
+  if (item.publicId) return String(item.publicId);
+  const id = item.id ? String(item.id) : "";
+  const url = String(item.secure_url || item.url || item.thumb || item.cover || "");
+  if (id && (id.includes("/") || url.includes("cloudinary.com"))) return id;
+  return "";
+}
+
+function buildCloudinaryUrl(publicId, transform) {
+  if (!CLOUDINARY_CLOUD_NAME || !publicId) return "";
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${transform}/${encodeCloudinaryPublicId(publicId)}`;
+}
+
+function buildCloudinaryCoverUrl(publicId) {
+  const logoOverlay = String(CLOUDINARY_LOGO_PUBLIC_ID || "i10_logo").replace(/\//g, ":");
+  return buildCloudinaryUrl(publicId, `f_auto,q_auto,w_1600/l_${logoOverlay},o_40,g_south_east,x_30,y_30`);
+}
+
+function parseImageList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "object") return [value];
+
+  const text = String(value).trim();
+  if (!text) return [];
+
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === "object") return [parsed];
+  } catch (e) {
+    // Fall back to legacy newline/comma separated URLs.
+  }
+
+  return text.split(/[\n,]+/).map((url) => url.trim()).filter(Boolean);
+}
+
+function hasImageSource(image) {
+  if (!image) return false;
+  if (typeof image === "string") return !!image;
+  const responsive = image.responsive || {};
+  return !!(image.url || image.secure_url || image.thumb || image.cover || responsive.small || responsive.medium || responsive.large || (CLOUDINARY_CLOUD_NAME && getCloudinaryPublicId(image)));
+}
+
+function normalizeImageItem(item) {
+  if (!item) return {};
+  if (typeof item === "string") {
+    return {
+      id: "",
+      name: "",
+      url: normalizeDriveImageUrl(item, 1600),
+      thumb: normalizeDriveImageUrl(item, 600),
+      cover: normalizeDriveImageUrl(item, 1600),
+      responsive: {
+        small: normalizeDriveImageUrl(item, 400),
+        medium: normalizeDriveImageUrl(item, 800),
+        large: normalizeDriveImageUrl(item, 1600)
+      }
+    };
+  }
+
+  const publicId = getCloudinaryPublicId(item);
+  const originalUrl = item.secure_url || item.url || buildCloudinaryUrl(publicId, "f_auto,q_auto,w_1600");
+  const thumbUrl = item.thumb || item.thumbnail_url || buildCloudinaryUrl(publicId, "f_auto,q_auto,w_600") || originalUrl;
+  const coverUrl = item.cover || buildCloudinaryCoverUrl(publicId) || originalUrl;
+  const responsive = item.responsive || {};
+
+  return Object.assign({}, item, {
+    id: item.id || publicId,
+    public_id: item.public_id || publicId,
+    url: normalizeDriveImageUrl(originalUrl, 1600),
+    thumb: normalizeDriveImageUrl(thumbUrl, 600),
+    cover: normalizeDriveImageUrl(coverUrl, 1600),
+    responsive: {
+      small: normalizeDriveImageUrl(responsive.small || buildCloudinaryUrl(publicId, "f_auto,q_auto,w_400") || thumbUrl || originalUrl, 400),
+      medium: normalizeDriveImageUrl(responsive.medium || buildCloudinaryUrl(publicId, "f_auto,q_auto,w_800") || thumbUrl || originalUrl, 800),
+      large: normalizeDriveImageUrl(responsive.large || buildCloudinaryUrl(publicId, "f_auto,q_auto,w_1600") || coverUrl || originalUrl, 1600)
+    }
+  });
+}
+
+function getImageScore(img) {
+  let score = 0;
+  const width = Number(img.width || 0);
+  const height = Number(img.height || 0);
+  const name = img.name || img.original_filename || "";
+
+  if (width > height) score += 10;
+  if (width >= 1200) score += 5;
+  if (/front|cover|main/i.test(name)) score += 20;
+  return score;
+}
+
+function autoPickCover(images) {
+  return (Array.isArray(images) ? images : [])
+    .slice()
+    .sort((a, b) => getImageScore(b) - getImageScore(a));
+}
+
+function getProductImages(product) {
+  if (!product) return [];
+  let images = parseImageList(product["Photos2"])
+    .map(normalizeImageItem)
+    .filter(hasImageSource);
+
+  if (!images.length) {
+    images = parseImageList(product.images)
+      .map(normalizeImageItem)
+      .filter(hasImageSource);
+  }
+
+  return autoPickCover(images);
+}
+
+function getImageUrl(image, intent = "medium") {
+  const img = typeof image === "string" ? normalizeImageItem(image) : (image || {});
+  const responsive = img.responsive || {};
+  if (intent === "small") return responsive.small || img.thumb || img.url || img.cover || "";
+  if (intent === "large") return responsive.large || img.cover || img.url || img.thumb || "";
+  if (intent === "cover") return img.cover || responsive.large || img.url || img.thumb || "";
+  if (intent === "thumb") return img.thumb || responsive.small || img.url || "";
+  return responsive.medium || img.thumb || img.url || img.cover || "";
+}
+
+function getImageSrcset(image) {
+  const img = typeof image === "string" ? normalizeImageItem(image) : (image || {});
+  const responsive = img.responsive || {};
+  return [
+    responsive.small ? `${responsive.small} 400w` : "",
+    responsive.medium ? `${responsive.medium} 800w` : "",
+    responsive.large ? `${responsive.large} 1600w` : ""
+  ].filter(Boolean).join(", ");
+}
+
+function renderResponsiveImage(image, alt, sizes = "(max-width:768px) 100vw, 50vw", extraAttrs = "") {
+  const src = getImageUrl(image, "medium") || SITE_LOGO_2;
+  const srcset = getImageSrcset(image);
+  const responsiveAttrs = srcset ? ` srcset="${escapeAttr(srcset)}" sizes="${escapeAttr(sizes)}"` : "";
+  const extra = extraAttrs ? ` ${extraAttrs}` : "";
+  return `<img loading="lazy" decoding="async" src="${escapeAttr(src)}"${responsiveAttrs} alt="${escapeAttr(alt)}"${extra} onerror="this.onerror=null;this.src='${escapeAttr(SITE_LOGO_2)}';">`;
+}
+
+function setResponsiveImageElement(imgEl, image, intent = "medium", sizes = "(max-width:768px) 100vw, 50vw") {
+  const src = getImageUrl(image, intent) || SITE_LOGO_2;
+  const srcset = getImageSrcset(image);
+  imgEl.src = src;
+  imgEl.loading = "lazy";
+  imgEl.decoding = "async";
+  imgEl.alt = imgEl.alt || "i10 Store";
+  if (srcset) {
+    imgEl.srcset = srcset;
+    imgEl.sizes = sizes;
+  } else {
+    imgEl.removeAttribute("srcset");
+    imgEl.removeAttribute("sizes");
+  }
 }
 
 /* === GOOGLE SHEET PARSER === */
@@ -466,41 +655,8 @@ async function renderProductGrid() {
             const html = paginatedList.map((p) => {
                 const title = `${p["Brand"] || ""} ${p["Model"] || ""}`.trim() || (p["Name"] || "Sản phẩm");
                 
-                 // Xử lý ảnh từ Photos2 (cột AH - JSON) - Luôn parse như JSON
-                 let displayImages = [];
-                 const photos2Str = p["Photos2"] || "";
-                 
-                 if (photos2Str && photos2Str.trim()) {
-                   try {
-                     // Parse JSON array
-                     const photos2Array = JSON.parse(photos2Str);
-                     if (Array.isArray(photos2Array)) {
-                       displayImages = photos2Array
-                         .map(item => {
-                           // Ưu tiên thumb nếu có, nếu không dùng url
-                           const imgUrl = item.thumb || item.url || "";
-                           // Chuẩn hóa Drive URL thành thumbnail 1000px
-                           if (imgUrl.includes('drive.google.com')) {
-                             const fileId = imgUrl.match(/[-\w]{25,}/);
-                             if (fileId) return `https://drive.google.com/thumbnail?id=${fileId[0]}&sz=w1000`;
-                           }
-                           return imgUrl;
-                         })
-                         .filter(Boolean);
-                     }
-                   } catch (e) {
-                     // Nếu có lỗi trong parsing JSON, để trống và fallback
-                     displayImages = [];
-                   }
-                 }
-                 
-                 // Fallback: dùng ảnh từ field images
-                 if (displayImages.length === 0) {
-                   const sortedImgs = (p.images || []).slice().sort((a,b) => (a.name||"").localeCompare(b.name||""));
-                   displayImages = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1000")).filter(Boolean);
-                 }
-                
-                const mainImg = displayImages[0] || SITE_LOGO_2; 
+                const displayImages = getProductImages(p);
+                const mainImage = displayImages[0];
                 
                 let priceText = "Liên hệ";
                 let priceStyle = `color:${THEME};font-weight:800;`;
@@ -538,26 +694,39 @@ async function renderProductGrid() {
                 const jsonData = encodeURIComponent(JSON.stringify(p));
                 return `
                   <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
-                    <a class="product-card" href="/${p.slug}" data-json="${jsonData}" data-slug="${p.slug}">
+                    <div class="product-card" data-json="${jsonData}" data-slug="${p.slug}">
                       <div class="thumb">
-                        <img src="${mainImg}" alt="${title} - i10 Store" onerror="this.src='${SITE_LOGO_2}' ">
+                        ${renderResponsiveImage(mainImage, `${title} - i10 Store`, "(max-width:768px) 50vw, 280px")}
                       </div>
                       <div style="padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;flex:1;">
                         <div>
                           <h4 style="font-size:16px;font-weight:700;margin:0 0 6px 0;color:#2c3e50;min-height:42px;line-height:1.3;overflow:hidden;">${title}</h4>
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
                         </div>
-                        <div style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
+                         <div class="price-container" style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
+                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#d3cf00';" onmouseout="this.style.backgroundColor='${THEME}'">Mua ngay</button>
                       </div>
-                    </a>
+                    </div>
                   </div>`;
             }).join("");
 
-            gridEl.innerHTML = `<div class="row">${html}</div>`; 
-
+gridEl.innerHTML = `<div class="row">${html}</div>`; 
+             
             document.querySelectorAll("#" + gridEl.id + " .product-card").forEach(card => {
                 card.addEventListener('click', function(e) {
-                    e.preventDefault(); 
+                    const buyBtn = e.target.closest('.buy-now-btn');
+                    if (buyBtn) {
+                        e.stopPropagation();
+                        const jsonData = buyBtn.getAttribute('data-json');
+                        const titleText = buyBtn.getAttribute('data-title');
+                        try {
+                            const product = JSON.parse(decodeURIComponent(jsonData));
+                            openOrderForm(product, titleText);
+                        } catch (err) {
+                            console.error('Lỗi mở form đặt hàng:', err);
+                        }
+                        return;
+                    }
                     const jsonData = this.getAttribute('data-json');
                     const slug = this.getAttribute('data-slug');
                     openProductPopup(jsonData, slug);
@@ -676,8 +845,9 @@ function openAdvancedLightbox(images, startIndex) {
     closeBtn.innerHTML = "×";
     
     const img = document.createElement("img");
-    img.src = images[currentIndex];
     img.className = "i10-lightbox-img";
+    img.alt = "i10 Store";
+    setResponsiveImageElement(img, images[currentIndex], "large", "100vw");
 
     const prevBtn = document.createElement("button");
     prevBtn.className = "i10-lightbox-nav prev";
@@ -691,7 +861,7 @@ function openAdvancedLightbox(images, startIndex) {
         currentIndex = (newIndex + totalImages) % totalImages;
         img.style.opacity = 0;
         setTimeout(() => {
-            img.src = images[currentIndex];
+            setResponsiveImageElement(img, images[currentIndex], "large", "100vw");
             img.style.opacity = 1;
         }, 150);
     }
@@ -727,9 +897,7 @@ function openAdvancedLightbox(images, startIndex) {
 
 function updateMetaTags(product) {
     const titleText = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
-    const firstImg = (product.images && product.images.length > 0) 
-                     ? product.images[0].url 
-                     : SITE_LOGO;
+    const firstImg = getImageUrl(getProductImages(product)[0], "cover") || SITE_LOGO;
 
     // 1. Cập nhật Meta Title cho mạng xã hội
     const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -771,7 +939,7 @@ function convertDriveLinksToPhotos2JSON(linksInput) {
 } */
 
 // Hàm này dùng để import từ change.xlsx (chạy trong Console sau khi copy link)
-function importPhotos2FromExcel() {
+function importPhotos2FromExcelLegacy() {
   alert(`Copy toàn bộ link Drive từ Excel (cột chứa link ảnh), sau đó nhấn OK.`);
   navigator.clipboard.readText().then(text => {
     const json = convertDriveLinksToPhotos2JSON(text);
@@ -783,8 +951,23 @@ function importPhotos2FromExcel() {
 }
 
 /* =====================================================
-   END OF TOOLS
-   ===================================================== */
+    END OF TOOLS
+    ===================================================== */
+
+// Image protection - prevent saving/downloading images via right-click or drag
+document.addEventListener('contextmenu', function(e) {
+    if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+        // Optional: Uncomment to show a warning (may annoy users)
+        // alert('Images are protected. Please contact us for image usage.');
+    }
+}, false);
+
+document.addEventListener('dragstart', function(e) {
+    if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+    }
+}, false);
 
 function openProductPopup(encoded, slug) {
     document.body.style.overflow = 'hidden';
@@ -807,42 +990,8 @@ function openProductPopup(encoded, slug) {
             metaDesc.setAttribute('content', description.substring(0, 155));
         }
 
-            const photos2Str = product["Photos2"] || "";
-            let images = [];
-            
-            if (photos2Str && photos2Str.trim()) {
-              try {
-                const photos2Array = JSON.parse(photos2Str);
-                if (Array.isArray(photos2Array)) {
-                  images = photos2Array.map(item => {
-                    const imgUrl = item.thumb || item.url || "";
-                    if (imgUrl.includes('drive.google.com')) {
-                      const fileId = imgUrl.match(/[-\w]{25,}/);
-                      if (fileId) return `https://drive.google.com/thumbnail?id=${fileId[0]}&sz=w1600`;
-                    }
-                    return imgUrl;
-                  }).filter(Boolean);
-                }
-              } catch (e) {
-                // Fallback to newline-separated URLs
-                const photos2Urls = photos2Str.split('\n').filter(url => url.trim());
-                images = photos2Urls.map(url => {
-                  if (url.includes('drive.google.com')) {
-                    const fileId = url.match(/[-\w]{25,}/);
-                    if (fileId) return 'https://drive.google.com/thumbnail?id=' + fileId[0] + '&sz=w1600';
-                  }
-                  return url;
-                });
-              }
-            }
-            
-            // Fallback: dùng ảnh từ images field
-            if (images.length === 0) {
-              const sortedImgs = (product.images || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-              images = sortedImgs.map(x => (x.thumb || x.url || "").replace("=s220", "=s1600")).filter(Boolean);
-            }
-            
-            if (!images.length) images.push(SITE_LOGO);
+            let images = getProductImages(product);
+            if (!images.length) images.push(normalizeImageItem(SITE_LOGO));
 
         let currentIndex = 0;
         let autoplayTimer = null;
@@ -861,7 +1010,8 @@ function openProductPopup(encoded, slug) {
         mainImgWrap.style.cssText = `height:100%;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:16px;position:relative;overflow:hidden;`;
         
         const mainImg = document.createElement("img");
-        mainImg.src = images[currentIndex];
+        mainImg.alt = titleText;
+        setResponsiveImageElement(mainImg, images[currentIndex], "large", "(max-width:768px) 100vw, 60vw");
         mainImg.style.cssText = `max-width:100%;max-height:400px;object-fit:contain;border-radius:16px;transition:opacity .3s ease, transform .3s ease;cursor: zoom-in;`;
         mainImg.onclick = () => openAdvancedLightbox(images, currentIndex);
         mainImgWrap.appendChild(mainImg);
@@ -882,13 +1032,14 @@ function openProductPopup(encoded, slug) {
         thumbsWrap.appendChild(thumbsInner);
 
         const thumbElems = [];
-        images.forEach((src, i) => {
+        images.forEach((imageItem, i) => {
           const t = document.createElement("img");
-          t.src = src; 
+          t.alt = `${titleText} ${i + 1}`;
+          setResponsiveImageElement(t, imageItem, "small", "64px");
           t.style.cssText = `width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;opacity:${i === 0 ? 1 : 0.6};flex-shrink:0;`;
           t.onclick = () => {
             currentIndex = i;
-            mainImg.src = src;
+            setResponsiveImageElement(mainImg, imageItem, "large", "(max-width:768px) 100vw, 60vw");
             mainImg.onclick = () => openAdvancedLightbox(images, i);
             thumbElems.forEach((el, idx) => (el.style.opacity = idx === i ? "1" : "0.6"));
             startAutoplay();
@@ -906,7 +1057,7 @@ function openProductPopup(encoded, slug) {
           currentIndex = (currentIndex + dir + images.length) % images.length;
           mainImg.style.opacity = 0;
           setTimeout(() => {
-            mainImg.src = images[currentIndex];
+            setResponsiveImageElement(mainImg, images[currentIndex], "large", "(max-width:768px) 100vw, 60vw");
             mainImg.onclick = () => openAdvancedLightbox(images, currentIndex);
             mainImg.style.opacity = 1;
           }, 150);
@@ -1186,7 +1337,7 @@ function convertDriveLinksToPhotos2JSON(linksInput) {
 } */
 
 // Hàm import từ clipboard (dùng cho change.xlsx)
-function importPhotos2FromExcel() {
+function importPhotos2FromExcelLegacySimple() {
   alert(`📋 Bước 1: Copy toàn bộ link Drive từ Excel (cột chứa link ảnh)\nBước 2: Nhấn OK ở đây`);
   navigator.clipboard.readText().then(text => {
     const json = convertDriveLinksToPhotos2JSON(text);
@@ -1208,14 +1359,14 @@ function importPhotos2FromExcel() {
    ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
-  modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
+  modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background: #169000;padding:20px;border:3px solid #cdcdcd;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
 
   modal.innerHTML = `
-    <h4 style="margin:0 0 8px 0;font-weight:700;color:${THEME};">Đặt hàng: <span style="color:#2c3e50;font-weight:600">${titleText}</span></h4>
-    <p style="font-size:13px;color:#27ae60;margin-bottom:12px;">Cảm ơn bạn đã tin dùng! i10 Store sẽ sớm liên hệ...</p>
+    <h4 style="margin:0 0 8px 0;font-weight:700;color:${THEME};">Đặt hàng: <span style="color: #ffe100;font-weight:600">${titleText}</span></h4>
+    <p style="font-size:13px;color:#000000; font-weight:500;margin-bottom:12px;">Cảm ơn bạn đã tin dùng! i10 Store sẽ sớm liên hệ, hãy điền thông tin liên lạc giúp mình nhé...</p>
     <input id="order_name" placeholder="👤 Họ tên *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" />
     <input id="order_phone" placeholder="📞 Số điện thoại *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" type="tel" />
-    <textarea id="order_note" placeholder="📝 Ghi chú (Địa chỉ, yêu cầu khác...)" class="form-control" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:12px" rows="3"></textarea>
+    <textarea id="order_note" placeholder="📝 Ghi chú (Hình thức liên lạc, yêu cầu khác...)" class="form-control" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:12px" rows="3"></textarea>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button id="order_cancel" class="btn btn-default" style="padding:8px 15px;border:1px solid #ccc;border-radius:6px;">Hủy</button>
       <button id="order_submit" class="btn btn-success" style="padding:8px 15px;background:#27ae60;border:none;border-radius:6px;color:#fff;font-weight:700;">Gửi đơn hàng</button>
@@ -1241,7 +1392,7 @@ function openOrderForm(product, titleText, parentOverlay) {
       return; 
     }
 
-    msgEl.style.color = '#FF6B6B'; 
+    msgEl.style.color = '#FF6B6B';
     msgEl.textContent = "Đang gửi đơn hàng...";
     submitBtn.disabled = true;
     cancelBtn.disabled = true;
@@ -1334,13 +1485,8 @@ async function renderBanner() {
         }
       }
 
-      // Chuyển đổi sang định dạng banner tương thích
-      banners = bannerArray.map(item => ({
-        id: item.id || '',
-        name: item.name || 'Banner',
-        url: item.url || '',
-        thumb: item.thumb || item.url || ''
-      }));
+      // Normalize both Cloudinary and legacy Drive banner objects.
+      banners = bannerArray.map(normalizeImageItem).filter(hasImageSource);
       
       localStorage.setItem(CACHE_KEY_BANNER, JSON.stringify({
         timestamp: Date.now(),
@@ -1393,7 +1539,7 @@ async function renderBanner() {
       item.dataset.index = i;
       item.style.zIndex = 1;
       item.style.opacity = 0;
-      item.innerHTML = `<img src="${banners[i].thumb}" alt="${banners[i].name || 'Banner'} - i10 Store" loading="lazy" />`;
+      item.innerHTML = renderResponsiveImage(banners[i], `${banners[i].name || 'Banner'} - i10 Store`, "(max-width:768px) 120px, 220px");
       track.appendChild(item);
       bannerItems.push(item);
     }
