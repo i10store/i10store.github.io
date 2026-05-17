@@ -704,7 +704,7 @@ async function renderProductGrid() {
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
                         </div>
                          <div class="price-container" style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#d3cf00';" onmouseout="this.style.backgroundColor='${THEME}'">Mua ngay</button>
+                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">Mua ngay</button>
                       </div>
                     </div>
                   </div>`;
@@ -1359,7 +1359,7 @@ function importPhotos2FromExcelLegacySimple() {
    ----------------------------------------------------- */
 function openOrderForm(product, titleText, parentOverlay) {
   const modal = document.createElement("div");
-  modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background: #169000;padding:20px;border:3px solid #cdcdcd;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
+  modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background: #096B00;padding:20px;border:3px solid #cdcdcd;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
 
   modal.innerHTML = `
     <h4 style="margin:0 0 8px 0;font-weight:700;color:${THEME};">Đặt hàng: <span style="color: #ffe100;font-weight:600">${titleText}</span></h4>
