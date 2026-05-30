@@ -712,26 +712,28 @@ async function renderProductGrid() {
 
 gridEl.innerHTML = `<div class="row">${html}</div>`; 
              
-            document.querySelectorAll("#" + gridEl.id + " .product-card").forEach(card => {
-                card.addEventListener('click', function(e) {
-                    const buyBtn = e.target.closest('.buy-now-btn');
-                    if (buyBtn) {
-                        e.stopPropagation();
-                        const jsonData = buyBtn.getAttribute('data-json');
-                        const titleText = buyBtn.getAttribute('data-title');
-                        try {
-                            const product = JSON.parse(decodeURIComponent(jsonData));
-                            openOrderForm(product, titleText);
-                        } catch (err) {
-                            console.error('Lỗi mở form đặt hàng:', err);
-                        }
-                        return;
-                    }
-                    const jsonData = this.getAttribute('data-json');
-                    const slug = this.getAttribute('data-slug');
-                    openProductPopup(jsonData, slug);
-                });
-            });
+             document.querySelectorAll("#" + gridEl.id + " .product-card").forEach(card => {
+                 card.addEventListener('click', function(e) {
+                     const buyBtn = e.target.closest('.buy-now-btn');
+                     if (buyBtn) {
+                         e.stopPropagation();
+                         const jsonData = buyBtn.getAttribute('data-json');
+                         const titleText = buyBtn.getAttribute('data-title');
+                         try {
+                             const product = JSON.parse(decodeURIComponent(jsonData));
+                             // Create title with ID like in the popup for consistency
+                             const titleWithId = `${product["Brand"] || ""} ${product["Model"] || ""} \u00A0  [${product["ID"] || ""}]`.trim() || (product["Name"] || "Sản phẩm");
+                             openOrderForm(product, titleWithId);
+                         } catch (err) {
+                             console.error('Lỗi mở form đặt hàng:', err);
+                         }
+                         return;
+                     }
+                     const jsonData = this.getAttribute('data-json');
+                     const slug = this.getAttribute('data-slug');
+                     openProductPopup(jsonData, slug);
+                 });
+             });
             
             paginationEl.innerHTML = renderPaginationHTML(totalPages, state.currentPage);
               
@@ -1110,18 +1112,18 @@ function openProductPopup(encoded, slug) {
 
         const table = document.createElement("table");
         table.style.cssText = "width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;";
-        const rows = [
-          ["CPU", product["CPU"] || "N/A"],
-          ["RAM", product["RAM"] ? `${product["RAM"]} Gb` : "N/A"],
-          ["SSD Nvme", product["SSD"] ? `${product["SSD"]} Gb` : "N/A"],
-          ["Màn hình", product["RESOLUTION"] || "N/A"],
-          ["Kích thước", product["SIZE"] ? `${product["SIZE"]} inch` : "N/A"],
-          ["GPU", product["GPU"] || "Onboard"],
-          ["Phân loại", product["Phân loại"] || "Laptop"],
-          ["Trạng thái", product["T.THÁI"] || "Đang bán"],
-          ["Giá bán", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
-          ["Ghi chú", product["NOTE"] || "Không có"]
-        ];
+const rows = [
+  ["CPU", product["CPU_Detail"] || product["CPU"] || "N/A"],
+  ["RAM", product["RAM_Detail"] ? `${product["RAM_Detail"]}` : (product["RAM"] ? `${product["RAM"]}` : "N/A")],
+  ["SSD", product["SSD_Detail"] ? `${product["SSD_Detail"]}` : (product["SSD"] ? `${product["SSD"]}` : "N/A")],
+  ["Màn hình", product["RESOLUTION"] || "N/A"],
+  ["Kích thước", product["SIZE"] ? `${product["SIZE"]} inch` : "N/A"],
+  ["GPU", product["GPU_Detail"] || product["GPU"] || "Onboard"],
+  ["Phân loại", product["Phân loại"] || "Laptop"],
+  ["Trạng thái", product["T.THÁI"] || "Đang bán"],
+  ["Giá bán", `<b style="color:${priceColor};font-size:17px;font-weight:800;">${priceText}</b>`],
+  ["Ghi chú", product["NOTE"] || "Không có"]
+];
         rows.forEach((r, i) => {
           const tr = document.createElement("tr");
           tr.style.background = i % 2 === 0 ? "#fff" : "#f8faf8";
@@ -1362,26 +1364,82 @@ function openOrderForm(product, titleText, parentOverlay) {
   modal.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10020;background: #096B00;padding:20px;border:3px solid #cdcdcd;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:90%;max-width:380px;";
 
   modal.innerHTML = `
-    <h4 style="margin:0 0 8px 0;font-weight:700;color:${THEME};">Đặt hàng: <span style="color: #ffe100;font-weight:600">${titleText}</span></h4>
-    <p style="font-size:13px;color:#000000; font-weight:500;margin-bottom:12px;">Cảm ơn bạn đã tin dùng! i10 Store sẽ sớm liên hệ, hãy điền thông tin liên lạc giúp mình nhé...</p>
-    <input id="order_name" placeholder="👤 Họ tên *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" />
-    <input id="order_phone" placeholder="📞 Số điện thoại *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" type="tel" />
-    <textarea id="order_note" placeholder="📝 Ghi chú (Hình thức liên lạc, yêu cầu khác...)" class="form-control" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:12px" rows="3"></textarea>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button id="order_cancel" class="btn btn-default" style="padding:8px 15px;border:1px solid #ccc;border-radius:6px;">Hủy</button>
-      <button id="order_submit" class="btn btn-success" style="padding:8px 15px;background:#27ae60;border:none;border-radius:6px;color:#fff;font-weight:700;">Gửi đơn hàng</button>
-    </div>
-    <div id="order_msg" style="margin-top:10px;font-size:13px;text-align:right;"></div>
+     <h4 style="margin:0 0 8px 0;font-weight:700;color:${THEME};">Đặt hàng: <span style="color: #ffe100;font-weight:600">${titleText}</span></h4>
+     <p style="font-size:13px;color:#000000; font-weight:500;margin-bottom:12px;">Cảm ơn bạn đã tin dùng! i10 Store sẽ sớm liên hệ, hãy điền thông tin liên lạc giúp mình nhé...</p>
+     <input id="order_name" placeholder="👤 Họ tên *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" />
+     <input id="order_phone" placeholder="📞 Số điện thoại *" class="form-control" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px" type="tel" />
+     <textarea id="order_note" placeholder="📝 Ghi chú (Đã đặt chuyển khoản cọc (nếu có)/ hình thức liên lạc/ yêu cầu khác...)" class="form-control" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:12px" rows="3"></textarea>
+     
+     <div style="border:1px solid #003b00;border-radius:8px;padding:0px;margin:15px 0;background: #799579;">
+       <div id="banking_toggle_btn" style="font-weight:600;color:#333;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;">
+         <span>💰Click để xem tài khoản (nếu đặt cọc)</span>
+         <span id="banking_arrow" style="font-size:10px;margin-left:5px;color:#888;">▼</span>
+       </div>
+       
+       <div id="banking_details" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #eee;">
+         <div style="display:flex;align-items:center;gap:12px;">
+           <img id="banking_img_thumb" src="/assets/images/banking.png" alt="QR Code Thanh Toán" style="width:80px;height:80px;border:1px solid #eee;border-radius:4px;display:block;cursor:pointer;" onerror="this.style.display='none';">
+           <div style="flex:1;">
+             <div style="font-size:14px;margin-bottom:4px;font-weight:600;color:#000;">Số tài khoản: 9.179.000.000 (Techcombank)</div>
+             <div style="font-size:12px;color:#666;">Chủ tài khoản: NGUYEN QUANG HIEU</div>
+           </div>
+         </div>
+       </div>
+     </div>
+     
+     <div style="display:flex;gap:10px;justify-content:flex-end;">
+       <button id="order_cancel" class="btn btn-default" style="padding:8px 15px;border:1px solid #ccc;border-radius:6px;">Hủy</button>
+       <button id="order_submit" class="btn btn-success" style="padding:8px 15px;background:#27ae60;border:none;border-radius:6px;color:#fff;font-weight:700;">Gửi đơn hàng</button>
+     </div>
+     <div id="order_msg" style="margin-top:10px;font-size:13px;text-align:right;"></div>
   `;
 
   document.body.appendChild(modal);
+  
   const submitBtn = modal.querySelector('#order_submit');
   const cancelBtn = modal.querySelector('#order_cancel');
   const msgEl = modal.querySelector('#order_msg');
   
-  cancelBtn.onclick = ()=> modal.remove();
+  // Lấy các phần tử phục vụ logic đóng mở thông tin tài khoản
+  const bankingToggleBtn = modal.querySelector('#banking_toggle_btn');
+  const bankingDetails = modal.querySelector('#banking_details');
+  const bankingArrow = modal.querySelector('#banking_arrow');
+  const bankingImgThumb = modal.querySelector('#banking_img_thumb');
 
-  submitBtn.onclick = async ()=>{
+  // Gán sự kiện click đóng mở (Toggle) thông tin tài khoản
+  bankingToggleBtn.onclick = () => {
+    if (bankingDetails.style.display === "none" || bankingDetails.style.display === "") {
+      bankingDetails.style.display = "block";
+      bankingArrow.textContent = "▲";
+    } else {
+      bankingDetails.style.display = "none";
+      bankingArrow.textContent = "▼";
+    }
+  };
+
+  // Logic click vào ảnh thu nhỏ để tạo hiệu ứng phóng to toàn màn hình (Lightbox)
+  bankingImgThumb.onclick = () => {
+    const zoomOverlay = document.createElement("div");
+    // Đặt z-index: 10030 cao hơn hẳn modal đặt hàng để đè lên trên
+    zoomOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10030;display:flex;justify-content:center;align-items:center;cursor:zoom-out;transition:opacity 0.2s ease-in-out;";
+    
+    const zoomImg = document.createElement("img");
+    zoomImg.src = bankingImgThumb.src;
+    zoomImg.style.cssText = "max-width:320px;width:85%;height:auto;border-radius:12px;border:4px solid #fff;box-shadow:0 5px 25px rgba(0,0,0,0.5);cursor:default;";
+    
+    // Chặn sự kiện click vào chính cái ảnh phóng to (tránh click vào ảnh lại bị ẩn đi đột ngột)
+    zoomImg.onclick = (e) => e.stopPropagation();
+    
+    zoomOverlay.appendChild(zoomImg);
+    document.body.appendChild(zoomOverlay);
+    
+    // Click ra vùng nền đen bên ngoài để đóng ảnh thu nhỏ lại
+    zoomOverlay.onclick = () => zoomOverlay.remove();
+  };
+  
+  cancelBtn.onclick = () => modal.remove();
+
+  submitBtn.onclick = async () => {
     const name = modal.querySelector('#order_name').value.trim();
     const phone = modal.querySelector('#order_phone').value.trim();
     const note = modal.querySelector('#order_note').value.trim();
@@ -1418,7 +1476,7 @@ function openOrderForm(product, titleText, parentOverlay) {
       if (result.success) {
         msgEl.style.color = '#27ae60';
         msgEl.textContent = "✅ Gửi thành công! Cảm ơn bạn.";
-        setTimeout(()=> modal.remove(), 1500);
+        setTimeout(() => modal.remove(), 1500);
       } else {
         msgEl.style.color = '#e74c3c';
         msgEl.textContent = "❌ Lỗi gửi: " + result.error;
@@ -1434,7 +1492,6 @@ function openOrderForm(product, titleText, parentOverlay) {
     }
   };
 }
-
 /* -----------------------------------------------------
    BANNER (TỐI ƯU CACHE localStorage)
    (*** ĐÃ SỬA: TẢI FILE banners.json TĨNH ***)
