@@ -1226,12 +1226,13 @@ const rows = [
           table.appendChild(tr);
         }
 
-        const relatedProducts = getRandomRelatedProducts(product, globalProductData || [], 5);
+        const isMobile = window.innerWidth < 768;
+        const relatedProducts = getRandomRelatedProducts(product, globalProductData || [], isMobile ? 3 : 5);
         const relatedWrap = document.createElement("div");
         relatedWrap.style.cssText = "width:203px;flex:0 0 203px;display:flex;flex-direction:column;align-self:flex-start;background:#fefef5;border-radius:18px;box-shadow:0 16px 40px rgba(0,0,0,0.18);overflow:hidden;";
         relatedWrap.innerHTML = `
           <div style="font-weight:800;font-size:14px;color:#222;padding:12px 12px 10px 12px;border-bottom:1px solid #eee;background: #faf7ea;">Sản phẩm khác:</div>
-          <div style="display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;max-height:83vh;">
+          <div class="related-product-list" style="display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;max-height:83vh;">
             ${relatedProducts.length ? relatedProducts.map(renderRelatedProductItem).join("") : '<div style="padding:10px;color:#666;font-size:13px;border:1px dashed #ddd;border-radius:10px;background:#fff;">Chưa có gợi ý phù hợp</div>'}
           </div>
         `;
@@ -1289,6 +1290,18 @@ const rows = [
           actions.style.paddingLeft = '10px';
           actions.style.paddingRight = '10px';
           actions.style.flexWrap = 'wrap';
+
+          relatedWrap.style.order = '3';
+          relatedWrap.style.width = '100%';
+          relatedWrap.style.maxWidth = '100%';
+          relatedWrap.style.flex = '0 0 auto';
+          relatedWrap.style.maxHeight = '18vh';
+          relatedWrap.style.alignSelf = 'stretch';
+          relatedWrap.querySelector('.related-product-list').style.cssText = 'display:flex;flex-direction:row;gap:8px;padding:10px;overflow-x:auto;overflow-y:hidden;max-height:calc(18vh - 48px);white-space:nowrap;';
+          relatedWrap.querySelectorAll('.related-product-item').forEach((item) => {
+            item.style.minWidth = '180px';
+            item.style.flex = '0 0 180px';
+          });
         }
 
         const shell = document.createElement("div");

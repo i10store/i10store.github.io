@@ -1,0 +1,496 @@
+// ================= CONFIG =================
+
+const TOKEN = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');
+const SHEET_ID = PropertiesService.getScriptProperties().getProperty('TELEGRAM_SHEET_ID');
+
+const ADMIN_CHAT_ID = '5857710133'; // CHAT ID admin chính
+
+// ================= CLOUDINARY CONFIG =================
+const CLOUD_NAME = PropertiesService.getScriptProperties().getProperty('CLOUDINARY_CLOUD_NAME');
+const CLOUD_API_KEY = PropertiesService.getScriptProperties().getProperty('CLOUDINARY_API_KEY');
+const CLOUD_API_SECRET = PropertiesService.getScriptProperties().getProperty('CLOUDINARY_API_SECRET');
+
+const CLOUD_FOLDER = PropertiesService.getScriptProperties().getProperty('CLOUDINARY_FOLDER') || 'i10store';
+// Thay đổi giá trị mặc định thành i10_logo5 theo yêu cầu của bạn
+const CLOUD_LOGO_PUBLIC_ID = PropertiesService.getScriptProperties().getProperty('CLOUDINARY_LOGO_PUBLIC_ID') || 'i10_logo5';
+
+// ================= MAIN (WEBHOOK) =================
+
+function doPost(e) {
+  try {
+    if (!e || !e.postData) return;
+    const data = JSON.parse(e.postData.contents);
+    const msg = data.message || data.callback_query?.message;
+    if (!msg) return;
+
+    // Lấy chatId chính xác tùy theo là Callback hay tin nhắn thường
+    const chatId = msg.chat.id;
+    const userId = data.callback_query ? data.callback_query.from.id : msg.from.id;
+
+    // ===== CHECK USER =====
+    // Kiểm tra quyền truy cập - chỉ Admin duy nhất
+    if (userId.toString() !== ADMIN_CHAT_ID) {
+      return sendMessage(chatId, "❌ Bạn không có quyền sử dụng bot này.");
+    }
+
+    // ===== CALLBACK BUTTON =====
+    if (data.callback_query) {
+      return handleCallback(data.callback_query);
+    }
+
+    const text = msg.text ? msg.text.trim() : null;
+
+    // ===== COMMANDS =====
+    if (text && text.startsWith("/")) {
+      return handleCommand(chatId, text);
+    }
+
+    // ===== TEXT INPUT =====
+    if (text) {
+      return handleTextInput(chatId, text);
+    }
+
+    // ===== IMAGE =====
+    if (msg.photo || msg.document) {
+      return handleImageUpload(chatId, msg);
+    }
+
+  } catch (err) {
+// Gửi thông báo lỗi về tài khoản Admin chính
+     const adminId = ADMIN_CHAT_ID || '5857710133';
+     sendMessage(adminId, "⚠️ Hệ thống lỗi: " + err.message);
+   }
+ }
+
+// ================= COMMANDS =================
+
+function handleCommand(chatId, text) {
+  if (text === "/start" || text === "/help") {
+    return sendMessage(chatId,
+`📚 HƯỚNG DẪN BOT
+/new → Tìm sản phẩm mới
+/clear → Reset trạng thái hiện tại
+/check → Kiểm tra danh sách thiếu ảnh
+/delete [STT] → Xóa ảnh số mấy (VD: /delete 1)
+/help → Xem hướng dẫn`
+    );
+  }
+
+  if (text === "/new") {
+    finalizeCurrentUpload(chatId);
+    clearUserSerial(chatId);
+    return sendMessage(chatId, "🆕 Mời sếp nhập ID hoặc Serial máy:");
+  }
+
+  if (text === "/clear") {
+    finalizeCurrentUpload(chatId);
+    clearUserSerial(chatId);
+    clearUpload(chatId);
+    return sendMessage(chatId, "🧹 Đã xóa trạng thái hàng chờ ạ.");
+  }
+
+  if (text === "/check") {
+    return handleCheck(chatId);
+  }
+
+  if (text.startsWith("/delete")) {
+    return handleDelete(chatId, text);
+  }
+}
+
+// ================= CALLBACK =================
+
+function handleCallback(cb) {
+  const chatId = cb.message.chat.id;
+  const rowIndex = parseInt(cb.data.replace("SELECT_", ""));
+
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+  const row = sheet.getRange(rowIndex, 1, 1, 6).getValues()[0];
+
+  setUserSerial(chatId, JSON.stringify({
+    rowIndex: rowIndex,
+    value: row[4], // Cột E (Serial)
+    model: row[3]  // Cột D (Model)
+  }));
+
+  clearUpload(chatId);
+
+  sendMessage(chatId, `✅ Đã chọn: ${row[3]}\nSN: ${row[4]}\n📸 Sếp gửi ảnh máy để em đồng bộ nha!`);
+}
+
+// ================= TEXT INPUT =================
+
+function handleTextInput(chatId, text) {
+  const input = text.toUpperCase();
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+
+  // ===== ĐẶC CÁCH BANNER =====
+  if (input === "BANNERS") {
+    setUserSerial(chatId, JSON.stringify({
+      value: "BANNERS",
+      model: "BANNERS",
+      rowIndex: 2
+    }));
+    clearUpload(chatId);
+    return sendMessage(chatId, "🌆 Em đã vào chế độ BANNERS\n📸 Sếp gửi ảnh banners đi.");
+  }
+
+  const data = sheet.getDataRange().getValues();
+  const type = input.length === 3 ? "ID" : "SERIAL";
+  let matches = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (type === "ID" && String(row[1]).toUpperCase() === input) {
+      matches.push({ row: i + 1, model: row[3], sn: row[4] });
+    }
+    if (type === "SERIAL" && String(row[4]).toUpperCase() === input) {
+      matches.push({ row: i + 1, model: row[3], sn: row[4] });
+    }
+  }
+
+  // ===== KHÔNG TÌM THẤY =====
+  if (matches.length === 0) {
+    return sendMessage(chatId, `❌ Không tìm thấy thông tin cho: ${input} sếp ơi.`);
+  }
+
+  // ===== CHỈ TÌM THẤY 1 SẢN PHẨM =====
+  if (matches.length === 1) {
+    const item = matches[0];
+    setUserSerial(chatId, JSON.stringify({
+      rowIndex: item.row,
+      value: item.sn,
+      model: item.model
+    }));
+    clearUpload(chatId);
+    return sendMessage(chatId, `✅ Em tìm thấy: ${item.model}\nSN: ${item.sn}\n📸 Hãy gửi ảnh cho em.`);
+  }
+
+  // ===== TRÙNG NHAU (HIỂN THỊ NÚT BẤM CHỌN) =====
+  const buttons = matches.map(m => [{
+    text: `${m.model} (${m.sn})`,
+    callback_data: `SELECT_${m.row}`
+  }]);
+
+  return sendKeyboard(chatId, `⚠️ Em tìm thấy ${matches.length} máy trùng, Sếp hãy chọn máy chính xác:`, buttons);
+}
+
+// ================= IMAGE UPLOAD =================
+
+function handleImageUpload(chatId, msg) {
+  const userData = JSON.parse(getUserSerial(chatId) || "{}");
+
+  if (!userData.rowIndex) {
+    return sendMessage(chatId, "❌ Sếp hãy nhập ID hoặc Serial trước khi gửi ảnh.");
+  }
+
+  let upload = JSON.parse(getUpload(chatId) || "{}");
+  const isNewBatch = !upload.started;
+
+  if (isNewBatch) {
+    sendMessage(chatId, `⏳ Em đang đồng bộ ảnh cho máy ${userData.model}...`);
+    upload = {
+      started: true,
+      total: 0,
+      model: userData.model,
+      sn: userData.value
+    };
+  }
+
+  // Lấy file_id từ Photo (luôn lấy size lớn nhất cuối mảng) hoặc Document
+  const fileId = msg.document ? msg.document.file_id : msg.photo[msg.photo.length - 1].file_id;
+
+  try {
+    const imageObj = uploadTelegramPhotoToCloudinary(fileId, userData.value);
+    
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+    let images = JSON.parse(sheet.getRange(userData.rowIndex, 6).getValue() || "[]");
+
+    images.push(imageObj);
+    sheet.getRange(userData.rowIndex, 6).setValue(JSON.stringify(images));
+
+    upload.total++;
+    upload.last = Date.now();
+    setUpload(chatId, JSON.stringify(upload));
+
+    // Đặt lịch chờ 15s xác nhận hoàn tất tải ảnh
+    scheduleFinalize(chatId);
+  } catch (error) {
+    sendMessage(chatId, "❌ Lỗi khi tải ảnh rồi ạ: " + error.message);
+    throw error;
+  }
+}
+
+// ================= CLOUDINARY LOGIC =================
+
+function assertCloudinaryConfig_() {
+  if (!CLOUD_NAME || !CLOUD_API_KEY || !CLOUD_API_SECRET) {
+    throw new Error('Thiếu cấu hình Cloudinary trong Script Properties.');
+  }
+}
+
+function uploadToCloudinary(blob, serial) {
+  assertCloudinaryConfig_();
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const safeSerial = String(serial || 'product').replace(/[^\w-]/g, '_');
+  const publicId = `${safeSerial}_${timestamp}`;
+  const folder = `${CLOUD_FOLDER}/${safeSerial}`;
+
+  // Chuẩn hóa ký tự "/" thành ":" đối với thư mục chứa logo theo chuẩn của Cloudinary
+  const safeLogoId = String(CLOUD_LOGO_PUBLIC_ID).replace(/\//g, ':');
+
+  /**
+   * CẤU HÌNH LAYER TRANSFORMATION CHO ẢNH GỐC (URL SECURE_URL):
+   * l_${safeLogoId} : Chèn đè Logo i10_logo5 làm watermark
+   * o_35           : Độ mờ (opacity) 35% để giữ chi tiết máy không bị đè mất hẳn
+   * w_0.15         : Tự động co dãn chiều rộng logo chiếm đúng 15% kích thước của ảnh gốc
+   * g_south_east   : Đặt vị trí ở góc dưới cùng bên phải
+   * x_20,y_20      : Cách góc lề ngoài 20 pixel
+   */
+  const transformationStr = `l_${safeLogoId},o_39,w_0.15,g_south_east,x_29,y_29`;
+
+  const params = {
+    folder: folder,
+    public_id: publicId,
+    timestamp: timestamp,
+    transformation: transformationStr // Đưa vào params để tính toán Signature hợp lệ công khai
+  };
+
+  const signature = createCloudinarySignature(params);
+
+  const response = UrlFetchApp.fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    {
+      method: 'post',
+      payload: {
+        file: blob,
+        api_key: CLOUD_API_KEY,
+        timestamp: String(timestamp),
+        folder: folder,
+        public_id: publicId,
+        transformation: transformationStr,
+        signature: signature
+      },
+      muteHttpExceptions: true
+    }
+  );
+
+  const text = response.getContentText();
+  const result = JSON.parse(text);
+
+  if (response.getResponseCode() >= 300 || !result.secure_url) {
+    throw new Error(`Cloudinary báo lỗi: ${text}`);
+  }
+
+  return result;
+}
+
+function createCloudinarySignature(params) {
+  const str = Object.keys(params)
+    .sort()
+    .map(k => `${k}=${params[k]}`)
+    .join('&') + CLOUD_API_SECRET;
+
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_1, str);
+
+  return digest.map(function(b) {
+    const v = (b < 0 ? b + 256 : b).toString(16);
+    return ('0' + v).slice(-2);
+  }).join('');
+}
+
+function buildCloudinaryThumb(publicId) {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_600/${publicId}`;
+}
+
+function buildCloudinaryCover(publicId) {
+  const logoOverlay = String(CLOUD_LOGO_PUBLIC_ID).replace(/\//g, ':');
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_1600/l_${logoOverlay},o_40,g_south_east,x_30,y_30/${publicId}`;
+}
+
+function buildResponsiveImages(publicId) {
+  return {
+    small: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_400/${publicId}`,
+    medium: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_800/${publicId}`,
+    large: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_1600/${publicId}`
+  };
+}
+
+function buildCloudinaryImageObject(cloud) {
+  return {
+    id: cloud.public_id,
+    public_id: cloud.public_id,
+    name: cloud.original_filename || cloud.public_id,
+    url: cloud.secure_url,
+    thumb: buildCloudinaryThumb(cloud.public_id),
+    cover: buildCloudinaryCover(cloud.public_id),
+    responsive: buildResponsiveImages(cloud.public_id),
+    width: cloud.width,
+    height: cloud.height,
+    bytes: cloud.bytes,
+    format: cloud.format
+  };
+}
+
+function uploadTelegramPhotoToCloudinary(fileId, serial) {
+  if (!TOKEN) throw new Error('Cấu hình thiếu TELEGRAM_BOT_TOKEN.');
+
+  const fileInfoResponse = UrlFetchApp.fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`);
+  const fileInfo = JSON.parse(fileInfoResponse.getContentText());
+
+  if (!fileInfo.ok || !fileInfo.result || !fileInfo.result.file_path) {
+    throw new Error(`Telegram không thể getFile: ${fileInfoResponse.getContentText()}`);
+  }
+
+  const blob = UrlFetchApp.fetch(`https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`).getBlob();
+  const cloud = uploadToCloudinary(blob, serial);
+  return buildCloudinaryImageObject(cloud);
+}
+
+// ================= AUTO FINALIZE BATCH =================
+
+function scheduleFinalize(chatId) {
+  PropertiesService.getScriptProperties().setProperty("FINALIZE_" + chatId, String(Date.now()));
+}
+
+// Hàm này bạn cài đặt kích hoạt theo thời gian (Time-driven Trigger) mỗi phút 1 lần
+function finalizePendingUploads() {
+  const props = PropertiesService.getScriptProperties();
+  const all = props.getProperties();
+
+  Object.keys(all).forEach(key => {
+    if (!key.startsWith("FINALIZE_")) return;
+
+    const chatId = key.replace("FINALIZE_", "");
+    const last = parseInt(all[key]);
+
+    // Nếu người dùng gửi ảnh chưa quá 15 giây thì bỏ qua chờ đợt sau
+    if (Date.now() - last < 15000) return;
+
+    const upload = JSON.parse(getUpload(chatId) || "{}");
+
+    if (upload.total) {
+      sendMessage(chatId, `✅ Hoàn thành!\n📸 Em đã tải lên tổng cộng ${upload.total} ảnh cho máy **${upload.model}** thành công.`);
+    }
+
+    clearUpload(chatId);
+    props.deleteProperty(key);
+  });
+}
+
+function finalizeCurrentUpload(chatId) {
+  const upload = JSON.parse(getUpload(chatId) || "{}");
+  if (!upload.total) return;
+
+  sendMessage(chatId, `✅ Đã chốt bộ ảnh cũ!\n📸 Có ${upload.total} ảnh được lưu cho máy ${upload.model} ạ.`);
+  clearUpload(chatId);
+  PropertiesService.getScriptProperties().deleteProperty("FINALIZE_" + chatId);
+}
+
+// ================= DELETE IMAGE =================
+
+function handleDelete(chatId, text) {
+  const index = parseInt(text.replace("/delete ", "")) - 1;
+  const user = JSON.parse(getUserSerial(chatId) || "{}");
+
+  if (!user.rowIndex) {
+    return sendMessage(chatId, "❌ Sếp chưa chọn hoặc tìm kiếm sản phẩm nào.");
+  }
+
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+  let images = JSON.parse(sheet.getRange(user.rowIndex, 6).getValue() || "[]");
+
+  if (isNaN(index) || index < 0 || index >= images.length) {
+    return sendMessage(chatId, `❌ Số thứ tự ảnh không hợp lệ. Hiện sản phẩm này đang có ${images.length} ảnh.`);
+  }
+
+  const deleted = images.splice(index, 1)[0];
+  sheet.getRange(user.rowIndex, 6).setValue(JSON.stringify(images));
+
+  sendMessage(chatId, `🗑 Đã xóa ảnh số ${index + 1} (${deleted.public_id}) khỏi Google Sheet.`);
+}
+
+// ================= CHECK MISSING =================
+
+function handleCheck(chatId) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+  const data = sheet.getDataRange().getValues();
+  let missing = [];
+
+  for (let i = 1; i < data.length; i++) {
+    // Kiểm tra ô cột F (index 5) trống hoặc mảng rỗng "[]"
+    if (!data[i][5] || data[i][5] === "[]") {
+      missing.push(`• ID: ${data[i][1]} | ${data[i][3]}`);
+    }
+  }
+
+  if (missing.length === 0) {
+    return sendMessage(chatId, "✅ Tuyệt vời! Tất cả sản phẩm đã được cập nhật đầy đủ ảnh ạ.");
+  }
+
+  sendMessage(chatId, "📋 Danh sách máy chưa có ảnh đây Sếp:\n\n" + missing.join("\n"));
+}
+
+// ================= TELEGRAM SEND HELPERS =================
+
+function sendMessage(chatId, text) {
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'Markdown'
+    }),
+    muteHttpExceptions: true
+  });
+  return response;
+}
+
+function sendKeyboard(chatId, text, buttons) {
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      reply_markup: { inline_keyboard: buttons }
+    }),
+    muteHttpExceptions: true
+  });
+  return response;
+}
+
+// ================= CACHE STATE HELPERS =================
+
+function setUserSerial(chatId, data) {
+  PropertiesService.getScriptProperties().setProperty("USER_" + chatId, data);
+}
+
+function getUserSerial(chatId) {
+  return PropertiesService.getScriptProperties().getProperty("USER_" + chatId);
+}
+
+function clearUserSerial(chatId) {
+  PropertiesService.getScriptProperties().deleteProperty("USER_" + chatId);
+}
+
+function setUpload(chatId, data) {
+  PropertiesService.getScriptProperties().setProperty("UPLOAD_" + chatId, data);
+}
+
+function getUpload(chatId) {
+  return PropertiesService.getScriptProperties().getProperty("UPLOAD_" + chatId);
+}
+
+function clearUpload(chatId) {
+  PropertiesService.getScriptProperties().deleteProperty("UPLOAD_" + chatId);
+}
+
+// ================= WEBHOOK SETUP EXECUTE =================
+
+function setWebhook() {
+  const ui = SpreadsheetApp.getUi();
+  ui.alert('⚠️ Webhook URL cần được thiết lập thủ công.\nVui lòng copy URL Web App của bạn và thiết lập webhook tại: https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEB_APP_URL}');
+}
