@@ -1265,8 +1265,8 @@ const rows = [
         
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
-          card.style.height = '90vh';
-          card.style.maxHeight = '90vh';
+          card.style.height = '96vh';
+          card.style.maxHeight = '96vh';
           card.style.padding = '15px';
           card.style.overflowY = 'auto'; 
           left.style.minWidth = 'auto';
@@ -1291,11 +1291,11 @@ const rows = [
           actions.style.paddingRight = '10px';
           actions.style.flexWrap = 'wrap';
 
-          relatedWrap.style.order = '3';
+          relatedWrap.style.order = '5';
           relatedWrap.style.width = '100%';
           relatedWrap.style.maxWidth = '100%';
           relatedWrap.style.flex = '0 0 auto';
-          relatedWrap.style.maxHeight = '18vh';
+          relatedWrap.style.maxHeight = '20vh';
           relatedWrap.style.alignSelf = 'stretch';
           relatedWrap.querySelector('.related-product-list').style.cssText = 'display:flex;flex-direction:row;gap:8px;padding:10px;overflow-x:auto;overflow-y:hidden;max-height:calc(18vh - 48px);white-space:nowrap;';
           relatedWrap.querySelectorAll('.related-product-item').forEach((item) => {
