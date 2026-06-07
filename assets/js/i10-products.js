@@ -172,6 +172,20 @@ function renderRelatedProductItem(product) {
   `;
 }
 
+function closeAllProductPopups() {
+  document.querySelectorAll('.i10-popup-overlay').forEach((node) => node.remove());
+  document.body.style.overflow = 'auto';
+  const basePath = window.location.pathname.includes('.html')
+    ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1)
+    : '/';
+  history.pushState(null, null, basePath);
+  document.title = SITE_TITLE_HOME;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    metaDesc.setAttribute('content', SITE_META_DESC_HOME);
+  }
+}
+
 function normalizeDriveImageUrl(url, size = 1000) {
   if (!url) return "";
   const str = String(url);
@@ -1066,6 +1080,8 @@ function openProductPopup(encoded, slug) {
         history.pushState({ json: encoded, slug: slug }, "", `/${slug}`); 
     }
 
+    document.querySelectorAll('.i10-popup-overlay').forEach((node) => node.remove());
+
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         updateMetaTags(product);
@@ -1317,17 +1333,7 @@ const rows = [
 
         const closePopup = () => {
             stopAutoplay();
-            overlay.remove();
-            document.body.style.overflow = 'auto'; 
-            
-            const basePath = window.location.pathname.includes('.html') ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : '/';
-            history.pushState(null, null, basePath);
-            
-            document.title = SITE_TITLE_HOME;
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) {
-                metaDesc.setAttribute('content', SITE_META_DESC_HOME);
-            }
+            closeAllProductPopups();
         };
 
         closeBtn.onclick = closePopup;
