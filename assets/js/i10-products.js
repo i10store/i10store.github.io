@@ -85,6 +85,93 @@ function escapeAttr(value) {
   })[ch]);
 }
 
+function isDepositedProduct(product) {
+  const status = String(product && product["T.THÁI"] ? product["T.THÁI"] : "").trim().toLowerCase();
+  return status === "đã nhận cọc";
+}
+
+function getProductComparablePriceValue(product) {
+  if (!product || typeof product !== "object") return null;
+  const exactPrice = parseFloat(product["Price"]);
+  if (!Number.isNaN(exactPrice) && exactPrice > 0) return exactPrice;
+  const segmentStr = String(product["PRICE SEGMENT"] || "");
+  const match = segmentStr.match(/(\d+[\.,]?\d*)/);
+  if (!match) return null;
+  const parsed = parseFloat(match[1].replace(",", "."));
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function getProductBasicSpecs(product) {
+  if (!product || typeof product !== "object") return [];
+  const specs = [
+    product["CPU_Detail"] || product["CPU"],
+    product["RAM_Detail"] || product["RAM"],
+    product["SSD_Detail"] || product["SSD"],
+    product["RESOLUTION"],
+    product["GPU_Detail"] || product["GPU"]
+  ].filter(Boolean);
+  return specs;
+}
+
+function getRandomRelatedProducts(sourceProduct, allProducts, limit = 4) {
+  const sourcePrice = getProductComparablePriceValue(sourceProduct);
+  if (!Array.isArray(allProducts) || !allProducts.length || sourcePrice == null) return [];
+
+  const samePriceBand = allProducts
+    .filter((product) => product && product !== sourceProduct)
+    .map((product) => {
+      const price = getProductComparablePriceValue(product);
+      return { product, price };
+    })
+    .filter(({ price }) => price != null)
+    .map(({ product, price }) => ({
+      product,
+      price,
+      diff: Math.abs(price - sourcePrice)
+    }))
+    .filter(({ diff }) => diff <= Math.max(sourcePrice * 0.25, 2));
+
+  const exactRange = samePriceBand.filter(({ diff }) => diff <= Math.max(sourcePrice * 0.12, 1));
+  const pool = exactRange.length >= limit ? exactRange : samePriceBand;
+  if (!pool.length) return [];
+
+  const shuffled = shuffleArray(pool);
+  return shuffled.slice(0, limit).map(({ product }) => product);
+}
+
+function renderRelatedProductItem(product) {
+  const title = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+  const image = getProductImages(product)[0];
+  const cpu = product["CPU"] || product["CPU_Detail"] || "N/A";
+  const ram = product["RAM"] || product["RAM_Detail"] || "N/A";
+  const display = product["RESOLUTION"] || "N/A";
+  const gpu = product["GPU"] || product["GPU_Detail"] || "N/A";
+  const specs = [cpu, ram, display, gpu].filter(Boolean).join(" • ");
+  let priceText = "Liên hệ";
+  if (product["T.THÁI"] && String(product["T.THÁI"]).toLowerCase().includes("đã bán")) {
+    priceText = "Tạm hết hàng";
+  } else if (product["Price"]) {
+    const num = parseFloat(product["Price"]) * 1000000;
+    priceText = `~${num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+  } else if (product["PRICE SEGMENT"]) {
+    priceText = product["PRICE SEGMENT"];
+  }
+  return `
+    <button type="button" class="related-product-item" data-json="${escapeAttr(encodeURIComponent(JSON.stringify(product)))}" data-slug="${escapeAttr(product.slug || "")}" style="display:block;padding:8px;border:1px solid #eee;border-radius:10px;background:#fff;cursor:pointer;text-align:left;width:100%;transition:background-color .18s ease,color .18s ease,border-color .18s ease;">
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+      <div style="width:48px;height:48px;flex:0 0 48px;border-radius:7px;overflow:hidden;background:#f5f5f5;border:1px solid #eee;">
+        ${renderResponsiveImage(image, title, "48px", "style=\"width:100%;height:100%;object-fit:cover;\"")}
+      </div>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#222;line-height:1.3;max-height:31px;overflow:hidden;">${escapeAttr(title)}</div>
+      </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#666;line-height:1.35;max-height:34px;overflow:hidden;">${escapeAttr(specs)}</div>
+      <div style="margin-top:4px;font-size:12px;font-weight:800;color:${THEME};line-height:1.3;">${escapeAttr(priceText)}</div>
+    </button>
+  `;
+}
+
 function normalizeDriveImageUrl(url, size = 1000) {
   if (!url) return "";
   const str = String(url);
@@ -692,6 +779,7 @@ async function renderProductGrid() {
                 if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
+                const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : "Mua ngay";
                 return `
                   <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                     <div class="product-card" data-json="${jsonData}" data-slug="${p.slug}">
@@ -704,7 +792,7 @@ async function renderProductGrid() {
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
                         </div>
                          <div class="price-container" style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">Mua ngay</button>
+                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">${cardCtaText}</button>
                       </div>
                     </div>
                   </div>`;
@@ -1138,6 +1226,16 @@ const rows = [
           table.appendChild(tr);
         }
 
+        const relatedProducts = getRandomRelatedProducts(product, globalProductData || [], 5);
+        const relatedWrap = document.createElement("div");
+        relatedWrap.style.cssText = "width:203px;flex:0 0 203px;display:flex;flex-direction:column;align-self:flex-start;background:#fefef5;border-radius:18px;box-shadow:0 16px 40px rgba(0,0,0,0.18);overflow:hidden;";
+        relatedWrap.innerHTML = `
+          <div style="font-weight:800;font-size:14px;color:#222;padding:12px 12px 10px 12px;border-bottom:1px solid #eee;background: #faf7ea;">Sản phẩm khác:</div>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;max-height:83vh;">
+            ${relatedProducts.length ? relatedProducts.map(renderRelatedProductItem).join("") : '<div style="padding:10px;color:#666;font-size:13px;border:1px dashed #ddd;border-radius:10px;background:#fff;">Chưa có gợi ý phù hợp</div>'}
+          </div>
+        `;
+
         const actions = document.createElement("div");
         actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
         
@@ -1148,7 +1246,9 @@ const rows = [
         
         const orderBtn = document.createElement("button");
         orderBtn.className = "btn btn-success";
-        orderBtn.innerHTML = `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
+        orderBtn.innerHTML = isDepositedProduct(product)
+          ? `<i class="fa fa-comments"></i> Nhận tư vấn`
+          : `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
         orderBtn.style.cssText = `background:${THEME};color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;border:none;min-width:110px;`;
         orderBtn.onclick = () => openOrderForm(product, titleText, overlay);
         actions.appendChild(orderBtn);
@@ -1159,6 +1259,7 @@ const rows = [
 
         right.appendChild(titleBox);
         right.appendChild(table);
+        if (relatedWrap) right.appendChild(relatedWrap);
         right.appendChild(actions); 
         
         if (window.innerWidth < 768) {
@@ -1190,9 +1291,14 @@ const rows = [
           actions.style.flexWrap = 'wrap';
         }
 
+        const shell = document.createElement("div");
+        shell.style.cssText = "display:flex;gap:16px;align-items:flex-start;max-width:1300px;width:100%;";
+        if (window.innerWidth < 768) shell.style.flexDirection = 'column';
         card.appendChild(left);
         card.appendChild(right);
-        overlay.appendChild(card);
+        shell.appendChild(card);
+        shell.appendChild(relatedWrap);
+        overlay.appendChild(shell);
         overlay.appendChild(closeBtn);
         document.body.appendChild(overlay);
 
@@ -1220,6 +1326,22 @@ const rows = [
             closePopup();
             document.removeEventListener("keydown", escHandler);
           }
+        });
+
+        relatedWrap.querySelectorAll(".related-product-item").forEach((item) => {
+          item.addEventListener("mouseenter", () => {
+            item.style.backgroundColor = "var(--i10-highlight, #bfbfbf)";
+            item.style.borderColor = "var(--i10, #76b500)";
+          });
+          item.addEventListener("mouseleave", () => {
+            item.style.backgroundColor = "#fff";
+            item.style.borderColor = "#eee";
+          });
+          item.addEventListener("click", () => {
+            const jsonData = item.getAttribute("data-json");
+            const slug = item.getAttribute("data-slug");
+            openProductPopup(jsonData, slug);
+          });
         });
         
         startAutoplay();
