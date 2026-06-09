@@ -85,6 +85,107 @@ function escapeAttr(value) {
   })[ch]);
 }
 
+function isDepositedProduct(product) {
+  const status = String(product && product["T.THÁI"] ? product["T.THÁI"] : "").trim().toLowerCase();
+  return status === "đã nhận cọc";
+}
+
+function getProductComparablePriceValue(product) {
+  if (!product || typeof product !== "object") return null;
+  const exactPrice = parseFloat(product["Price"]);
+  if (!Number.isNaN(exactPrice) && exactPrice > 0) return exactPrice;
+  const segmentStr = String(product["PRICE SEGMENT"] || "");
+  const match = segmentStr.match(/(\d+[\.,]?\d*)/);
+  if (!match) return null;
+  const parsed = parseFloat(match[1].replace(",", "."));
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function getProductBasicSpecs(product) {
+  if (!product || typeof product !== "object") return [];
+  const specs = [
+    product["CPU_Detail"] || product["CPU"],
+    product["RAM_Detail"] || product["RAM"],
+    product["SSD_Detail"] || product["SSD"],
+    product["RESOLUTION"],
+    product["GPU_Detail"] || product["GPU"]
+  ].filter(Boolean);
+  return specs;
+}
+
+function getRandomRelatedProducts(sourceProduct, allProducts, limit = 4) {
+  const sourcePrice = getProductComparablePriceValue(sourceProduct);
+  if (!Array.isArray(allProducts) || !allProducts.length || sourcePrice == null) return [];
+
+  const samePriceBand = allProducts
+    .filter((product) => product && product !== sourceProduct)
+    .map((product) => {
+      const price = getProductComparablePriceValue(product);
+      return { product, price };
+    })
+    .filter(({ price }) => price != null)
+    .map(({ product, price }) => ({
+      product,
+      price,
+      diff: Math.abs(price - sourcePrice)
+    }))
+    .filter(({ diff }) => diff <= Math.max(sourcePrice * 0.25, 2));
+
+  const exactRange = samePriceBand.filter(({ diff }) => diff <= Math.max(sourcePrice * 0.12, 1));
+  const pool = exactRange.length >= limit ? exactRange : samePriceBand;
+  if (!pool.length) return [];
+
+  const shuffled = shuffleArray(pool);
+  return shuffled.slice(0, limit).map(({ product }) => product);
+}
+
+function renderRelatedProductItem(product) {
+  const title = `${product["Brand"] || ""} ${product["Model"] || ""}`.trim() || (product["Name"] || "Sản phẩm");
+  const image = getProductImages(product)[0];
+  const cpu = product["CPU"] || product["CPU_Detail"] || "N/A";
+  const ram = product["RAM"] || product["RAM_Detail"] || "N/A";
+  const display = product["RESOLUTION"] || "N/A";
+  const gpu = product["GPU"] || product["GPU_Detail"] || "N/A";
+  const specs = [cpu, ram, display, gpu].filter(Boolean).join(" • ");
+  let priceText = "Liên hệ";
+  if (product["T.THÁI"] && String(product["T.THÁI"]).toLowerCase().includes("đã bán")) {
+    priceText = "Tạm hết hàng";
+  } else if (product["Price"]) {
+    const num = parseFloat(product["Price"]) * 1000000;
+    priceText = `~${num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 })}`;
+  } else if (product["PRICE SEGMENT"]) {
+    priceText = product["PRICE SEGMENT"];
+  }
+  return `
+    <button type="button" class="related-product-item" data-json="${escapeAttr(encodeURIComponent(JSON.stringify(product)))}" data-slug="${escapeAttr(product.slug || "")}" style="display:block;padding:8px;border:1px solid #eee;border-radius:10px;background:#fff;cursor:pointer;text-align:left;width:100%;transition:background-color .18s ease,color .18s ease,border-color .18s ease;">
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+      <div style="width:48px;height:48px;flex:0 0 48px;border-radius:7px;overflow:hidden;background:#f5f5f5;border:1px solid #eee;">
+        ${renderResponsiveImage(image, title, "48px", "style=\"width:100%;height:100%;object-fit:cover;\"")}
+      </div>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#222;line-height:1.3;max-height:31px;overflow:hidden;">${escapeAttr(title)}</div>
+      </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#666;line-height:1.35;max-height:34px;overflow:hidden;">${escapeAttr(specs)}</div>
+      <div style="margin-top:4px;font-size:12px;font-weight:800;color:${THEME};line-height:1.3;">${escapeAttr(priceText)}</div>
+    </button>
+  `;
+}
+
+function closeAllProductPopups() {
+  document.querySelectorAll('.i10-popup-overlay').forEach((node) => node.remove());
+  document.body.style.overflow = 'auto';
+  const basePath = window.location.pathname.includes('.html')
+    ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1)
+    : '/';
+  history.pushState(null, null, basePath);
+  document.title = SITE_TITLE_HOME;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    metaDesc.setAttribute('content', SITE_META_DESC_HOME);
+  }
+}
+
 function normalizeDriveImageUrl(url, size = 1000) {
   if (!url) return "";
   const str = String(url);
@@ -692,6 +793,7 @@ async function renderProductGrid() {
                 if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
+                const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : "Mua ngay";
                 return `
                   <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                     <div class="product-card" data-json="${jsonData}" data-slug="${p.slug}">
@@ -704,7 +806,7 @@ async function renderProductGrid() {
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
                         </div>
                          <div class="price-container" style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">Mua ngay</button>
+                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">${cardCtaText}</button>
                       </div>
                     </div>
                   </div>`;
@@ -978,6 +1080,8 @@ function openProductPopup(encoded, slug) {
         history.pushState({ json: encoded, slug: slug }, "", `/${slug}`); 
     }
 
+    document.querySelectorAll('.i10-popup-overlay').forEach((node) => node.remove());
+
     try {
         const product = JSON.parse(decodeURIComponent(encoded));
         updateMetaTags(product);
@@ -1138,8 +1242,26 @@ const rows = [
           table.appendChild(tr);
         }
 
+        const isMobile = window.innerWidth < 768;
+        const relatedProducts = getRandomRelatedProducts(product, globalProductData || [], isMobile ? 5 : 5);
+        const relatedWrap = document.createElement("div");
+        relatedWrap.style.cssText = "width:203px;flex:0 0 203px;display:flex;flex-direction:column;align-self:flex-start;background:#fefef5;border-radius:18px;box-shadow:0 16px 40px rgba(0,0,0,0.18);overflow:hidden;";
+        relatedWrap.innerHTML = `
+          <div class="related-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px 6px 12px;border-bottom:1px solid #eee;background:#faf7ea;">
+            <div style="font-weight:800;font-size:14px;color:#222;line-height:1;">Sản phẩm khác:</div>
+            <button type="button" class="related-toggle-btn" style="padding:6px 10px;border:none;border-radius:8px;background:#222;color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">
+              <i class="fa fa-eye-slash"></i> Ẩn
+            </button>
+          </div>
+          <div class="related-body" style="display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;max-height:83vh;">
+            <div class="related-product-list" style="display:flex;flex-direction:column;gap:10px;">
+              ${relatedProducts.length ? relatedProducts.map(renderRelatedProductItem).join("") : '<div style="padding:10px;color:#666;font-size:13px;border:1px dashed #ddd;border-radius:10px;background:#fff;">Chưa có gợi ý phù hợp</div>'}
+            </div>
+          </div>
+        `;
+
         const actions = document.createElement("div");
-        actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 12px 0; border-top: 1px solid #eee;`;
+        actions.style.cssText = `display:flex; gap:10px; margin: 20px 0 0 0; align-items:center; justify-content:center; position: sticky; bottom: -15px; background: #fefef5; padding: 6px 0; border-top: 1px solid #eee;`;
         
         actions.innerHTML = `
           <a href="tel:0838288000" class="btn btn-danger" style="background:#e74c3c;color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;"><i class="fa fa-phone"></i> 0838.288.000</a>
@@ -1148,7 +1270,9 @@ const rows = [
         
         const orderBtn = document.createElement("button");
         orderBtn.className = "btn btn-success";
-        orderBtn.innerHTML = `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
+        orderBtn.innerHTML = isDepositedProduct(product)
+          ? `<i class="fa fa-comments"></i> Nhận tư vấn`
+          : `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
         orderBtn.style.cssText = `background:${THEME};color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;border:none;min-width:110px;`;
         orderBtn.onclick = () => openOrderForm(product, titleText, overlay);
         actions.appendChild(orderBtn);
@@ -1157,14 +1281,46 @@ const rows = [
         closeBtn.innerHTML = "×";
         closeBtn.style.cssText = `position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;line-height:0.9;`;
 
+        const relatedHeader = relatedWrap.querySelector('.related-header');
+        const relatedBody = relatedWrap.querySelector('.related-body');
+        const relatedToggleBtn = relatedWrap.querySelector('.related-toggle-btn');
+        const relatedTitleEl = relatedHeader.querySelector('div');
+        let relatedVisible = true;
+        const setRelatedVisibility = (visible) => {
+          relatedVisible = visible;
+          relatedBody.style.display = visible ? "flex" : "none";
+          relatedTitleEl.style.display = visible ? "block" : "none";
+          relatedWrap.style.width = visible ? "203px" : "fit-content";
+          relatedWrap.style.flex = visible ? "0 0 203px" : "0 0 auto";
+          relatedWrap.style.maxWidth = visible ? "203px" : "unset";
+          relatedWrap.style.overflow = "hidden";
+          relatedToggleBtn.innerHTML = visible
+            ? '<i class="fa fa-eye-slash"></i> Ẩn'
+            : '<i class="fa fa-eye"></i> Hiện sản phẩm gợi ý';
+          relatedHeader.style.justifyContent = visible ? "space-between" : "center";
+          relatedHeader.style.borderBottom = visible ? "1px solid #eee" : "none";
+          relatedHeader.style.padding = visible ? "6px 10px 6px 12px" : "8px 10px";
+          relatedWrap.style.boxShadow = visible ? "0 16px 40px rgba(0,0,0,0.18)" : "0 8px 20px rgba(0,0,0,0.12)";
+          relatedWrap.style.paddingBottom = visible ? "0" : "0";
+          card.style.flex = visible ? "0 1 auto" : "1 1 100%";
+          shell.style.maxWidth = visible ? "1300px" : "100%";
+          shell.style.gap = visible ? "16px" : "0";
+          if (window.innerWidth < 768) {
+            relatedWrap.style.width = visible ? "100%" : "fit-content";
+            relatedWrap.style.maxWidth = visible ? "100%" : "unset";
+          }
+        };
+        relatedToggleBtn.onclick = () => setRelatedVisibility(!relatedVisible);
+
         right.appendChild(titleBox);
         right.appendChild(table);
+        if (relatedWrap) right.appendChild(relatedWrap);
         right.appendChild(actions); 
         
         if (window.innerWidth < 768) {
           card.style.flexDirection = 'column';
-          card.style.height = '90vh';
-          card.style.maxHeight = '90vh';
+          card.style.height = '100vh';
+          card.style.maxHeight = '100vh';
           card.style.padding = '15px';
           card.style.overflowY = 'auto'; 
           left.style.minWidth = 'auto';
@@ -1188,27 +1344,36 @@ const rows = [
           actions.style.paddingLeft = '10px';
           actions.style.paddingRight = '10px';
           actions.style.flexWrap = 'wrap';
+
+          relatedWrap.style.order = '5';
+          relatedWrap.style.width = '100%';
+          relatedWrap.style.maxWidth = '100%';
+          relatedWrap.style.flex = '0 0 auto';
+          relatedWrap.style.maxHeight = '22vh';
+          relatedWrap.style.alignSelf = 'stretch';
+          relatedWrap.querySelector('.related-product-list').style.cssText = 'display:flex;flex-direction:row;gap:8px;padding:5px;overflow-x:auto;overflow-y:hidden;max-height:calc(22vh - 8px);white-space:nowrap;';
+          relatedWrap.querySelectorAll('.related-product-item').forEach((item) => {
+            item.style.minWidth = '180px';
+            item.style.flex = '0 0 180px';
+          });
         }
 
+        const shell = document.createElement("div");
+        shell.style.cssText = "display:flex;gap:16px;align-items:flex-start;max-width:1300px;width:100%;";
+        if (window.innerWidth < 768) shell.style.flexDirection = 'column';
         card.appendChild(left);
         card.appendChild(right);
-        overlay.appendChild(card);
+        shell.appendChild(card);
+        shell.appendChild(relatedWrap);
+        overlay.appendChild(shell);
         overlay.appendChild(closeBtn);
         document.body.appendChild(overlay);
 
+        setRelatedVisibility(true);
+
         const closePopup = () => {
             stopAutoplay();
-            overlay.remove();
-            document.body.style.overflow = 'auto'; 
-            
-            const basePath = window.location.pathname.includes('.html') ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : '/';
-            history.pushState(null, null, basePath);
-            
-            document.title = SITE_TITLE_HOME;
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) {
-                metaDesc.setAttribute('content', SITE_META_DESC_HOME);
-            }
+            closeAllProductPopups();
         };
 
         closeBtn.onclick = closePopup;
@@ -1220,6 +1385,22 @@ const rows = [
             closePopup();
             document.removeEventListener("keydown", escHandler);
           }
+        });
+
+        relatedWrap.querySelectorAll(".related-product-item").forEach((item) => {
+          item.addEventListener("mouseenter", () => {
+            item.style.backgroundColor = "var(--i10-highlight, #bfbfbf)";
+            item.style.borderColor = "var(--i10, #76b500)";
+          });
+          item.addEventListener("mouseleave", () => {
+            item.style.backgroundColor = "#fff";
+            item.style.borderColor = "#eee";
+          });
+          item.addEventListener("click", () => {
+            const jsonData = item.getAttribute("data-json");
+            const slug = item.getAttribute("data-slug");
+            openProductPopup(jsonData, slug);
+          });
         });
         
         startAutoplay();

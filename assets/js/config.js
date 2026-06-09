@@ -2,13 +2,12 @@
  * ==============================================
  * i10 STORE CONFIG - CẤU HÌNH API & THÔNG SỐ
  * ==============================================
- * Các giá trị nhạy cảm (API URLs, Sheet IDs) được quản lý phía server
- * File này chỉ chứa các cấu hình công khai an toàn
+ * Chỉ cần sửa các biến dưới đây để cập nhật toàn bộ hệ thống
  * 
- * Hướng dẫn setup:
- * 1. Thiết lập Google Apps Script (xem apps-script-template.txt)
- * 2. Thêm Script Properties với: TELEGRAM_BOT_TOKEN, CLOUDINARY_API_KEY, ...
- * 3. Deploy Web App và cấu hình endpoint trong backend
+ * CÁCH SỬ DỤNG:
+ *   1. Copy file này vào thư mục assets/js/
+ *   2. Thêm vào HTML: <script src="/assets/js/config.js"></script>
+ *   3. Các file JS khác sẽ tự động sử dụng các biến trong đây
  * ==============================================
  */
 
@@ -49,10 +48,9 @@
 
 const I10_CONFIG = {
    // ==================== API ====================
-    
-   // Google Apps Script Web App URL - để trống để dùng endpoint proxy bảo mật
-   // Cấu hình thực tế nằm phía server-side
-   SHEET_API: "",
+   
+   // Google Apps Script Web App URL (dùng cho form đặt hàng, liên hệ)
+   SHEET_API: "https://script.google.com/macros/s/AKfycbzVNKDHc2VUmPdiqKTz-ZCCV6I2cPw9hkseq56pyB5b1RwPUP6t0XvwTh-YR17y8Bhw/exec",
    
    // URL file products.json (có thể là link Local /assets/js/products.json hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
    STATIC_JSON_FILE: "/assets/js/products.json",
@@ -73,7 +71,9 @@ const I10_CONFIG = {
    // Chi dung cho render anh public tren website. API key/secret phai nam trong Apps Script Properties.
    CLOUDINARY_CLOUD_NAME: "diyvjay4f",
    CLOUDINARY_FOLDER: "i10store",
-   CLOUDINARY_LOGO_PUBLIC_ID: "i10_logo",
+   CLOUDINARY_LOGO_PUBLIC_ID: "i10_logo5",
+   // Upload preset dung cho signed upload tren backend Apps Script
+   CLOUDINARY_PRESET: "i10_preset",
    
    // ==================== SHEET ====================
    

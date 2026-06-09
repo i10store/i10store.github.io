@@ -43,22 +43,32 @@
   justify-content: center;
 }
 .banner-item {
-    position: absolute;
-    height: 180px; 
-    width: 180px; 
-    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    border: 1px solid rgba(255, 255, 255, 0.7); 
-    cursor: pointer;
-}
+     position: absolute;
+     height: 180px; 
+     width: 180px; 
+     transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+     border-radius: 12px;
+     overflow: hidden;
+     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+     border: 1px solid rgba(255, 255, 255, 0.7); 
+     cursor: pointer;
+     user-select: none;
+     -webkit-user-select: none;
+     -moz-user-select: none;
+     -ms-user-select: none;
+ }
 .banner-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
+     width: 100%;
+     height: 100%;
+     object-fit: cover;
+     display: block;
+     user-drag: none;
+     -webkit-user-drag: none;
+     user-select: none;
+     -moz-user-select: none;
+     -webkit-user-select: none;
+     -ms-user-select: none;
+ }
 .customer-banner-row .banner-nav {
     display: none;
 }
@@ -166,9 +176,9 @@
                 <ol class="breadcrumb" style="background:#fff; border-radius:12px; padding:10px 15px; margin-top:10px;">
                     <li><a href="/index.html">Trang chủ</a></li>
                     <li class="active">Khách hàng tin dùng</li>
-                    <li class="active"><div class="customer-filters">
+                    <!--<li class="active"><div class="customer-filters">
                     <a href="https://photos.app.goo.gl/qpU2MHJRnXaBgDXZ8" target="_blank" class="btn btn-primary">Khách Tây</a>
-                    <a href="https://photos.app.goo.gl/hK4aRfNa938nTWZm6" target="_blank" class="btn btn-primary">Khách Ship Xa</a>
+                     href="https://photos.app.goo.gl/hK4aRfNa938nTWZm6" target="_blank" class="btn btn-primary">Khách Ship Xa</a>-->
                 </div></li>
                 </ol>
             </div>
@@ -300,21 +310,43 @@
     let rowControllers = [];
     let autoTimer = null;
 
-    async function fetchJSON(url, opts = {}) {
-        const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts));
-        if (!res.ok) throw new Error("Lỗi mạng: " + res.status);
-        return res.json();
-    }
-    function debounce(fn, wait=250){
-        let t;
-        return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
-    }
+async function fetchJSON(url, opts = {}) {
+         const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts));
+         if (!res.ok) throw new Error("Lỗi mạng: " + res.status);
+         return res.json();
+     }
+     function debounce(fn, wait=250){
+         let t;
+         return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
+     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const siteLogo = document.getElementById("site-logo");
-        if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
-        fetchCustomerImages();
-    });
+     function protectImages() {
+         document.addEventListener('contextmenu', function(e) {
+             if (e.target.tagName === 'IMG' || e.target.closest('.banner-item')) {
+                 e.preventDefault();
+                 return false;
+             }
+         });
+         document.addEventListener('dragstart', function(e) {
+             if (e.target.tagName === 'IMG') {
+                 e.preventDefault();
+                 return false;
+             }
+         });
+         document.addEventListener('keydown', function(e) {
+             if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'u' || e.key === 'S' || e.key === 'U')) {
+                 e.preventDefault();
+                 return false;
+             }
+         });
+     }
+
+     document.addEventListener("DOMContentLoaded", () => {
+         const siteLogo = document.getElementById("site-logo");
+         if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+         fetchCustomerImages();
+     });
+     protectImages();
 
     async function fetchCustomerImages() {
         const loadingEl = document.getElementById("gallery-loading");
@@ -379,23 +411,21 @@
                 restartAuto();
             };
             
-            rowControllers.forEach((rc) => {
-                rc.items.forEach(item => {
-                    item.onclick = (e) => {
-                        const indexClicked = parseInt(e.currentTarget.dataset.index);
-                        const currentRowIndex = (globalCurrentIndex % rc.total + rc.total) % rc.total;
-                        if (indexClicked === currentRowIndex) {
-                            window.open(rc.banners[indexClicked].url || rc.banners[indexClicked].thumb, '_blank');
-                            return;
-                        }
-                        let offset = indexClicked - currentRowIndex;
-                        if (offset > rc.total / 2) offset -= rc.total;
-                        if (offset < -total / 2) offset += rc.total;
-                        updateAllRows(globalCurrentIndex + offset); 
-                        restartAuto();
-                    };
-                });
-            });
+rowControllers.forEach((rc) => {
+                 rc.items.forEach(item => {
+                     item.onclick = (e) => {
+                         const indexClicked = parseInt(e.currentTarget.dataset.index);
+                         const currentRowIndex = (globalCurrentIndex % rc.total + rc.total) % rc.total;
+                         if (indexClicked !== currentRowIndex) {
+                             let offset = indexClicked - currentRowIndex;
+                             if (offset > rc.total / 2) offset -= rc.total;
+                             if (offset < -total / 2) offset += rc.total;
+                             updateAllRows(globalCurrentIndex + offset); 
+                             restartAuto();
+                         }
+                     };
+                 });
+             });
             restartAuto();
         } catch (err) {
             console.error("Lỗi tải ảnh khách hàng:", err);

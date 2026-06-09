@@ -13,10 +13,11 @@
  */
 
 const TELEGRAM_CONFIG = {
-  // Lưu ý: BOT_TOKEN và CHAT_ID được lấy từ server-side để tránh lộ ra client
-  // File config này chỉ dùng cho mục đích minh bạch, thực tế giá trị sẽ được override
-  BOT_TOKEN: "", // Không cấu hình ở đây - dùng server endpoint
-  CHAT_ID: "", // Không cấu hình ở đây - dùng server endpoint
+  // Thay thế BOT_TOKEN bằng token thực tế từ @BotFather
+  BOT_TOKEN: "8975330891:AAHXuVqKn4iB5V5IqYOwQGGDzfASAdR5tP0", // Ví dụ: "123456:ABCDEfghijklmnopqrst"
+  
+  // Thay thế CHAT_ID bằng chat ID thực tế
+  CHAT_ID: "5857710133", // Ví dụ: "-1001234567890" (nhóm) hoặc "987654321" (cá nhân)
 
   // URL API Telegram (FIXED!)
   API_URL: "https://api.telegram.org/bot", //"https://core.telegram.org/bots/api",

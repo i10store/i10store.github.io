@@ -1,7 +1,2 @@
-# Sensitive config files - DO NOT commit to GitHub
-apps-script1.txt
-apps-script-cloudynary.txt
 obfuscate.py
-assets/js/i10-config.min.js
-assets/js/i10-config.js
 node_modules/
