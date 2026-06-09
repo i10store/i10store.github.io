@@ -2,12 +2,13 @@
  * ==============================================
  * i10 STORE CONFIG - CẤU HÌNH API & THÔNG SỐ
  * ==============================================
- * Chỉ cần sửa các biến dưới đây để cập nhật toàn bộ hệ thống
+ * Các giá trị nhạy cảm (API URLs, Sheet IDs) được quản lý phía server
+ * File này chỉ chứa các cấu hình công khai an toàn
  * 
- * CÁCH SỬ DỤNG:
- *   1. Copy file này vào thư mục assets/js/
- *   2. Thêm vào HTML: <script src="/assets/js/config.js"></script>
- *   3. Các file JS khác sẽ tự động sử dụng các biến trong đây
+ * Hướng dẫn setup:
+ * 1. Thiết lập Google Apps Script (xem apps-script-template.txt)
+ * 2. Thêm Script Properties với: TELEGRAM_BOT_TOKEN, CLOUDINARY_API_KEY, ...
+ * 3. Deploy Web App và cấu hình endpoint trong backend
  * ==============================================
  */
 
@@ -48,9 +49,10 @@
 
 const I10_CONFIG = {
    // ==================== API ====================
-   
-   // Google Apps Script Web App URL (dùng cho form đặt hàng, liên hệ)
-   SHEET_API: "https://script.google.com/macros/s/AKfycbzVNKDHc2VUmPdiqKTz-ZCCV6I2cPw9hkseq56pyB5b1RwPUP6t0XvwTh-YR17y8Bhw/exec",
+    
+   // Google Apps Script Web App URL - để trống để dùng endpoint proxy bảo mật
+   // Cấu hình thực tế nằm phía server-side
+   SHEET_API: "",
    
    // URL file products.json (có thể là link Local /assets/js/products.json hoặc drive - dạng https://drive.google.com/uc?export=download&id=...)
    STATIC_JSON_FILE: "/assets/js/products.json",
