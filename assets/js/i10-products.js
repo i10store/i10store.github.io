@@ -217,7 +217,7 @@ function buildCloudinaryUrl(publicId, transform) {
 
 function buildCloudinaryCoverUrl(publicId) {
   const logoOverlay = String(CLOUDINARY_LOGO_PUBLIC_ID || "i10_logo").replace(/\//g, ":");
-  return buildCloudinaryUrl(publicId, `f_auto,q_auto,w_1600/l_${logoOverlay},o_40,g_south_east,x_30,y_30`);
+  return buildCloudinaryUrl(publicId, `f_auto,q_auto,w_1600/l_${logoOverlay},o_79,g_south_east,x_30,y_30`);
 }
 
 function parseImageList(value) {
