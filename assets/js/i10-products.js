@@ -217,7 +217,7 @@ function buildCloudinaryUrl(publicId, transform) {
 
 function buildCloudinaryCoverUrl(publicId) {
   const logoOverlay = String(CLOUDINARY_LOGO_PUBLIC_ID || "i10_logo").replace(/\//g, ":");
-  return buildCloudinaryUrl(publicId, `f_auto,q_auto,w_1600/l_${logoOverlay},o_79,g_south_east,x_30,y_30`);
+  return buildCloudinaryUrl(publicId, `f_auto,q_auto,w_1600/l_${logoOverlay},o_40,g_south_east,x_30,y_30`);
 }
 
 function parseImageList(value) {
@@ -497,6 +497,23 @@ function renderControls(container, onChange) {
 let globalProductData = null;
 let globalProductPromise = null;
 
+function prepareProductData(data) {
+  if (!Array.isArray(data)) return [];
+  data.forEach((p, i) => {
+    const slugText = [
+      p["Model"] || p["Name"],
+      p["CPU"],
+      p["RAM"],
+      p["SSD"],
+      p["RESOLUTION"],
+      p["GPU"],
+      p["ID"]
+    ].filter(Boolean).join(' ');
+    p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
+  });
+  return data;
+}
+
 async function getProductData(forceRefresh = false) {
   if (globalProductData && !forceRefresh) return globalProductData;
   if (globalProductPromise && !forceRefresh) return globalProductPromise;
@@ -534,18 +551,7 @@ async function getProductData(forceRefresh = false) {
     }
 
     // Xử lý slug
-    data.forEach((p, i) => {
-      const slugText = [
-        p["Model"] || p["Name"],
-        p["CPU"],
-        p["RAM"],
-        p["SSD"],
-        p["RESOLUTION"],
-        p["GPU"],
-        p["ID"]
-      ].filter(Boolean).join(' ');
-      p.slug = p["Web Link"] || `san-pham/${createSlug(slugText || `product-${i}`)}`;
-    });
+    data = prepareProductData(data);
     
     globalProductData = data;
     return data;
@@ -553,6 +559,20 @@ async function getProductData(forceRefresh = false) {
 
   globalProductPromise = fetchData();
   return globalProductPromise;
+}
+
+async function getStartupProductData() {
+  try {
+    const raw = await fetchJSON(getCacheBustedUrl(PRODUCTS_JSON_URL));
+    const data = prepareProductData(parseSheetData(raw));
+    if (Array.isArray(data) && data.length) {
+      return { items: data, isStatic: true };
+    }
+  } catch (err) {
+    console.warn("Khong the doc file products.json, chuyen sang Google Sheet:", err.message);
+  }
+
+  return { items: await getProductData(true), isStatic: false };
 }
 
 
@@ -565,10 +585,12 @@ async function renderProductGrid() {
     // (*** TỐI ƯU: Tạo HTML bố cục cũ tại đây ***)
     container.innerHTML = `
         <div id="i10-controls"></div>
+        <div id="i10-data-status"></div>
         <div id="i10-grid"></div>
         <div id="i10-pagination"></div> 
     `;
     const controlsEl = document.getElementById('i10-controls');
+    const dataStatusEl = document.getElementById('i10-data-status');
     const gridEl = document.getElementById('i10-grid');
     const paginationEl = document.getElementById('i10-pagination');
     
@@ -576,7 +598,11 @@ async function renderProductGrid() {
     gridEl.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
 
     try {
-        const rawData = await getProductData();
+        const startupData = await getStartupProductData();
+        if (startupData.isStatic && dataStatusEl) {
+            dataStatusEl.innerHTML = `<div style="margin:0 10px 12px;padding:8px 12px;border:1px solid #d7e8b8;border-radius:6px;background:#f8fff0;color:#5b7f00;font-size:13px;text-align:center;">Sản phẩm đang cập nhật dữ liệu gần nhất.</div>`;
+        }
+        const rawData = startupData.items;
 
         // Lấy toàn bộ danh sách sản phẩm (không lọc trùng)
         const data = rawData;
@@ -886,11 +912,23 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
         });
             
         doRender();
+
+        if (startupData.isStatic) {
+          getProductData(true).then((freshData) => {
+            state.items = shuffleArray(applyUrlFilter(freshData, filter));
+            state.currentPage = 1;
+            if (dataStatusEl) dataStatusEl.innerHTML = "";
+            doRender({});
+          }).catch(err => {
+            console.warn("Loi cap nhat du lieu tu Google Sheet:", err.message);
+          });
+        }
         
         // === AUTO-REFRESH: Tải lại dữ liệu mỗi 5 phút ===
         setTimeout(() => {
-          getProductData(true).then(() => {
+          getProductData(true).then((freshData) => {
             console.log("🔄 Tự động cập nhật dữ liệu sau 5 phút");
+            state.items = shuffleArray(applyUrlFilter(freshData, filter));
             doRender();
           }).catch(err => {
             console.warn("Lỗi auto-refresh:", err.message);
@@ -905,7 +943,10 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
               // Nếu cache mới hơn 30s, tải lại
               if (Date.now() - timestamp < 30000) {
                 console.log("📡 Phát hiện thay đổi từ tab khác, đang tải lại...");
-                getProductData(true).then(() => doRender());
+                getProductData(true).then((freshData) => {
+                  state.items = shuffleArray(applyUrlFilter(freshData, filter));
+                  doRender();
+                });
               }
             } catch (e) { /* ignore */ }
           }
@@ -1209,9 +1250,9 @@ function openProductPopup(encoded, slug) {
         
         let photoRow = "";
         if (googlePhotoLink) {
-            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="${googlePhotoLink}" target="_blank" style="color:#0066cc;text-decoration:underline;">Xem ảnh Google Photos</a></td></tr>`;
+            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">Ghi chú 2</td><td style="padding:8px;border:1px solid #eee">${googlePhotoLink}</td></tr>`;
         } else if (hasNoImage) {
-            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">📷 Ảnh</td><td style="padding:8px;border:1px solid #eee"><a href="/contact.html" style="color:#e74c3c;font-weight:600;">Liên hệ để xem ảnh</a></td></tr>`;
+            photoRow = `<tr><td style="padding:8px;border:1px solid #eee;width:36%;font-weight:600">Chi tiết</td><td style="padding:8px;border:1px solid #eee"><a href="/contact.html" style="color:#e74c3c;font-weight:600;">Liên hệ để nhận tư vấn chi tiết hơn</a></td></tr>`;
         }
 
         const table = document.createElement("table");

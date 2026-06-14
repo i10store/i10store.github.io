@@ -676,7 +676,7 @@ async function savePDF() {
         var jsPDF = window.jspdf.jsPDF;
         var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [105, 148] });
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 105, 148);
-        var name = 'PhieuGiaoHang_' + (document.getElementById('maVanDon').value || 'draft') + '.pdf';
+        var name = 'HoaDon_' + getInvoiceFileName() + '.pdf';
         pdf.save(name);
         showStatus('Đã lưu PDF: ' + name, 'success');
         setTimeout(function() {
@@ -711,7 +711,7 @@ async function savePNG() {
     try {
         var canvas = await captureCanvas();
         var link = document.createElement('a');
-        link.download = 'PhieuGiaoHang_' + (document.getElementById('maVanDon').value || 'draft') + '.png';
+        link.download = 'HoaDon_' + getInvoiceFileName() + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         showStatus('Đã lưu PNG', 'success');
@@ -724,6 +724,12 @@ async function savePNG() {
         document.querySelector('.watermark').style.display = 'none';
         document.querySelectorAll('.shop-signature').forEach(el => el.style.display = 'none');
     }
+}
+
+function getInvoiceFileName() {
+    var input = document.getElementById('soHD');
+    var value = input && input.value ? input.value.trim() : 'draft';
+    return (value || 'draft').replace(/[\\/:*?"<>|]+/g, '-');
 }
 
 initDefaults();
