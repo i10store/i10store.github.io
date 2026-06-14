@@ -440,15 +440,6 @@ function renderControls(container, onChange) {
   `;
   ctrl.appendChild(sel);
 
-  const searchWrap = document.createElement('div');
-  searchWrap.className = "search-price-container";
-
-  const input = document.createElement('input');
-  input.type = "search";
-  input.placeholder = "Tìm theo tên, GPU, máy trạm, văn phòng,...";
-  input.className = "main-search-input";
-  searchWrap.appendChild(input);
-
   const priceWrap = document.createElement('div');
   priceWrap.className = 'price-filter-wrap';
   const priceLabel = document.createElement('span');
@@ -461,22 +452,29 @@ function renderControls(container, onChange) {
   priceInput.placeholder = "Vd: 8";
   priceInput.min = "0";
   priceWrap.appendChild(priceInput);
-  searchWrap.appendChild(priceWrap);
-  ctrl.appendChild(searchWrap);
+  ctrl.appendChild(priceWrap);
+
+  const searchWrap = document.createElement('div');
+  searchWrap.className = "search-price-container";
+  const input = document.createElement('input');
+  input.type = "search";
+  input.placeholder = "Tìm theo tên, GPU, máy trạm, văn phòng,...";
+  input.className = "main-search-input";
+  searchWrap.appendChild(input);
   
   const clearBtn = document.createElement('button');
   clearBtn.textContent = "🧹 Xóa";
   clearBtn.className = "clear-btn";
   clearBtn.style.marginLeft = "6px";
+searchWrap.appendChild(clearBtn);
+  ctrl.appendChild(searchWrap);
+
   clearBtn.onclick = ()=>{
     input.value = "";
     sel.value = "default";
     priceInput.value = ""; 
     onChange({ q:"", sort:"default", priceQuery: "" });
   };
-  ctrl.appendChild(clearBtn);
-
-
 
   container.prepend(ctrl);
 
