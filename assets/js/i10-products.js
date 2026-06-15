@@ -449,7 +449,7 @@ function renderControls(container, onChange) {
   priceInput.type = "number";
   priceInput.id = "price_query_input";
   priceInput.className = "form-control price-search-input";
-  priceInput.placeholder = "Vd: 8";
+  priceInput.placeholder = "Vd: 10";
   priceInput.min = "0";
   priceWrap.appendChild(priceInput);
   ctrl.appendChild(priceWrap);
@@ -463,7 +463,7 @@ function renderControls(container, onChange) {
   searchWrap.appendChild(input);
   
   const clearBtn = document.createElement('button');
-  clearBtn.textContent = "🧹 Xóa";
+  clearBtn.textContent = "Xóa lọc";
   clearBtn.className = "clear-btn";
   clearBtn.style.marginLeft = "6px";
 searchWrap.appendChild(clearBtn);
@@ -810,11 +810,25 @@ async function renderProductGrid() {
                 }
                 
                 let config = [];
-                if (p["CPU"]) config.push(p["CPU"]);
-                if (p["RAM"]) config.push(p["RAM"]);
-                if (p["SSD"]) config.push(p["SSD"]);
-                if (p["RESOLUTION"]) config.push(p["RESOLUTION"]);
-                if (p["GPU"] && p["GPU"].toLowerCase() !== "onboard") config.push(p["GPU"]);
+                const getSpecValue = (value, field) => {
+                    if (!value) return null;
+                    const str = String(value).trim();
+                    if (!str) return null;
+                    if (field === "RAM" || field === "SSD") {
+                        return str.split("|")[0].trim();
+                    }
+                    return str;
+                };
+                const cpu = getSpecValue(p["CPU"], "CPU");
+                const ram = getSpecValue(p["RAM"], "RAM");
+                const ssd = getSpecValue(p["SSD"], "SSD");
+                const display = getSpecValue(p["RESOLUTION"], "RESOLUTION");
+                const gpu = getSpecValue(p["GPU"], "GPU");
+                if (cpu) config.push(`${cpu}`);
+                if (ram) config.push(`${ram}`);
+                if (ssd) config.push(`${ssd}`);
+                if (display) config.push(`${display}`);
+                if (gpu && gpu.toLowerCase() !== "onboard") config.push(`${gpu}`);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
                 const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : "Mua ngay";
