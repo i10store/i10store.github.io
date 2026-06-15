@@ -538,7 +538,7 @@ async function getProductData(forceRefresh = false) {
       
       // Nếu không phải array, throw error
       if (!Array.isArray(data)) {
-        throw new Error("Dữ liệu sheet không đúng định dạng");
+        throw new Error("Dữ liệu không đúng định dạng");
       }
 
       // Lưu cache
@@ -598,7 +598,7 @@ async function renderProductGrid() {
     try {
         const startupData = await getStartupProductData();
         if (startupData.isStatic && dataStatusEl) {
-            dataStatusEl.innerHTML = `<div style="margin:0 10px 12px;padding:8px 12px;border:1px solid #d7e8b8;border-radius:6px;background:#f8fff0;color:#5b7f00;font-size:13px;text-align:center;">Sản phẩm đang cập nhật dữ liệu gần nhất.</div>`;
+            dataStatusEl.innerHTML = `<div style="margin:0 10px 12px;padding:8px 12px;border:1px solid #d7e8b8;border-radius:6px;background:#f8fff0;color:#5b7f00;font-size:13px;text-align:center;">Đang cập nhật dữ liệu gần nhất...</div>`;
         }
         const rawData = startupData.items;
 
@@ -1489,7 +1489,7 @@ function isFolderLink(link) {
 async function fetchFolderFiles(folderId) {
   const gasUrl = SITE_CONFIG.GAS_FOLDER_TO_JSON_URL;
   if (!gasUrl) {
-    throw new Error("Chưa cấu hình GAS_FOLDER_TO_JSON_URL. Cần deploy Google Apps Script (xem apps-script.txt)");
+    throw new Error("Chưa cấu hình GAS");
   }
   const url = `${gasUrl}?folderId=${encodeURIComponent(folderId)}`;
   const res = await fetch(url);
@@ -1760,7 +1760,7 @@ async function renderBanner() {
       // Lấy JSON banner từ ô AH2, dưới cột Photos2 của hàng tiêu đề.
       const photos2Str = getSheetHeaderCellValue(raw, "Photos2", 1, 33);
       if (!photos2Str) {
-        throw new Error("Không tìm thấy dữ liệu banner trong sheet Web (cột Photos2)");
+        throw new Error("Không tìm thấy dữ liệu banner...");
       }
 
       let bannerArray = [];
@@ -1772,7 +1772,7 @@ async function renderBanner() {
           if (!Array.isArray(bannerArray)) bannerArray = [];
         } catch (e) {
           console.warn("Không parse được Photos2 JSON, thử kiểm tra lại:", e);
-          throw new Error("Dữ liệu Photos2 không đúng định dạng JSON");
+          throw new Error("Dữ liệu không đúng định dạng ");
         }
       }
 
