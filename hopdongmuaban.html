@@ -875,6 +875,10 @@ async function saveToSheet() {
     }
 
     var btn = document.getElementById('btnSaveSheet');
+    if (window.I10_SECURITY && !I10_SECURITY.verifyButtonProtection('btnSaveSheet')) {
+        showStatus('Yêu cầu không hợp lệ. Vui lòng làm mới trang và thử lại.', 'error');
+        return;
+    }
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
     btn.style.opacity = '0.8';
@@ -1010,6 +1014,7 @@ updateSpeed();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 <script src="/assets/js/scripts.js"></script>
+<script src="/assets/js/site-security.js"></script>
 
 <script>
     // (*** ĐỒNG BỘ: API URL và LOGO từ file JS gốc ***)
@@ -1035,6 +1040,9 @@ updateSpeed();
     document.addEventListener("DOMContentLoaded", () => {
         const siteLogo = document.getElementById("site-logo");
         if (siteLogo) siteLogo.src = SITE_LOGO;
+        if (window.I10_SECURITY) {
+            I10_SECURITY.initButtonProtection('btnSaveSheet');
+        }
         fetchCustomerImages();
     });
 

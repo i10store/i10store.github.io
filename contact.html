@@ -278,8 +278,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 <script src="/assets/js/scripts.js"></script>
 <script src="/assets/js/telegram-config.js"></script>
+<script src="/assets/js/site-security.js"></script>
 
 <script>
+    if (window.I10_SECURITY) {
+        I10_SECURITY.initFormProtection('contact-form');
+        I10_SECURITY.initButtonProtection('contact_submit');
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const siteLogo = document.getElementById("site-logo");
         if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
@@ -295,6 +301,16 @@
         const msgEl = document.getElementById('contact_msg');
         const submitBtn = document.getElementById('contact_submit');
         
+        if (window.I10_SECURITY) {
+            if (!I10_SECURITY.verifyButtonProtection('contact_submit') || !I10_SECURITY.verifySecurityFields(document.getElementById('contact-form'))) {
+                msgEl.style.color = 'red';
+                msgEl.textContent = 'Yêu cầu không hợp lệ. Vui lòng làm mới trang và thử lại.';
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = 1;
+                return;
+            }
+        }
+
         if (!name || !phone || !message) { 
             msgEl.style.color = 'red'; 
             msgEl.textContent = "Vui lòng nhập Họ tên, SĐT và Nội dung yêu cầu."; 

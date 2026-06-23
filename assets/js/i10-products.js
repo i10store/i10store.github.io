@@ -1629,6 +1629,10 @@ function openOrderForm(product, titleText, parentOverlay) {
   `;
 
   document.body.appendChild(modal);
+  if (window.I10_SECURITY) {
+      I10_SECURITY.createHiddenSecurityFields(modal);
+      I10_SECURITY.initButtonProtection('order_submit');
+  }
   
   const submitBtn = modal.querySelector('#order_submit');
   const cancelBtn = modal.querySelector('#order_cancel');
@@ -1678,6 +1682,16 @@ function openOrderForm(product, titleText, parentOverlay) {
     const phone = modal.querySelector('#order_phone').value.trim();
     const note = modal.querySelector('#order_note').value.trim();
     
+    if (window.I10_SECURITY) {
+      if (!I10_SECURITY.verifyButtonProtection('order_submit') || !I10_SECURITY.verifySecurityFields(modal)) {
+        msgEl.style.color = 'red';
+        msgEl.textContent = 'Yêu cầu đơn hàng không hợp lệ hoặc gửi quá nhanh. Vui lòng thử lại sau.';
+        submitBtn.disabled = false;
+        cancelBtn.disabled = false;
+        return;
+      }
+    }
+
     if (!name || !phone) { 
       msgEl.style.color = 'red'; 
       msgEl.textContent = "Vui lòng nhập Tên và Số điện thoại."; 

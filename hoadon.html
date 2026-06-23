@@ -772,6 +772,10 @@ async function saveToSheet() {
     }
 
     var btn = document.getElementById('btnSaveSheet');
+    if (window.I10_SECURITY && !I10_SECURITY.verifyButtonProtection('btnSaveSheet')) {
+        showStatus('Yêu cầu không hợp lệ. Vui lòng làm mới trang và thử lại.', 'error');
+        return;
+    }
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
     btn.style.opacity = '0.8';
@@ -867,15 +871,19 @@ updateSpeed();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="/assets/js/scripts.js"></script>
+<script src="/assets/js/site-security.js"></script>
 
 
 <script>
-const SITE_LOGO = i10Config ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
+const SITE_LOGO = i10Config ? i10Config.SITE_LOGO : "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4fD5QeN0xXGf9lx7v1Vi=s1000";
 const SHEET_API = i10Config ? i10Config.SHEET_API_HOADON : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
     const siteLogo = document.getElementById("site-logo");
     if (siteLogo) siteLogo.src = SITE_LOGO;
+    if (window.I10_SECURITY) {
+        I10_SECURITY.initButtonProtection('btnSaveSheet');
+    }
 });
 </script>
 
