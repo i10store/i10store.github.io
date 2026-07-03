@@ -196,7 +196,77 @@
 <script>
 const SITE_LOGO = "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
 const THEME = "#76b500";
+const PRODUCT_CACHE_KEY = "i10_products_cache_v6";
 let foundProducts = [];
+let cachedProducts = null;
+let cachedProductsPromise = null;
+
+function normalizeProductId(value) {
+    return String(value == null ? "" : value).trim().toUpperCase();
+}
+
+function readCachedProducts() {
+    try {
+        const cached = localStorage.getItem(PRODUCT_CACHE_KEY);
+        if (!cached) return [];
+
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+        return [];
+    } catch (err) {
+        console.warn("Không đọc được cache sản phẩm:", err);
+        return [];
+    }
+}
+
+async function getProductsForIntem() {
+    if (Array.isArray(cachedProducts)) return cachedProducts;
+    if (cachedProductsPromise) return cachedProductsPromise;
+
+    cachedProductsPromise = (async () => {
+        let products = readCachedProducts();
+
+        if (!products.length) {
+            try {
+                const response = await fetch('/assets/js/products.json');
+                products = await response.json();
+            } catch (err) {
+                console.error('Không tải được dữ liệu sản phẩm:', err);
+                products = [];
+            }
+        }
+
+        cachedProducts = Array.isArray(products) ? products : [];
+        return cachedProducts;
+    })();
+
+    return cachedProductsPromise;
+}
+
+function buildProductIndex(products) {
+    const index = new Map();
+
+    products.forEach((product) => {
+        if (!product || typeof product !== "object") return;
+
+        const keys = [
+            product.ID,
+            product.id,
+            product["Ma SP"],
+            product["Mã SP"]
+        ];
+
+        keys.forEach((key) => {
+            const normalized = normalizeProductId(key);
+            if (normalized && !index.has(normalized)) {
+                index.set(normalized, product);
+            }
+        });
+    });
+
+    return index;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const savedIds = localStorage.getItem('i10_intem_ids');
@@ -228,11 +298,12 @@ async function searchProducts() {
     foundProducts = [];
     
     try {
-        const response = await fetch('/assets/js/products.json');
-        const data = await response.json();
+        const data = await getProductsForIntem();
+        const productIndex = buildProductIndex(data);
         
         ids.forEach(searchId => {
-            const product = data.find(p => p.ID && p.ID.toUpperCase() === searchId.toUpperCase());
+            const normalizedId = normalizeProductId(searchId);
+            const product = productIndex.get(normalizedId) || data.find(p => normalizeProductId(p && p.ID) === normalizedId);
             if (product) {
                 foundProducts.push(product);
             }

@@ -232,7 +232,7 @@
                     <span>Sản phẩm 1</span>
                 </div>
                 <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" value="Laptop Thinkpad X1 Carbon Gen 11" oninput="tinhTong()"></div>
-                <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
+                <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong(); syncInvoiceNumber()"></div>
                 <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
                 <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
                 <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" value="8500000" oninput="tinhTong()"></div>
@@ -372,9 +372,72 @@
 
 <script>
 var productCount = 1;
+var dateAutoTimer = null;
+var dateManualOverride = false;
+
+function formatDateDDMMYYYY(date) {
+    var d = String(date.getDate()).padStart(2, '0');
+    var m = String(date.getMonth() + 1).padStart(2, '0');
+    var y = date.getFullYear();
+    return d + '/' + m + '/' + y;
+}
+
+function getPrimaryModelSerial() {
+    var modelInputs = document.querySelectorAll('.modelSanPham');
+    for (var i = 0; i < modelInputs.length; i++) {
+        var value = (modelInputs[i].value || '').trim();
+        if (value) return value;
+    }
+    return '';
+}
+
+function getInvoiceSuffixFromModel(modelSerial) {
+    var digits = String(modelSerial || '').replace(/\D/g, '');
+    if (digits.length >= 3) return digits.slice(-3);
+    if (digits.length > 0) return digits.padStart(3, '0');
+
+    var fallback = String(modelSerial || '').replace(/[^A-Za-z0-9]/g, '');
+    if (!fallback) return '000';
+    return fallback.slice(-3).toUpperCase().padStart(3, '0');
+}
+
+function syncInvoiceNumber() {
+    var soHDInput = document.getElementById('soHD');
+    if (!soHDInput) return;
+
+    var modelSerial = getPrimaryModelSerial();
+    var preview = document.getElementById('p_soHD');
+    if (!modelSerial) {
+        soHDInput.value = '';
+        if (preview) preview.textContent = '';
+        return;
+    }
+
+    var suffix = getInvoiceSuffixFromModel(modelSerial);
+    var invoiceNumber = 'HD-' + suffix + '/' + new Date().getFullYear();
+
+    soHDInput.value = invoiceNumber;
+    if (preview) preview.textContent = invoiceNumber;
+}
+
+function syncCurrentDate(force) {
+    var dateInput = document.getElementById('ngayThangNam');
+    if (!dateInput) return;
+
+    if (!force) {
+        if (document.activeElement === dateInput) return;
+        if (dateManualOverride) return;
+    }
+
+    var today = formatDateDDMMYYYY(new Date());
+    dateInput.value = today;
+    var preview = document.getElementById('p_ngayThangNam');
+    if (preview) preview.textContent = today;
+}
 
 function syncDate() {
     var dateStr = document.getElementById('ngayThangNam').value;
+    dateManualOverride = !!dateStr;
     document.getElementById('p_ngayThangNam').textContent = dateStr;
 }
 
@@ -390,13 +453,14 @@ function addProduct() {
             <span class="product-item-remove" onclick="removeProduct(${productCount})">Xóa</span>
         </div>
         <div class="form-group"><input type="text" class="tenSanPham" placeholder="Tên sản phẩm" oninput="tinhTong()"></div>
-        <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong()"></div>
+        <div class="form-group"><input type="text" class="modelSanPham" placeholder="Model/Serial" oninput="tinhTong(); syncInvoiceNumber()"></div>
         <div class="form-group"><input type="text" class="cauHinh" placeholder="Cấu hình" oninput="tinhTong()"></div>
         <div class="form-group"><input type="number" class="soLuong" placeholder="Số lượng" value="1" oninput="tinhTong()"></div>
         <div class="form-group"><input type="text" class="donGia" placeholder="Đơn giá (VNĐ)" oninput="tinhTong()"></div>
     `;
     productList.appendChild(newProduct);
     tinhTong();
+    syncInvoiceNumber();
 }
 
 function removeProduct(id) {
@@ -405,8 +469,9 @@ function removeProduct(id) {
         if (product) {
             product.remove();
             productCount--;
-            tinhTong();
-        }
+    tinhTong();
+    syncInvoiceNumber();
+}
     }
 }
 
@@ -523,8 +588,8 @@ function selectPayment(val) {
 }
 
 function initDefaults() {
-    document.getElementById('p_soHD').textContent = document.getElementById('soHD').value;
-    document.getElementById('p_ngayThangNam').textContent = document.getElementById('ngayThangNam').value;
+    syncCurrentDate(true);
+    syncInvoiceNumber();
     document.getElementById('p_tenKhachHang').textContent = document.getElementById('tenKhachHang').value;
     document.getElementById('p_diaChiKhachHang').textContent = document.getElementById('diaChiKhachHang').value;
     document.getElementById('p_sdtKhachHang').textContent = document.getElementById('sdtKhachHang').value;
@@ -536,6 +601,11 @@ function initDefaults() {
     document.getElementById('diaChiKhachHang').addEventListener('input', function() { document.getElementById('p_diaChiKhachHang').textContent = this.value; });
     document.getElementById('sdtKhachHang').addEventListener('input', function() { document.getElementById('p_sdtKhachHang').textContent = this.value; });
     document.getElementById('ghiChu').addEventListener('input', function() { document.getElementById('p_ghiChu').textContent = this.value; });
+
+    if (dateAutoTimer) clearInterval(dateAutoTimer);
+    dateAutoTimer = setInterval(function() {
+        syncCurrentDate(false);
+    }, 1000);
 }
 
 function updatePreview() {
@@ -584,6 +654,7 @@ function clearForm() {
     document.getElementById('sdtKhachHang').value = '';
     document.getElementById('ghiChu').value = 'Kèm sạc 65w, túi chống sốc, lót chuột, chuột bluetooth.';
     document.getElementById('thanhTienChu').value = '';
+    dateManualOverride = false;
     
     document.getElementById('p_soHD').textContent = '';
     document.getElementById('p_ngayThangNam').textContent = '';
@@ -612,6 +683,8 @@ function clearForm() {
     firstProduct.querySelector('.donGia').value = '';
     
     productCount = 1;
+    syncCurrentDate(true);
+    syncInvoiceNumber();
     tinhTong();
     showStatus('Đã xóa trắng form', 'success');
 }
@@ -732,9 +805,6 @@ function getInvoiceFileName() {
     return (value || 'draft').replace(/[\\/:*?"<>|]+/g, '-');
 }
 
-initDefaults();
-updatePreview();
-updateSpeed();
 // === GET FORM DATA ===
 function getFormDataHoaDon() {
     var data = {
