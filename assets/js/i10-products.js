@@ -646,7 +646,7 @@ async function renderProductGrid() {
             return fullList;
         }
 
-        const filteredData = shuffleArray(applyUrlFilter(data, filter));
+        const filteredData = applyUrlFilter(data, filter);
         
         let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
 
@@ -683,14 +683,27 @@ async function renderProductGrid() {
             return false;
         };
 
+        const getProductStockPriority = (product) => {
+            const status = String(product?.["T.THÁI"] || "").trim().toLowerCase();
+            if (status.includes("đã bán") || status.includes("tạm hết")) return 2;
+            if (status === "đã nhận cọc") return 0;
+            return 1;
+        };
+
         const orderByStockStatus = (items) => {
             const availableItems = [];
             const unavailableItems = [];
-            items.forEach(product => {
-                if (isSold(product)) unavailableItems.push(product);
-                else availableItems.push(product);
+
+            items.forEach((product) => {
+                const status = String(product?.["T.THÁI"] || "").trim().toLowerCase();
+                if (status.includes("đã bán") || status.includes("tạm hết")) {
+                    unavailableItems.push(product);
+                } else {
+                    availableItems.push(product);
+                }
             });
-            return availableItems.concat(unavailableItems);
+
+            return shuffleArray(availableItems).concat(shuffleArray(unavailableItems));
         };
         
         // (Hàm getComparablePrice)
@@ -831,7 +844,7 @@ async function renderProductGrid() {
                 if (gpu && gpu.toLowerCase() !== "onboard") config.push(`${gpu}`);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
-                const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : "Mua ngay";
+                const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : (isSold(p) ? "Liên hệ" : "Mua ngay");
                 return `
                   <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                     <div class="product-card" data-json="${jsonData}" data-slug="${p.slug}">
