@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="description" content="i10 STORE - Test chất lượng laptop">
+<title>Test Máy - i10 STORE</title>
+
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/i10.css">
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  .test-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 20px;
+  }
+
+  .back-link {
+    margin-bottom: 20px;
+  }
+
+  .back-link a {
+    color: #76b500;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+
+  .page-title {
+    text-align: center;
+    color: #76b500;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  .main-panel {
+    background-color: #fff;
+    border: 2px solid #76b500;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .btn-test-module {
+    background-color: #76b500;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    min-height: 70px;
+  }
+
+  .btn-test-module:hover {
+    background-color: #5a8a00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .btn-test-module.active {
+    background-color: #5a8a00;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #76b500;
+  }
+
+  .btn-test-module .icon {
+    font-size: 20px;
+  }
+
+  .content-area {
+    border-top: 2px solid #76b500;
+    padding-top: 30px;
+  }
+
+  .test-module {
+    display: none;
+  }
+
+  .test-module.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* KEYBOARD STYLES */
+  .keyboard-layout {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+  }
+
+  .keyboard-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 4px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .key-button {
+    background-color: #e0e0e0;
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 5px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #333;
+  }
+
+  .key-button:active,
+  .key-button.active {
+    background-color: #76b500;
+    color: white;
+    border-color: #5a8a00;
+    transform: scale(0.95);
+  }
+
+  .key-button.spacebar {
+    min-width: auto;
+    flex: 1 1 100%;
+  }
+
+  .keyboard-spacer {
+    width: 15px;
+    flex-shrink: 0;
+  }
+
+  /* Active state - first press, keep green */
+  .key-button.active {
+    background-color: #76b500;
+    color: white;
+    border-color: #5a8a00;
+  }
+
+  /* Blink animation for repeated presses */
+  @keyframes keyBlink {
+    0% { background-color: #e0e0e0; color: #333; }
+    50% { background-color: #76b500; color: white; }
+    100% { background-color: #76b500; color: white; }
+  }
+
+  .key-button.active.blink {
+    animation: keyBlink 0.3s ease-in-out;
+  }
+
+  .keyboard-log {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 10px;
+    max-height: 40px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-family: monospace;
+    font-size: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .log-entry {
+    padding: 2px 6px;
+    background-color: #76b500;
+    color: white;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* SCREEN TEST STYLES */
+  .screen-test-section {
+    text-align: center;
+  }
+
+  .screen-test-btn {
+    background-color: #76b500;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+
+  .screen-test-btn:hover {
+    background-color: #5a8a00;
+  }
+
+  .screen-test-instructions {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .screen-test-instructions h4 {
+    color: #856404;
+    margin: 0 0 5px 0;
+    font-size: 13px;
+  }
+
+  .screen-test-instructions ul {
+    margin: 0;
+    font-size: 11px;
+    padding-left: 18px;
+  }
+
+  /* AUDIO TEST STYLES */
+  .audio-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .audio-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .audio-panel {
+    background-color: #f5f5f5;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  .audio-panel h4 {
+    color: #76b500;
+    margin: 0 0 8px 0;
+    font-size: 13px;
+  }
+
+  .btn-audio {
+    background-color: #76b500;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+  }
+
+  .btn-audio:hover {
+    background-color: #5a8a00;
+  }
+
+  .btn-audio:active {
+    transform: scale(0.95);
+  }
+
+  .volume-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    margin: 10px 0;
+  }
+
+  .audio-visualizer {
+    background-color: #000;
+    border-radius: 6px;
+    height: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .visualizer-bar {
+    position: absolute;
+    bottom: 0;
+    width: 4px;
+    background-color: #76b500;
+    border-radius: 2px;
+  }
+
+  /* CAMERA TEST STYLES */
+  .camera-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .camera-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .camera-preview {
+    background-color: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 1px solid #76b500;
+    font-size: 12px;
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .camera-info {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #76b500;
+    margin-top: 10px;
+  }
+
+  /* SPECS STYLES */
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .spec-card {
+    background-color: #f5f5f5;
+    border-left: 4px solid #76b500;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .spec-card h4 {
+    color: #76b500;
+    margin-top: 0;
+    font-weight: bold;
+  }
+
+  .spec-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+
+  .spec-item:last-child {
+    border-bottom: none;
+  }
+
+  .spec-label {
+    color: #666;
+    font-weight: bold;
+  }
+
+  .spec-value {
+    color: #333;
+    margin-left: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .test-container {
+      padding: 10px;
+    }
+
+    .button-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .audio-section, .camera-section {
+      grid-template-columns: 1fr;
+    }
+
+    .keyboard-row {
+      flex-wrap: wrap;
+    }
+
+    .key-button.spacebar {
+      min-width: auto;
+      flex: 1 1 100%;
+    }
+  }
+
+  .fullscreen-test {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+  }
+
+  .screen-controls {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    gap: 10px;
+  }
+
+  .screen-controls button {
+    background-color: rgba(255,255,255,0.9);
+    color: #333;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+
+  .screen-controls button:hover {
+    background-color: #fff;
+  }
+</style>
+
+
+<script src="/assets/js/i10-config.min.js"></script>
+<script src="/assets/js/config.js"></script>
+
+</head>
+<body class="cnt-test">
+
+<header class="header-style-1"> 
+  <div class="top-bar animate-dropdown"><div class="container"></div></div>
+  <div class="main-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-3 logo-holder"> 
+          <div class="logo-box"> 
+            <marquee behavior="alternate" direction="up" scrollamount="2" style="text-align: center; font-size: 26px; font-weight: bolder; color: #fff;"> i10 STORE </marquee>
+            <a href="/index.html"><img id="site-logo" width="100" height="100" alt="i10 Store Logo"></a>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-9 top-search-holder"> 
+          <div style="font-size: 16px; font-weight: bold; padding: 5px;">
+            <marquee scrollamount="9" style="color: #fff;">i10 Store - Chuyên Laptop Thinkpad Mỹ - Chào Mừng Quý Khách...</marquee>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="body-content outer-top-xs" id="top-banner-and-menu">
+  <div class="test-container">
+    <div class="back-link">
+      <a href="./index.html"><i class="fa fa-arrow-left"></i> Quay lại trang chủ</a>
+    </div>
+
+    <div class="page-title">
+      🧪 TEST CHẤT LƯỢNG LAPTOP
+    </div>
+
+    <div class="main-panel">
+      <!-- BUTTON GRID -->
+      <div class="button-grid">
+        <button class="btn-test-module active" onclick="switchModule('keyboard')">
+          <span class="icon">⌨️</span>
+          Test Bàn Phím
+        </button>
+        <button class="btn-test-module" onclick="switchModule('screen')">
+          <span class="icon">🖥️</span>
+          Test Màn Hình
+        </button>
+        <button class="btn-test-module" onclick="switchModule('audio')">
+          <span class="icon">🔊</span>
+          Test Loa
+        </button>
+        <button class="btn-test-module" onclick="switchModule('camera')">
+          <span class="icon">📷</span>
+          Test Camera
+        </button>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div class="content-area">
+        
+        <!-- KEYBOARD TEST MODULE -->
+        <div id="keyboard" class="test-module active">
+          <h3 style="color: #76b500; margin-top: 0; font-size: 15px;">⌨️ Test Bàn Phím (84 Key US)</h3>
+          <p style="font-size: 12px; margin: 5px 0;">Bấm các phím trên bàn phím hoặc click nút để test. Phím sẽ đổi màu xanh.</p>
+          
+          <div class="keyboard-layout">
+            <!-- Row 0: Function Keys + Navigation -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="Escape" style="min-width: 40px;">Esc</button>
+              <div class="keyboard-spacer"></div>
+              <button class="key-button" data-key="F1">F1</button>
+              <button class="key-button" data-key="F2">F2</button>
+              <button class="key-button" data-key="F3">F3</button>
+              <button class="key-button" data-key="F4">F4</button>
+              <div class="keyboard-spacer"></div>
+              <button class="key-button" data-key="F5">F5</button>
+              <button class="key-button" data-key="F6">F6</button>
+              <button class="key-button" data-key="F7">F7</button>
+              <button class="key-button" data-key="F8">F8</button>
+              <div class="keyboard-spacer"></div>
+              <button class="key-button" data-key="F9">F9</button>
+              <button class="key-button" data-key="F10">F10</button>
+              <button class="key-button" data-key="F11">F11</button>
+              <button class="key-button" data-key="F12">F12</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <button class="key-button" data-key="PrintScreen" style="min-width: 35px;">PrS</button>
+              <button class="key-button" data-key="ScrollLock" style="min-width: 35px;">Scr</button>
+              <button class="key-button" data-key="Pause" style="min-width: 35px;">Pau</button>
+            </div>
+
+            <!-- Row 1: Numbers -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="`">~`</button>
+              <button class="key-button" data-key="1">1!</button>
+              <button class="key-button" data-key="2">2@</button>
+              <button class="key-button" data-key="3">3#</button>
+              <button class="key-button" data-key="4">4$</button>
+              <button class="key-button" data-key="5">5%</button>
+              <button class="key-button" data-key="6">6^</button>
+              <button class="key-button" data-key="7">7&</button>
+              <button class="key-button" data-key="8">8*</button>
+              <button class="key-button" data-key="9">9(</button>
+              <button class="key-button" data-key="0">0)</button>
+              <button class="key-button" data-key="-">-_</button>
+              <button class="key-button" data-key="=">=+</button>
+              <button class="key-button" data-key="Backspace" style="min-width: 80px;">Bksp</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <button class="key-button" data-key="Insert" style="min-width: 40px;">Ins</button>
+              <button class="key-button" data-key="Home" style="min-width: 40px;">Hom</button>
+              <button class="key-button" data-key="PageUp" style="min-width: 40px;">PUp</button>
+            </div>
+
+            <!-- Row 2: QWERTY -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="Tab" style="min-width: 65px;">Tab</button>
+              <button class="key-button" data-key="q">Q</button>
+              <button class="key-button" data-key="w">W</button>
+              <button class="key-button" data-key="e">E</button>
+              <button class="key-button" data-key="r">R</button>
+              <button class="key-button" data-key="t">T</button>
+              <button class="key-button" data-key="y">Y</button>
+              <button class="key-button" data-key="u">U</button>
+              <button class="key-button" data-key="i">I</button>
+              <button class="key-button" data-key="o">O</button>
+              <button class="key-button" data-key="p">P</button>
+              <button class="key-button" data-key="[">[{</button>
+              <button class="key-button" data-key="]">]}</button>
+              <button class="key-button" data-key="\\" style="min-width: 65px;">\\|</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <button class="key-button" data-key="Delete" style="min-width: 40px;">Del</button>
+              <button class="key-button" data-key="End" style="min-width: 40px;">End</button>
+              <button class="key-button" data-key="PageDown" style="min-width: 40px;">PDn</button>
+            </div>
+
+            <!-- Row 3: ASDF -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="CapsLock" style="min-width: 85px;">Caps</button>
+              <button class="key-button" data-key="a">A</button>
+              <button class="key-button" data-key="s">S</button>
+              <button class="key-button" data-key="d">D</button>
+              <button class="key-button" data-key="f">F</button>
+              <button class="key-button" data-key="g">G</button>
+              <button class="key-button" data-key="h">H</button>
+              <button class="key-button" data-key="j">J</button>
+              <button class="key-button" data-key="k">K</button>
+              <button class="key-button" data-key="l">L</button>
+              <button class="key-button" data-key=";">:;</button>
+              <button class="key-button" data-key="'">'"'</button>
+              <button class="key-button" data-key="Enter" style="min-width: 85px;">Entr</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <span style="flex: 3;"></span>
+            </div>
+
+            <!-- Row 4: ZXCV -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="Shift" style="min-width: 130px;">Shift</button>
+              <button class="key-button" data-key="z">Z</button>
+              <button class="key-button" data-key="x">X</button>
+              <button class="key-button" data-key="c">C</button>
+              <button class="key-button" data-key="v">V</button>
+              <button class="key-button" data-key="b">B</button>
+              <button class="key-button" data-key="n">N</button>
+              <button class="key-button" data-key="m">M</button>
+              <button class="key-button" data-key=",">,<</button>
+              <button class="key-button" data-key=".">. ></button>
+              <button class="key-button" data-key="/">?/</button>
+              <button class="key-button" data-key="Shift" style="min-width: 130px;">Shift</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <span style="flex: 1;"></span>
+              <button class="key-button" data-key="ArrowUp" style="min-width: 40px;">↑</button>
+              <span style="flex: 1;"></span>
+            </div>
+
+            <!-- Row 5: Space and Modifiers -->
+            <div class="keyboard-row">
+              <button class="key-button" data-key="Control" style="min-width: 75px;">Ctrl</button>
+              <button class="key-button" data-key="Meta" style="min-width: 65px;">Win</button>
+              <button class="key-button" data-key="Alt" style="min-width: 65px;">Alt</button>
+              <button class="key-button spacebar" data-key=" ">SPACE</button>
+              <button class="key-button" data-key="Alt" style="min-width: 65px;">Alt</button>
+              <button class="key-button" data-key="Meta" style="min-width: 65px;">Win</button>
+              <button class="key-button" data-key="ContextMenu" style="min-width: 65px;">Menu</button>
+              <button class="key-button" data-key="Control" style="min-width: 75px;">Ctrl</button>
+              <div class="keyboard-spacer" style="width: 25px;"></div>
+              <button class="key-button" data-key="ArrowLeft" style="min-width: 40px;">←</button>
+              <button class="key-button" data-key="ArrowDown" style="min-width: 40px;">↓</button>
+              <button class="key-button" data-key="ArrowRight" style="min-width: 40px;">→</button>
+            </div>
+          </div>
+
+          <div class="keyboard-log" id="keyboardLog">
+            <div style="color: #999; font-size: 11px;">Log: </div>
+          </div>
+        </div>
+
+        <!-- SCREEN TEST MODULE -->
+        <div id="screen" class="test-module">
+          <h3 style="color: #76b500; margin-top: 0;">🖥️ Test Màn Hình</h3>
+          
+          <div class="screen-test-instructions">
+            <h4><i class="fa fa-info-circle"></i> Hướng Dẫn</h4>
+            <ul>
+              <li>Click nút <strong>"Bắt Đầu"</strong> để vào chế độ toàn màn hình</li>
+              <li>Sử dụng <strong>mũi tên trái/phải</strong> hoặc <strong>click chuột trái</strong> để chuyển màu</li>
+              <li>Nhìn kỹ tìm <strong>pixel chết</strong> (những điểm sáng bất thường hoặc không sáng)</li>
+              <li>Kiểm tra <strong>độ sáng đều</strong> trên toàn bộ màn hình</li>
+              <li>Bấm <strong>ESC</strong> để thoát</li>
+            </ul>
+          </div>
+
+          <div class="screen-test-section">
+            <button class="screen-test-btn" onclick="startScreenTest()">
+              <i class="fa fa-play"></i> Bắt Đầu Test
+            </button>
+          </div>
+        </div>
+
+        <!-- AUDIO TEST MODULE -->
+        <div id="audio" class="test-module">
+          <h3 style="color: #76b500; margin-top: 0; font-size: 16px;">🔊 Test Loa</h3>
+          
+          <div class="audio-section">
+            <div class="audio-controls">
+              <div class="audio-panel">
+                <h4><i class="fa fa-music"></i> Test Stereo (Âm Thanh)</h4>
+                <button class="btn-audio" onclick="playTestMusic('left')" style="width: 100%;">
+                  <i class="fa fa-arrow-left"></i> Loa Trái (L)
+                </button>
+                <button class="btn-audio" onclick="playTestMusic('right')" style="width: 100%;">
+                  <i class="fa fa-arrow-right"></i> Loa Phải (R)
+                </button>
+                <button class="btn-audio" onclick="playTestMusic('both')" style="width: 100%;">
+                  <i class="fa fa-volume-up"></i> Cả Hai Loa
+                </button>
+              </div>
+
+              <div class="audio-panel">
+                <h4><i class="fa fa-sliders"></i> Điều Chỉnh Âm Lượng</h4>
+                <label for="audioVolume" style="display: block; margin-bottom: 5px; font-size: 11px;">Âm lượng:</label>
+                <input type="range" id="audioVolume" class="volume-slider" min="0" max="100" value="50" onchange="updateAudioVolume()">
+                <div style="text-align: center; margin-top: 5px; font-size: 11px;">
+                  <span id="volumePercent">50%</span>
+                </div>
+              </div>
+
+              <div class="audio-panel">
+                <h4><i class="fa fa-wave-square"></i> Test Tone</h4>
+                <button class="btn-audio" onclick="playFrequency(440)" style="width: 100%;">
+                  440 Hz
+                </button>
+                <button class="btn-audio" onclick="playFrequency(1000)" style="width: 100%;">
+                  1000 Hz
+                </button>
+                <button class="btn-audio" onclick="playFrequency(8000)" style="width: 100%;">
+                  8000 Hz
+                </button>
+                <button class="btn-audio" onclick="stopAudio()" style="width: 100%; background-color: #dc3545; margin-top: 5px;">
+                  <i class="fa fa-stop"></i> Dừng
+                </button>
+              </div>
+            </div>
+
+            <div class="audio-panel" style="grid-column: 1 / -1;">
+              <h4><i class="fa fa-bar-chart"></i> Bộ Hiển Thị Âm Thanh</h4>
+              <div class="audio-visualizer" id="audioVisualizer"></div>
+              <p id="audioStatus" style="text-align: center; color: #76b500; font-weight: bold; margin-top: 5px; font-size: 12px;">Sẵn sàng</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMERA TEST MODULE -->
+        <div id="camera" class="test-module">
+          <h3 style="color: #76b500; margin-top: 0;">📷 Test Camera</h3>
+          
+          <div class="camera-section">
+            <div class="camera-preview" id="cameraPreview">
+              <span>Camera chưa được bật</span>
+            </div>
+
+            <div class="camera-controls">
+              <div class="audio-panel">
+                <h4><i class="fa fa-camera"></i> Điều Khiển Camera</h4>
+                <button class="btn-audio" onclick="startCamera()" style="width: 100%;">
+                  <i class="fa fa-camera"></i> Bật Camera
+                </button>
+                <button class="btn-audio" onclick="stopCamera()" style="width: 100%; background-color: #dc3545; margin-top: 10px;">
+                  <i class="fa fa-times"></i> Tắt Camera
+                </button>
+                <button class="btn-audio" onclick="capturePhoto()" style="width: 100%; margin-top: 10px;">
+                  <i class="fa fa-photo"></i> Chụp Ảnh
+                </button>
+              </div>
+
+              <div class="audio-panel">
+                <h4><i class="fa fa-info-circle"></i> Kiểm Tra</h4>
+                <div style="font-size: 13px; line-height: 1.6;">
+                  <p>✓ Độ sáng camera</p>
+                  <p>✓ Độ nét hình ảnh</p>
+                  <p>✓ Màu sắc chính xác</p>
+                  <p>✓ Không có vết bẩn trên ống kính</p>
+                  <p>✓ Cảm biến hoạt động tốt</p>
+                </div>
+              </div>
+
+              <div class="camera-info" id="cameraInfo">
+                <p style="margin: 0; font-size: 12px; color: #666;">Thông tin camera sẽ xuất hiện ở đây</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="photoCapture" style="margin-top: 30px; display: none;">
+            <h4 style="color: #76b500;">Ảnh Chụp</h4>
+            <canvas id="photoCanvas" style="max-width: 100%; border-radius: 8px; border: 2px solid #76b500;"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer" class="footer color-bg" style="margin-top: 40px;">
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12">
+          <p style="text-align: center; color: white;">
+            &copy; 2024 i10 STORE. Công cụ Test Chất Lượng Laptop.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ========== MODULE SWITCHING ==========
+let currentModule = 'keyboard';
+
+function switchModule(module) {
+  // Hide all modules
+  document.querySelectorAll('.test-module').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.btn-test-module').forEach(el => el.classList.remove('active'));
+  
+  // Show selected module
+  document.getElementById(module).classList.add('active');
+  event.target.closest('.btn-test-module').classList.add('active');
+  
+  currentModule = module;
+}
+
+// ========== KEYBOARD TEST ==========
+let keyboardLog = [];
+let keyPressCount = {}; // Track how many times each key was pressed
+
+// Setup keyboard listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Real keyboard input - ONLY when in keyboard test module
+  document.addEventListener('keydown', (e) => {
+    if (currentModule === 'keyboard') {
+      const keyChar = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      const keyBtn = document.querySelector(`[data-key="${e.key}"]`);
+      
+      if (keyBtn) {
+        handleKeyPress(keyBtn, keyChar);
+      }
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    // Don't remove active state on keyup anymore
+  });
+
+  // Button click for keyboard - ONLY in keyboard module
+  document.querySelectorAll('.key-button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (currentModule === 'keyboard') {
+        e.preventDefault();
+        const key = btn.getAttribute('data-key');
+        handleKeyPress(btn, key);
+      }
+    });
+  });
+});
+
+function handleKeyPress(btn, key) {
+  // Initialize count if not exists
+  const btnId = btn.getAttribute('data-key');
+  if (!keyPressCount[btnId]) {
+    keyPressCount[btnId] = 0;
+  }
+  
+  keyPressCount[btnId]++;
+  
+  if (keyPressCount[btnId] === 1) {
+    // First press - just set active (keep green)
+    btn.classList.add('active');
+    btn.classList.remove('blink');
+  } else {
+    // Repeated press - trigger blink animation
+    btn.classList.remove('blink');
+    // Force reflow
+    void btn.offsetWidth;
+    btn.classList.add('blink');
+  }
+  
+  addKeyboardLog(key);
+}
+
+function addKeyboardLog(key) {
+  if (!keyboardLog.includes(key)) {
+    keyboardLog.push(key);
+  } else {
+    // Move to end if already exists
+    keyboardLog = keyboardLog.filter(k => k !== key);
+    keyboardLog.push(key);
+  }
+  
+  if (keyboardLog.length > 20) {
+    keyboardLog.shift();
+  }
+  
+  updateKeyboardLog();
+}
+
+function updateKeyboardLog() {
+  const logDiv = document.getElementById('keyboardLog');
+  logDiv.innerHTML = '<div style="color: #999; font-size: 11px;">Log: </div>' + 
+    keyboardLog.map(key => 
+      `<div class="log-entry">${key}</div>`
+    ).join('');
+  logDiv.scrollLeft = logDiv.scrollWidth;
+}
+
+// ========== SCREEN TEST ==========
+let screenColors = ['white', 'black', 'red', 'green', 'blue', 'cyan', 'yellow', 'magenta', 'gray'];
+let currentColorIndex = 0;
+let isScreenTesting = false;
+
+function startScreenTest() {
+  isScreenTesting = true;
+  showScreenColor(0);
+  
+  // Fullscreen request
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen().catch(err => console.log(err));
+  }
+}
+
+function showScreenColor(index) {
+  currentColorIndex = index;
+  const colors = {
+    'white': '#FFFFFF',
+    'black': '#000000',
+    'red': '#FF0000',
+    'green': '#00FF00',
+    'blue': '#0000FF',
+    'cyan': '#00FFFF',
+    'yellow': '#FFFF00',
+    'magenta': '#FF00FF',
+    'gray': '#808080'
+  };
+
+  const color = screenColors[currentColorIndex];
+  const bgColor = colors[color];
+  const textColor = ['white', 'cyan', 'yellow'].includes(color) ? '#000' : '#FFF';
+  
+  document.body.innerHTML = `
+    <div class="fullscreen-test" style="background-color: ${bgColor}; color: ${textColor};">
+      <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 48px; margin: 0; text-transform: uppercase;">${color}</h1>
+        <p style="font-size: 20px; margin: 20px 0;">Tìm kiếm Pixel Chết & Độ Sáng Đều</p>
+        <p style="font-size: 16px; opacity: 0.7;">Màu ${currentColorIndex + 1}/${screenColors.length}</p>
+      </div>
+      
+      <div class="screen-controls">
+        <button onclick="changeScreenColor(-1)">← Trước</button>
+        <button onclick="changeScreenColor(1)">Kế tiếp →</button>
+        <button onclick="exitScreenTest()">Thoát (ESC)</button>
+      </div>
+    </div>
+  `;
+
+  // Auto-style the buttons
+  const style = document.createElement('style');
+  style.textContent = `
+    button {
+      background-color: rgba(255,255,255,0.9);
+      color: #333;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      margin: 0 5px;
+    }
+    button:hover { background-color: #fff; }
+  `;
+  document.head.appendChild(style);
+
+  // Add click listener - click chuột trái để chuyển màu
+  document.body.addEventListener('click', (e) => {
+    if (e.button === 0 && !e.target.closest('button')) {
+      changeScreenColor(1);
+    }
+  });
+}
+
+function changeScreenColor(direction) {
+  currentColorIndex += direction;
+  if (currentColorIndex < 0) currentColorIndex = screenColors.length - 1;
+  if (currentColorIndex >= screenColors.length) currentColorIndex = 0;
+  showScreenColor(currentColorIndex);
+}
+
+function exitScreenTest() {
+  isScreenTesting = false;
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+  // Restore the keyboard module instead of reloading
+  setTimeout(() => {
+    document.body.innerHTML = '';
+    document.body.className = 'cnt-test';
+    location.reload();
+  }, 100);
+}
+
+// ESC key to exit screen test
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isScreenTesting) {
+    exitScreenTest();
+  }
+  // Arrow keys for screen test
+  if (isScreenTesting) {
+    if (e.key === 'ArrowLeft') changeScreenColor(-1);
+    if (e.key === 'ArrowRight') changeScreenColor(1);
+  }
+});
+
+// ========== AUDIO TEST ==========
+let audioContext = null;
+let oscillator = null;
+let gainNode = null;
+let stereoPan = null;
+
+function initAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+// Phát đoạn nhạc test stereo
+function playTestMusic(channel = 'both') {
+  initAudioContext();
+  stopAudio();
+  
+  oscillator = audioContext.createOscillator();
+  gainNode = audioContext.createGain();
+  
+  if (channel !== 'both') {
+    stereoPan = audioContext.createStereoPanner();
+    oscillator.connect(gainNode);
+    gainNode.connect(stereoPan);
+    stereoPan.connect(audioContext.destination);
+    stereoPan.pan.value = channel === 'left' ? -1 : 1;
+  } else {
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+  }
+  
+  oscillator.type = 'sine';
+  const volume = document.getElementById('audioVolume').value / 100;
+  gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+  
+  // Phát dãy nhạc: Do, Re, Mi, Fa, Sol (C, D, E, F, G)
+  const notes = [262, 294, 330, 349, 392]; // Hz
+  const noteDuration = 0.3; // seconds
+  let currentTime = audioContext.currentTime;
+  
+  notes.forEach((freq, idx) => {
+    const startTime = currentTime + (idx * noteDuration);
+    const endTime = startTime + noteDuration;
+    
+    oscillator.frequency.setValueAtTime(freq, startTime);
+    gainNode.gain.setValueAtTime(volume, startTime);
+    gainNode.gain.setValueAtTime(0, endTime);
+  });
+  
+  oscillator.start(currentTime);
+  oscillator.stop(currentTime + (notes.length * noteDuration));
+  
+  const channelName = channel === 'left' ? 'Loa Trái' : (channel === 'right' ? 'Loa Phải' : 'Cả Hai Loa');
+  document.getElementById('audioStatus').textContent = `Phát: ${channelName}`;
+  visualizeAudio();
+}
+
+function playFrequency(freq, channel = 'both') {
+  initAudioContext();
+  stopAudio();
+  
+  oscillator = audioContext.createOscillator();
+  gainNode = audioContext.createGain();
+  
+  if (channel !== 'both') {
+    stereoPan = audioContext.createStereoPanner();
+    oscillator.connect(gainNode);
+    gainNode.connect(stereoPan);
+    stereoPan.connect(audioContext.destination);
+    stereoPan.pan.value = channel === 'left' ? -1 : 1;
+  } else {
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+  }
+  
+  oscillator.type = 'sine';
+  oscillator.frequency.value = freq;
+  
+  const volume = document.getElementById('audioVolume').value / 100;
+  gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+  
+  oscillator.start();
+  
+  document.getElementById('audioStatus').textContent = `Phát: ${freq} Hz`;
+  visualizeAudio();
+}
+
+function stopAudio() {
+  if (oscillator) {
+    try {
+      oscillator.stop();
+    } catch (e) {}
+    oscillator = null;
+  }
+  document.getElementById('audioStatus').textContent = 'Dừng';
+}
+
+function updateAudioVolume() {
+  const volume = document.getElementById('audioVolume').value;
+  document.getElementById('volumePercent').textContent = volume + '%';
+  
+  if (gainNode) {
+    gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
+  }
+}
+
+function visualizeAudio() {
+  const visualizer = document.getElementById('audioVisualizer');
+  visualizer.innerHTML = '';
+  
+  for (let i = 0; i < 50; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'visualizer-bar';
+    bar.style.left = (i * 2) + '%';
+    bar.style.height = (Math.random() * 80 + 20) + '%';
+    bar.style.animation = `pulse 0.3s infinite`;
+    visualizer.appendChild(bar);
+  }
+  
+  if (!document.getElementById('pulseAnimation')) {
+    const style = document.createElement('style');
+    style.id = 'pulseAnimation';
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+// ========== CAMERA TEST ==========
+let cameraStream = null;
+
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    
+    const preview = document.getElementById('cameraPreview');
+    const video = document.createElement('video');
+    video.srcObject = cameraStream;
+    video.autoplay = true;
+    video.playsinline = true;
+    
+    preview.innerHTML = '';
+    preview.appendChild(video);
+    
+    // Get camera capabilities
+    const track = cameraStream.getVideoTracks()[0];
+    const settings = track.getSettings();
+    
+    document.getElementById('cameraInfo').innerHTML = `
+      <p><strong>Resolution:</strong> ${settings.width}x${settings.height}</p>
+      <p><strong>Frame Rate:</strong> ${settings.frameRate} fps</p>
+      <p><strong>Device:</strong> ${track.label}</p>
+      <p style="color: #28a745;">✓ Camera hoạt động tốt</p>
+    `;
+  } catch (error) {
+    document.getElementById('cameraInfo').innerHTML = `
+      <p style="color: #dc3545;">✗ Lỗi: ${error.message}</p>
+      <p style="font-size: 12px; color: #666;">Kiểm tra quyền truy cập camera</p>
+    `;
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+    
+    const preview = document.getElementById('cameraPreview');
+    preview.innerHTML = '<span>Camera đã tắt</span>';
+    document.getElementById('photoCapture').style.display = 'none';
+  }
+}
+
+function capturePhoto() {
+  if (!cameraStream) {
+    alert('Vui lòng bật camera trước');
+    return;
+  }
+  
+  const preview = document.getElementById('cameraPreview');
+  const video = preview.querySelector('video');
+  
+  if (!video) return;
+  
+  const canvas = document.getElementById('photoCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0);
+  
+  document.getElementById('photoCapture').style.display = 'block';
+}
+
+// Cleanup
+window.addEventListener('beforeunload', () => {
+  stopAudio();
+  stopCamera();
+});
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    var siteLogo = document.getElementById("site-logo");
+    if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+    if (window.I10_SECURITY) {
+        I10_SECURITY.initButtonProtection('btnSaveSheet');
+    }
+});
+</script>
+</body>
+</html>
