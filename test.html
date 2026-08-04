@@ -127,45 +127,115 @@
   }
 
   /* KEYBOARD STYLES */
+  .keyboard-shell {
+    background: linear-gradient(135deg, #f8fdf0 0%, #f2f7e3 100%);
+    border: 1px solid #cfe38f;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+
+  .keyboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .keyboard-title {
+    color: #4f7000;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .keyboard-subtitle {
+    color: #666;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .keyboard-status {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .keyboard-chip {
+    background: #fff;
+    border: 1px solid #d9e8b2;
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: #4f7000;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  .keyboard-reset {
+    border: none;
+    background: #76b500;
+    color: white;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .keyboard-reset:hover {
+    background: #5f8f00;
+  }
+
   .keyboard-layout {
-    background-color: #f5f5f5;
-    padding: 8px;
-    border-radius: 6px;
+    background: linear-gradient(180deg, #5f8f00 0%, #1f1f1f 100%);
+    padding: 10px;
+    border-radius: 12px;
     margin: 6px 0;
+    border: 1px solid #4d4d4d;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
   }
 
   .keyboard-row {
     display: flex;
     gap: 4px;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     justify-content: flex-start;
     align-items: center;
   }
 
   .key-button {
-    background-color: #e0e0e0;
+    background: linear-gradient(180deg, #f7f7f7 0%, #e8e8e8 100%);
     border: 1px solid #999;
-    border-radius: 3px;
+    border-radius: 5px;
     padding: 4px;
-    min-width: 28px;
-    height: 28px;
+    min-width: 38px;
+    height: 32px;
     font-size: 9px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.1s;
+    transition: all 0.12s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     color: #333;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+  }
+
+  .key-button:hover {
+    transform: translateY(-1px);
   }
 
   .key-button:active,
+  .key-button.pressed,
   .key-button.active {
-    background-color: #76b500;
+    background: linear-gradient(180deg, #8bcf00 0%, #76b500 100%);
     color: white;
     border-color: #5a8a00;
-    transform: scale(0.95);
+    transform: scale(0.96);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
   }
 
   .key-button.spacebar {
@@ -178,18 +248,10 @@
     flex-shrink: 0;
   }
 
-  /* Active state - first press, keep green */
-  .key-button.active {
-    background-color: #76b500;
-    color: white;
-    border-color: #5a8a00;
-  }
-
-  /* Blink animation for repeated presses */
   @keyframes keyBlink {
-    0% { background-color: #e0e0e0; color: #333; }
-    50% { background-color: #76b500; color: white; }
-    100% { background-color: #76b500; color: white; }
+    0% { background: linear-gradient(180deg, #f7f7f7 0%, #e8e8e8 100%); color: #333; }
+    50% { background: linear-gradient(180deg, #8bcf00 0%, #76b500 100%); color: white; }
+    100% { background: linear-gradient(180deg, #8bcf00 0%, #76b500 100%); color: white; }
   }
 
   .key-button.active.blink {
@@ -197,12 +259,12 @@
   }
 
   .keyboard-log {
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
+    background-color: #f7f9f2;
+    border: 1px solid #dfe8c5;
     border-radius: 8px;
     padding: 8px 12px;
     margin-top: 8px;
-    max-height: 34px;
+    max-height: 40px;
     overflow-x: auto;
     overflow-y: hidden;
     font-family: monospace;
@@ -598,10 +660,20 @@
         
         <!-- KEYBOARD TEST MODULE -->
         <div id="keyboard" class="test-module active">
-          <h3 style="color: #76b500; margin-top: 0; font-size: 15px;">⌨️ Test Bàn Phím (84 Key US)</h3>
-          <p style="font-size: 12px; margin: 5px 0;">Bấm các phím trên bàn phím hoặc click nút để test. Phím sẽ đổi màu xanh.</p>
-          
-          <div class="keyboard-layout">
+          <div class="keyboard-shell">
+            <div class="keyboard-header">
+              <div>
+                <div class="keyboard-title">Kiểm tra bàn phím</div>
+                <div class="keyboard-subtitle">Phím sẽ sáng xanh khi phát hiện và đổi màu khi bạn nhấn.</div>
+              </div>
+              <div class="keyboard-status">
+                <div class="keyboard-chip" id="keyboardIndicator">Phím: Chưa có</div>
+                <div class="keyboard-chip" id="keyboardCount">Lần nhấn: 0</div>
+                <button class="keyboard-reset" type="button" onclick="resetKeyboardTest()">Reset</button>
+              </div>
+            </div>
+
+            <div class="keyboard-layout">
             <!-- Row 0: Function Keys + Navigation -->
             <div class="keyboard-row">
               <button class="key-button" data-key="Escape" style="min-width: 40px;">Esc</button>
@@ -620,10 +692,6 @@
               <button class="key-button" data-key="F10">F10</button>
               <button class="key-button" data-key="F11">F11</button>
               <button class="key-button" data-key="F12">F12</button>
-              <div class="keyboard-spacer" style="width: 25px;"></div>
-              <button class="key-button" data-key="PrintScreen" style="min-width: 35px;">PrS</button>
-              <button class="key-button" data-key="ScrollLock" style="min-width: 35px;">Scr</button>
-              <button class="key-button" data-key="Pause" style="min-width: 35px;">Pau</button>
             </div>
 
             <!-- Row 1: Numbers -->
@@ -641,7 +709,7 @@
               <button class="key-button" data-key="0">0)</button>
               <button class="key-button" data-key="-">-_</button>
               <button class="key-button" data-key="=">=+</button>
-              <button class="key-button" data-key="Backspace" style="min-width: 80px;">Bksp</button>
+              <button class="key-button" data-key="Backspace" style="min-width: 92px;">Backspace</button>
               <div class="keyboard-spacer" style="width: 25px;"></div>
               <button class="key-button" data-key="Insert" style="min-width: 40px;">Ins</button>
               <button class="key-button" data-key="Home" style="min-width: 40px;">Hom</button>
@@ -663,7 +731,7 @@
               <button class="key-button" data-key="p">P</button>
               <button class="key-button" data-key="[">[{</button>
               <button class="key-button" data-key="]">]}</button>
-              <button class="key-button" data-key="\\" style="min-width: 65px;">\\|</button>
+              <button class="key-button" data-key="Backslash" style="min-width: 65px;">\\|</button>
               <div class="keyboard-spacer" style="width: 25px;"></div>
               <button class="key-button" data-key="Delete" style="min-width: 40px;">Del</button>
               <button class="key-button" data-key="End" style="min-width: 40px;">End</button>
@@ -684,14 +752,14 @@
               <button class="key-button" data-key="l">L</button>
               <button class="key-button" data-key=";">:;</button>
               <button class="key-button" data-key="'">'"'</button>
-              <button class="key-button" data-key="Enter" style="min-width: 85px;">Entr</button>
+              <button class="key-button" data-key="Enter" style="min-width: 85px;">Enter</button>
               <div class="keyboard-spacer" style="width: 25px;"></div>
               <span style="flex: 3;"></span>
             </div>
 
             <!-- Row 4: ZXCV -->
             <div class="keyboard-row">
-              <button class="key-button" data-key="ShiftLeft" style="min-width: 130px;">Shift</button>
+              <button class="key-button" data-key="ShiftLeft" style="min-width: 108px;">Shift</button>
               <button class="key-button" data-key="z">Z</button>
               <button class="key-button" data-key="x">X</button>
               <button class="key-button" data-key="c">C</button>
@@ -702,11 +770,9 @@
               <button class="key-button" data-key=",">,<</button>
               <button class="key-button" data-key=".">. ></button>
               <button class="key-button" data-key="/">?/</button>
-              <button class="key-button" data-key="ShiftRight" style="min-width: 130px;">Shift</button>
+              <button class="key-button" data-key="ShiftRight" style="min-width: 108px;">Shift</button>
               <div class="keyboard-spacer" style="width: 25px;"></div>
-              <span style="flex: 1;"></span>
               <button class="key-button" data-key="ArrowUp" style="min-width: 40px;">↑</button>
-              <span style="flex: 1;"></span>
             </div>
 
             <!-- Row 5: Space and Modifiers -->
@@ -714,15 +780,16 @@
               <button class="key-button" data-key="ControlLeft" style="min-width: 75px;">Ctrl</button>
               <button class="key-button" data-key="Meta" style="min-width: 65px;">Win</button>
               <button class="key-button" data-key="AltLeft" style="min-width: 65px;">Alt</button>
-              <button class="key-button spacebar" data-key=" ">SPACE</button>
+              <button class="key-button" data-key=" " style="width: 279px;">SPACE</button>
               <button class="key-button" data-key="AltRight" style="min-width: 65px;">Alt</button>
-              <button class="key-button" data-key="Meta" style="min-width: 65px;">Win</button>
-              <button class="key-button" data-key="ContextMenu" style="min-width: 65px;">Menu</button>
               <button class="key-button" data-key="ControlRight" style="min-width: 75px;">Ctrl</button>
               <div class="keyboard-spacer" style="width: 25px;"></div>
               <button class="key-button" data-key="ArrowLeft" style="min-width: 40px;">←</button>
               <button class="key-button" data-key="ArrowDown" style="min-width: 40px;">↓</button>
               <button class="key-button" data-key="ArrowRight" style="min-width: 40px;">→</button>
+            </div>
+          </div>
+
             </div>
           </div>
 
@@ -930,11 +997,13 @@ function switchModule(module, event) {
   }
 
   currentModule = module;
+  updateKeyboardUIVisibility();
 }
 
 // ========== KEYBOARD TEST ==========
 let keyboardLog = [];
 let keyPressCount = {};
+let lastPressedKey = '';
 
 function normalizeKeyboardKey(e) {
   const code = e.code || '';
@@ -951,7 +1020,7 @@ function normalizeKeyboardKey(e) {
     Equal: '=',
     BracketLeft: '[',
     BracketRight: ']',
-    Backslash: '\\',
+    Backslash: 'Backslash',
     Semicolon: ';',
     Quote: "'",
     Comma: ',',
@@ -1000,6 +1069,8 @@ function findKeyButton(keyName) {
 
 // Setup keyboard listeners
 document.addEventListener('DOMContentLoaded', () => {
+  updateKeyboardUIVisibility();
+
   document.addEventListener('keydown', (e) => {
     if (currentModule !== 'keyboard') return;
 
@@ -1033,52 +1104,93 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function handleKeyPress(btn, key) {
-  // Initialize count if not exists
   const btnId = btn.getAttribute('data-key');
   if (!keyPressCount[btnId]) {
     keyPressCount[btnId] = 0;
   }
-  
+
   keyPressCount[btnId]++;
-  
-  if (keyPressCount[btnId] === 1) {
-    // First press - just set active (keep green)
-    btn.classList.add('active');
-    btn.classList.remove('blink');
-  } else {
-    // Repeated press - trigger blink animation
-    btn.classList.remove('blink');
-    // Force reflow
+  lastPressedKey = key;
+
+  btn.classList.add('active', 'pressed');
+  btn.classList.remove('blink');
+
+  if (keyPressCount[btnId] > 1) {
     void btn.offsetWidth;
     btn.classList.add('blink');
   }
-  
+
+  updateKeyboardStatus();
   addKeyboardLog(key);
 }
 
 function addKeyboardLog(key) {
-  if (!keyboardLog.includes(key)) {
-    keyboardLog.push(key);
-  } else {
-    // Move to end if already exists
-    keyboardLog = keyboardLog.filter(k => k !== key);
-    keyboardLog.push(key);
-  }
-  
+  keyboardLog = [key, ...keyboardLog.filter(k => k !== key)];
+
   if (keyboardLog.length > 20) {
-    keyboardLog.shift();
+    keyboardLog = keyboardLog.slice(0, 20);
   }
-  
+
   updateKeyboardLog();
 }
 
 function updateKeyboardLog() {
   const logDiv = document.getElementById('keyboardLog');
+  if (!logDiv) return;
+
+  if (currentModule !== 'keyboard') {
+    logDiv.innerHTML = '';
+    return;
+  }
+
   logDiv.innerHTML = '<div style="color: #999; font-size: 11px;">Log: </div>' + 
     keyboardLog.map(key => 
       `<div class="log-entry">${key}</div>`
     ).join('');
   logDiv.scrollLeft = logDiv.scrollWidth;
+}
+
+function updateKeyboardUIVisibility() {
+  const logDiv = document.getElementById('keyboardLog');
+  const shell = document.querySelector('.keyboard-shell');
+  const statusBar = document.querySelector('.keyboard-header');
+
+  if (currentModule !== 'keyboard') {
+    if (logDiv) logDiv.style.display = 'none';
+    if (shell) shell.style.display = 'none';
+    if (statusBar) statusBar.style.display = 'none';
+  } else {
+    if (logDiv) logDiv.style.display = 'flex';
+    if (shell) shell.style.display = 'block';
+    if (statusBar) statusBar.style.display = 'flex';
+  }
+}
+
+function updateKeyboardStatus() {
+  const indicatorEl = document.getElementById('keyboardIndicator');
+  const countEl = document.getElementById('keyboardCount');
+
+  if (indicatorEl) {
+    indicatorEl.textContent = `Phím: ${lastPressedKey || 'Chưa có'}`;
+  }
+
+  if (countEl) {
+    const totalPresses = Object.values(keyPressCount).reduce((sum, value) => sum + (value || 0), 0);
+    countEl.textContent = `Lần nhấn: ${totalPresses}`;
+  }
+}
+
+function resetKeyboardTest() {
+  keyboardLog = [];
+  keyPressCount = {};
+  lastPressedKey = '';
+
+  document.querySelectorAll('.key-button').forEach(btn => {
+    btn.classList.remove('active', 'pressed', 'blink');
+  });
+
+  updateKeyboardLog();
+  updateKeyboardStatus();
 }
 
 // ========== SCREEN TEST ==========
