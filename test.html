@@ -1306,6 +1306,8 @@ let audioContext = null;
 let oscillator = null;
 let gainNode = null;
 let stereoPan = null;
+let testAudioElement = null;
+let audioSourceNode = null;
 
 function initAudioContext() {
   if (!audioContext) {
@@ -1313,48 +1315,41 @@ function initAudioContext() {
   }
 }
 
-// Phát đoạn nhạc test stereo
-function playTestMusic(channel = 'both') {
+function initTestAudioElement() {
   initAudioContext();
-  stopAudio();
-  
-  oscillator = audioContext.createOscillator();
-  gainNode = audioContext.createGain();
-  
-  if (channel !== 'both') {
-    stereoPan = audioContext.createStereoPanner();
-    oscillator.connect(gainNode);
-    gainNode.connect(stereoPan);
-    stereoPan.connect(audioContext.destination);
-    stereoPan.pan.value = channel === 'left' ? -1 : 1;
-  } else {
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+
+  if (!testAudioElement) {
+    testAudioElement = new Audio('assets/audio-test.mp3');
+    testAudioElement.preload = 'auto';
   }
-  
-  oscillator.type = 'sine';
+
+  if (!audioSourceNode) {
+    audioSourceNode = audioContext.createMediaElementSource(testAudioElement);
+  }
+}
+
+// Ph?t file audio test stereo
+function playTestMusic(channel = 'both') {
+  stopAudio();
+  initTestAudioElement();
+
+  gainNode = audioContext.createGain();
+  stereoPan = audioContext.createStereoPanner();
+
+  audioSourceNode.disconnect();
+  audioSourceNode.connect(gainNode);
+  gainNode.connect(stereoPan);
+  stereoPan.connect(audioContext.destination);
+  stereoPan.pan.value = channel === 'left' ? -1 : (channel === 'right' ? 1 : 0);
+
   const volume = document.getElementById('audioVolume').value / 100;
   gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-  
-  // Phát dãy nhạc: Do, Re, Mi, Fa, Sol (C, D, E, F, G)
-  const notes = [262, 294, 330, 349, 392]; // Hz
-  const noteDuration = 0.3; // seconds
-  let currentTime = audioContext.currentTime;
-  
-  notes.forEach((freq, idx) => {
-    const startTime = currentTime + (idx * noteDuration);
-    const endTime = startTime + noteDuration;
-    
-    oscillator.frequency.setValueAtTime(freq, startTime);
-    gainNode.gain.setValueAtTime(volume, startTime);
-    gainNode.gain.setValueAtTime(0, endTime);
-  });
-  
-  oscillator.start(currentTime);
-  oscillator.stop(currentTime + (notes.length * noteDuration));
-  
-  const channelName = channel === 'left' ? 'Loa Trái' : (channel === 'right' ? 'Loa Phải' : 'Cả Hai Loa');
-  document.getElementById('audioStatus').textContent = `Phát: ${channelName}`;
+
+  testAudioElement.currentTime = 0;
+  testAudioElement.play().catch(() => {});
+
+  const channelName = channel === 'left' ? 'Loa Tr?i' : (channel === 'right' ? 'Loa Ph?i' : 'C? Hai Loa');
+  document.getElementById('audioStatus').textContent = `Ph?t audio test: ${channelName}`;
   visualizeAudio();
 }
 
@@ -1384,18 +1379,22 @@ function playFrequency(freq, channel = 'both') {
   
   oscillator.start();
   
-  document.getElementById('audioStatus').textContent = `Phát: ${freq} Hz`;
+  document.getElementById('audioStatus').textContent = `Ph?t: ${freq} Hz`;
   visualizeAudio();
 }
 
 function stopAudio() {
+  if (testAudioElement) {
+    testAudioElement.pause();
+    testAudioElement.currentTime = 0;
+  }
   if (oscillator) {
     try {
       oscillator.stop();
     } catch (e) {}
     oscillator = null;
   }
-  document.getElementById('audioStatus').textContent = 'Dừng';
+  document.getElementById('audioStatus').textContent = 'D?ng';
 }
 
 function updateAudioVolume() {
@@ -1404,6 +1403,9 @@ function updateAudioVolume() {
   
   if (gainNode) {
     gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
+  }
+  if (testAudioElement) {
+    testAudioElement.volume = volume / 100;
   }
 }
 
