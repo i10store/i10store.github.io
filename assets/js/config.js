@@ -105,7 +105,7 @@ const I10_CONFIG = {
    // ==================== SITE ====================
    
    // Logo
-   SITE_LOGO: "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000",
+   SITE_LOGO: "https://res.cloudinary.com/diyvjay4f/image/upload/v1779010018/i10_logo5.png",
    SITE_LOGO_2: "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000",
    
    // Màu theme
