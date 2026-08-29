@@ -629,7 +629,7 @@ async function renderProductGrid() {
                         const isDedicatedGpu = gpu && !gpu.includes("onboard") && !gpu.includes("intel uhd") && !gpu.includes("intel hd") && !gpu.includes("iris");
                         return isWorkstation || isDedicatedGpu;
                     });
-                case "available": simpleQueryString = "còn"; break;
+                case "stock": simpleQueryString = "còn"; break;
                 case "sold": simpleQueryString = "đã bán"; break;
                 case "thinkpad": simpleQueryString = "thinkpad"; break;
                 case "dell": simpleQueryString = "dell"; break;
@@ -639,7 +639,7 @@ async function renderProductGrid() {
             }
             if (simpleQueryString) {
                 return fullList.filter(p => {
-                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || "", p["ID"] || ""].join(' ').toLowerCase();
                     return fields.includes(simpleQueryString);
                 });
             }
@@ -747,7 +747,7 @@ async function renderProductGrid() {
 
             if (qstr) {
                 list = list.filter(p => {
-                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                    const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["CPU"] || "", p["RAM"] || "", p["SSD"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || "", p["ID"] || ""].join(' ').toLowerCase();
                     return fields.includes(qstr);
                 });
             }
@@ -909,7 +909,7 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
             const priceNum = parseFloat(state.priceQuery);
             let list = state.items.filter(p => {
                  if (!qstr) return true;
-                 const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["RAM"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || ""].join(' ').toLowerCase();
+                 const fields = [p["Brand"] || "", p["Model"] || "", p["Name"] || "", p["CPU"] || "", p["RAM"] || "", p["SSD"] || "", p["Phân loại"] || "", p["T.THÁI"] || "", p["GPU"] || "", p["ID"] || ""].join(' ').toLowerCase();
                  return fields.includes(qstr);
             });
             if (!isNaN(priceNum) && priceNum > 0) {
