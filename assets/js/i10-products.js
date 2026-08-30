@@ -844,7 +844,11 @@ async function renderProductGrid() {
                 if (gpu && gpu.toLowerCase() !== "onboard") config.push(`${gpu}`);
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
-                const cardCtaText = isDepositedProduct(p) ? "Đã nhận cọc" : (isSold(p) ? "Liên hệ" : "Mua ngay");
+                const isDeposited = isDepositedProduct(p);
+                const cardCtaText = isDeposited ? "Đã nhận cọc" : (isSold(p) ? "Liên hệ" : "Mua ngay");
+                const cardCtaStyle = isDeposited
+                  ? `width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#000000;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;`
+                  : `width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;`;
                 return `
                   <div class="col-xs-6 col-sm-6 col-md-4 product-item" style="margin-bottom:22px;">
                     <div class="product-card" data-json="${jsonData}" data-slug="${p.slug}">
@@ -857,7 +861,7 @@ async function renderProductGrid() {
                           <div style="font-size:13px;color:#666;">${config.join(" • ")}</div>
                         </div>
                          <div class="price-container" style="${priceStyle}margin-top:8px;font-size:16px">${priceText}</div>
-                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">${cardCtaText}</button>
+                         <button class="buy-now-btn" data-json="${jsonData}" data-title="${escapeAttr(title)}" style="${cardCtaStyle}" onmouseover="this.style.backgroundColor='#096B00';" onmouseout="this.style.backgroundColor='${THEME}'">${cardCtaText}</button>
                       </div>
                     </div>
                   </div>`;
@@ -1345,7 +1349,7 @@ const rows = [
 
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = "×";
-        closeBtn.style.cssText = `position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#ff0000;border:2px solid #ff0000;border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;line-height:0.9;`;
+        closeBtn.style.cssText = `position:absolute;right:15px;top:15px;font-size:32px;background:#fff;color:#000000;border:2px solid #000000;border-radius:50%;padding:2px;cursor:pointer;z-index:10;height:45px;width:45px;line-height:0.9;`;
 
         const relatedHeader = relatedWrap.querySelector('.related-header');
         const relatedBody = relatedWrap.querySelector('.related-body');
