@@ -14,7 +14,7 @@
 
 const TELEGRAM_CONFIG = {
   // Thay thế BOT_TOKEN bằng token thực tế từ @BotFather
-  BOT_TOKEN: "8975330891:AAHXuVqKn4iB5V5IqYOwQGGDzfASAdR5tP0", // Ví dụ: "123456:ABCDEfghijklmnopqrst"
+  BOT_TOKEN: "8985542579:AAFdsQraNEk1e5XHSkZW9DvT3mD7F8Q_6Yg", // Ví dụ: "123456:ABCDEfghijklmnopqrst"
   
   // Thay thế CHAT_ID bằng chat ID thực tế
   CHAT_ID: "5857710133", // Ví dụ: "-1001234567890" (nhóm) hoặc "987654321" (cá nhân)
