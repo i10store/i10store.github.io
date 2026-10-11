@@ -1789,7 +1789,7 @@ async function renderBanner() {
       let raw = await fetchJSON(getCacheBustedUrl(DATA_SOURCE_URL));
 
       // Lấy JSON banner từ ô AH2, dưới cột Photos2 của hàng tiêu đề.
-      const photos2Str = getSheetHeaderCellValue(raw, "Photos2", 1, 33);
+      const photos2Str = getSheetHeaderCellValue(raw, "Photos2", 0, 33);
       if (!photos2Str) {
         throw new Error("Không tìm thấy dữ liệu banner...");
       }
