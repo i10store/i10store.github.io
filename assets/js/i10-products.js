@@ -593,7 +593,7 @@ async function renderProductGrid() {
     const paginationEl = document.getElementById('i10-pagination');
     
     // Hiển thị loading (thay thế placeholder)
-    gridEl.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm...</p></div>`;
+    gridEl.innerHTML = `<div style="padding:20px;text-align:center;"><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color: ${THEME};"></i><p style="margin-top:15px;font-size:16px;">Đang tải dữ liệu sản phẩm... bạn chờ vài giây nhé !!</p></div>`;
 
     try {
         const startupData = await getStartupProductData();
