@@ -105,8 +105,8 @@ const I10_CONFIG = {
    // ==================== SITE ====================
    
    // Logo
-   SITE_LOGO: "https://res.cloudinary.com/diyvjay4f/image/upload/v1779010018/i10_logo5.png",
-   SITE_LOGO_2: "https://res.cloudinary.com/diyvjay4f/image/upload/v1787984286/logo-big-2_aw7d11.png",
+   SITE_LOGO: "https://res.cloudinary.com/diyvjay4f/image/upload/i10_logo.png",
+   SITE_LOGO_2: "https://res.cloudinary.com/diyvjay4f/image/upload/logo-big-2.png",
    //Logo2 hiển thị khi không có ảnh sản phẩm
    // Màu theme
    THEME: "#76b500",
@@ -117,6 +117,6 @@ const I10_CONFIG = {
    SITE_META_DESC_HOME: "i10 STORE - Chuyên Laptop Thinkpad Mỹ cao cấp. Hiệu năng vượt trội, thiết kế bền bỉ. Máy trạm, văn phòng, Dell, Thinkpad.",
    
    // Điện thoại liên hệ
-   PHONE: "0838288000",
-   ZALO: "0838288000"
+   PHONE: "O838288OOO",
+   ZALO: "O838288OOO"
 };

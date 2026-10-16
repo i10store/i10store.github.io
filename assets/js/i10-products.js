@@ -14,8 +14,8 @@ const DATA_SOURCE_URL = (() => {
   }
   return PRODUCTS_JSON_URL;
 })();
-const SITE_LOGO = SITE_CONFIG.SITE_LOGO || "https://lh3.googleusercontent.com/d/1kICZAlJ_eXq4ZfD5QeN0xXGf9lx7v1Vi=s1000";
-const SITE_LOGO_2 = SITE_CONFIG.SITE_LOGO_2 || "https://lh3.googleusercontent.com/d/1L6aVgYahuAz1SyzFlifSUTNvmgFIZeft=s1000";
+const SITE_LOGO = SITE_CONFIG.SITE_LOGO || "https://res.cloudinary.com/diyvjay4f/image/upload/v1778929451/i10_logo.png";
+const SITE_LOGO_2 = SITE_CONFIG.SITE_LOGO_2 || "https://res.cloudinary.com/diyvjay4f/image/upload/v1778929451/i10_logo.png";
 const THEME = SITE_CONFIG.THEME || "#76b500";
 const CACHE_KEY = "i10_products_cache_v6";
 const CACHE_KEY_BANNER = "i10_banner_cache_v6";
@@ -845,7 +845,7 @@ async function renderProductGrid() {
                 
                 const jsonData = encodeURIComponent(JSON.stringify(p));
                 const isDeposited = isDepositedProduct(p);
-                const cardCtaText = isDeposited ? "Đã nhận cọc" : (isSold(p) ? "Liên hệ" : "Mua ngay");
+                const cardCtaText = isDeposited ? "Đã nhận cọc" : (isSold(p) ? "Liên hệ" : "Gửi yêu cầu");
                 const cardCtaStyle = isDeposited
                   ? `width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#000000;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;`
                   : `width:100%;margin-top:10px;padding:3px 12px;background:${THEME};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;`;
