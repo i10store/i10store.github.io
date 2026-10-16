@@ -1342,7 +1342,7 @@ const rows = [
         orderBtn.className = "btn btn-success";
         orderBtn.innerHTML = isDepositedProduct(product)
           ? `<i class="fa fa-comments"></i> Nhận tư vấn`
-          : `<i class="fa fa-shopping-cart"></i> Đặt hàng`;
+          : `<i class="fa fa-shopping-cart"></i> Gửi thông tin`;
         orderBtn.style.cssText = `background:${THEME};color:#fff;font-weight:700;padding:8px 15px;font-size:13px;border-radius:8px;flex:1;border:none;min-width:110px;`;
         orderBtn.onclick = () => openOrderForm(product, titleText, overlay);
         actions.appendChild(orderBtn);
@@ -1640,7 +1640,7 @@ function openOrderForm(product, titleText, parentOverlay) {
      
      <div style="display:flex;gap:10px;justify-content:flex-end;">
        <button id="order_cancel" class="btn btn-default" style="padding:8px 15px;border:1px solid #ccc;border-radius:6px;">Hủy</button>
-       <button id="order_submit" class="btn btn-success" style="padding:8px 15px;background:#27ae60;border:none;border-radius:6px;color:#fff;font-weight:700;">Gửi đơn hàng</button>
+       <button id="order_submit" class="btn btn-success" style="padding:8px 15px;background:#27ae60;border:none;border-radius:6px;color:#fff;font-weight:700;">Gửi yêu cầu tư vấn</button>
      </div>
      <div id="order_msg" style="margin-top:10px;font-size:13px;text-align:right;"></div>
   `;
