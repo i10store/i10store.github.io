@@ -344,7 +344,7 @@ async function fetchJSON(url, opts = {}) {
 
      document.addEventListener("DOMContentLoaded", () => {
          const siteLogo = document.getElementById("site-logo");
-         if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+         if (siteLogo && window.I10_CONFIG) siteLogo.src = window.I10_CONFIG.SITE_LOGO;
          fetchCustomerImages();
      });
      protectImages();

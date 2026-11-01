@@ -960,7 +960,7 @@ updateSpeed();
 
 
 <script>
-const SITE_LOGO = i10Config ? i10Config.SITE_LOGO : "https://res.cloudinary.com/diyvjay4f/image/upload/v1778929451/i10_logo.png";
+const SITE_LOGO = (window.I10_CONFIG && window.I10_CONFIG.SITE_LOGO) || "https://res.cloudinary.com/diyvjay4f/image/upload/i10_logo.png";
 const SHEET_API = i10Config ? i10Config.SHEET_API_HOADON : "https://script.google.com/macros/s/AKfycbzgbhExQpKNReRxy-E2sL_TjOvKdnDfp4IHqt6S2RHeiT0ExqxEQoNTEPo4GbMl94eE/exec";
 
 document.addEventListener("DOMContentLoaded", () => {

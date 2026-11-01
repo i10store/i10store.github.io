@@ -1696,7 +1696,7 @@ window.addEventListener('beforeunload', () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     var siteLogo = document.getElementById("site-logo");
-    if (siteLogo && i10Config) siteLogo.src = i10Config.SITE_LOGO;
+    if (siteLogo && window.I10_CONFIG) siteLogo.src = window.I10_CONFIG.SITE_LOGO;
     if (window.I10_SECURITY) {
         I10_SECURITY.initButtonProtection('btnSaveSheet');
     }
