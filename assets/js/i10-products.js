@@ -607,6 +607,22 @@ async function renderProductGrid() {
         
         const params = new URLSearchParams(window.location.search);
         const filter = params.get("filter");
+
+        // Hỗ trợ link lọc giá: ?filter=gia10, ?filter=gia20.
+        // Một số link cũ dùng dấu % làm dấu phân cách (gia%10/gia%20).
+        // Đọc chuỗi query gốc để dấu % không bị URLSearchParams giải mã thành ký tự điều khiển.
+        function getPriceFilterFromUrl(filterKey) {
+            const rawMatch = window.location.search.match(/[?&]filter=([^&]*)/i);
+            const rawValue = rawMatch ? rawMatch[1] : "";
+            const rawPriceMatch = rawValue.match(/^gia(?:%|%25)?(\d+(?:[.,]\d+)?)$/i);
+            if (rawPriceMatch) return rawPriceMatch[1].replace(',', '.');
+
+            const decodedValue = String(filterKey || "").trim();
+            const decodedPriceMatch = decodedValue.match(/^gia\s*(\d+(?:[.,]\d+)?)$/i);
+            return decodedPriceMatch ? decodedPriceMatch[1].replace(',', '.') : "";
+        }
+
+        const urlPriceQuery = getPriceFilterFromUrl(filter);
         
         // (Hàm lọc applyUrlFilter)
         function applyUrlFilter(fullList, filterKey) {
@@ -646,9 +662,15 @@ async function renderProductGrid() {
             return fullList;
         }
 
-        const filteredData = applyUrlFilter(data, filter);
+        function applyActiveUrlFilter(fullList) {
+            return urlPriceQuery ? fullList : applyUrlFilter(fullList, filter);
+        }
+
+        // Lọc giá được xử lý bởi doRender để dùng cùng phạm vi ±2 triệu
+        // với ô "Giá khoảng (tr)" trên giao diện.
+        const filteredData = applyActiveUrlFilter(data);
         
-        let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: "" };
+        let state = { q: "", sort: "default", items: filteredData, currentPage: 1, priceQuery: urlPriceQuery };
 
         // (Hàm renderPaginationHTML)
         function renderPaginationHTML(totalPages, currentPage) {
@@ -898,10 +920,11 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
             
         // 5. Khởi tạo
         controlsEl.innerHTML = ''; 
-        renderControls(controlsEl, ({ q, sort, priceQuery }) => {
+        const controls = renderControls(controlsEl, ({ q, sort, priceQuery }) => {
             state.currentPage = 1;
             doRender({ q, sort, priceQuery });
         });
+        if (urlPriceQuery) controls.priceInput.value = urlPriceQuery;
         
         paginationEl.addEventListener('click', (e) => {
             e.preventDefault();
@@ -944,7 +967,7 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
 
         if (startupData.isStatic) {
           getProductData(true).then((freshData) => {
-            state.items = shuffleArray(applyUrlFilter(freshData, filter));
+            state.items = shuffleArray(applyActiveUrlFilter(freshData));
             state.currentPage = 1;
             if (dataStatusEl) dataStatusEl.innerHTML = "";
             doRender({});
@@ -957,7 +980,7 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
         setTimeout(() => {
           getProductData(true).then((freshData) => {
             console.log("🔄 Tự động cập nhật dữ liệu sau 5 phút");
-            state.items = shuffleArray(applyUrlFilter(freshData, filter));
+            state.items = shuffleArray(applyActiveUrlFilter(freshData));
             doRender();
           }).catch(err => {
             console.warn("Lỗi auto-refresh:", err.message);
@@ -973,7 +996,7 @@ gridEl.innerHTML = `<div class="row">${html}</div>`;
               if (Date.now() - timestamp < 30000) {
                 console.log("📡 Phát hiện thay đổi từ tab khác, đang tải lại...");
                 getProductData(true).then((freshData) => {
-                  state.items = shuffleArray(applyUrlFilter(freshData, filter));
+                  state.items = shuffleArray(applyActiveUrlFilter(freshData));
                   doRender();
                 });
               }
