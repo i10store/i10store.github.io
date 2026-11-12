@@ -382,7 +382,7 @@ function parseSheetData(response) {
     });
     
     // Lấy data từ row 2 trở đi (bỏ header row + 1 dòng phụ/chú thích)
-    return rows.slice(2)
+    return rows.slice(1)
       .filter(row => row.c) // Bỏ hàng trống
       .map(row => {
         const obj = {};
