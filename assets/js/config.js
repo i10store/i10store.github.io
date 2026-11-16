@@ -83,7 +83,7 @@ const I10_CONFIG = {
    
    // Google Sheet ID cho sheet "Web" (lấy từ URL: /d/{SHEET_ID}/edit)
    // Để trống nếu không dùng Google Sheet, sẽ fallback về products.json
-   SHEET_WEB_ID: "18sGLaK2MblP23WHeGblDhFhg8BcDvoIGSRT-7Upjsog",
+   SHEET_WEB_ID: "1RVcIYAIMqR0VtFq5RUEAxTWl7pIV5WDAKRhlL7iLIY8",
    
    // Tên sheet trong Google Sheet (mặc định: "Web")
    SHEET_WEB_SHEET_NAME: "Web",
